@@ -30,6 +30,23 @@ function json(res, status, body) {
   });
 }
 
+// Bellek içi hız sınırları: IP geneli + kullanıcı bazlı (DB okumadan önce).
+const buckets = new Map<string, { count: number; reset: number }>();
+function hit(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const b = buckets.get(key);
+  if (!b || now > b.reset) {
+    buckets.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  return b.count > limit;
+}
+function clientKey(req): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  return (fwd ? fwd.split(',')[0].trim() : 'local') || 'local';
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return json(req, 405, { error: 'method_not_allowed' });
@@ -44,7 +61,13 @@ Deno.serve(async (req) => {
 
   const action = typeof body?.action === 'string' ? body.action : '';
   const username = typeof body?.username === 'string' ? body.username.trim() : '';
-  if (!username) return json(req, 400, { error: 'username_required' });
+  if (!username || username.length < 2 || username.length > 64) {
+    return json(req, 400, { error: 'username_required' });
+  }
+  // IP başına dakikada 60 istek (sohbet akışı için bolca yeter).
+  if (hit(`ip:${clientKey(req)}`, 60, 60_000)) {
+    return json(req, 429, { error: 'rate_limited' });
+  }
 
   const now = new Date();
 
@@ -72,7 +95,11 @@ Deno.serve(async (req) => {
         ? body.avatarPhoto.trim().slice(0, 300)
         : null;
 
-    // Spam koruması: son mesajdan bu yana SPAM_MS geçmediyse reddet.
+    // Spam koruması: aynı kullanıcı 5 saniyede en fazla 1 mesaj.
+    // Bellek içi sayaç eşzamanlı istekleri de yakalar; DB kontrolü yedektir.
+    if (hit(`msg:${username}`, 1, SPAM_MS)) {
+      return json(req, 429, { error: 'slow_down', remainingMs: SPAM_MS });
+    }
     const { data: last } = await supabase
       .from('chat_messages')
       .select('created_at')
@@ -99,6 +126,10 @@ Deno.serve(async (req) => {
 
   // ---------------- room_create: yeni oda aç ----------------
   if (action === 'room_create') {
+    // Aynı kullanıcı 10 dakikada en fazla 3 oda açabilir.
+    if (hit(`room:${username}`, 3, 600_000)) {
+      return json(req, 429, { error: 'rate_limited' });
+    }
     const name = typeof body?.name === 'string' ? body.name.trim() : '';
     if (name.length < 2 || name.length > 40) {
       return json(req, 400, { error: 'invalid_room_name', max: 40 });

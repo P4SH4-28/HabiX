@@ -8,8 +8,8 @@
 // - "verify": verilen hash ile saklanan hash'i karşılaştırır; uyuşursa
 //             ok:true döner (istemci yeni şifreyi cihaza yazar).
 // Güvenlik: istemci anahtarı recovery_hash sütununu OKUYAMAZ (RLS);
-// bu fonksiyon yalnızca servis rolüyle çalışır. Aynı profil için
-// 10 saniyede bir çağrı (brute-force yavaşlatma).
+// bu fonksiyon yalnızca servis rolüyle çalışır. Hız sınırı ayrı bir
+// sayaçla tutulur (IP + kullanıcı) — normal senkronu etkilemez.
 //
 // Deploy: Supabase Dashboard → Edge Functions → recovery-action →
 // index.ts içeriğini yapıştır → Deploy (JWT doğrulaması KAPALI).
@@ -19,7 +19,25 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-const MIN_CALL_MS = 10_000;
+// ---------- Hız sınırları (ayrı anahtar: sync'in last_sync_at'ı KULLANILMAZ) ----------
+// Eski kod last_sync_at üzerinden 10 sn kısıtı uyguluyordu; bu hem normal
+// senkronu kilitleyebiliyor hem de gerçek zamanlı brute-force koruması
+// sağlamıyordu. Artık IP + kullanıcı adı bazlı, bellek içi sayaç var.
+const buckets = new Map<string, { count: number; reset: number }>();
+function hit(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const b = buckets.get(key);
+  if (!b || now > b.reset) {
+    buckets.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  return b.count > limit;
+}
+function clientKey(req): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  return (fwd ? fwd.split(',')[0].trim() : 'local') || 'local';
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
@@ -71,12 +89,12 @@ Deno.serve(async (req) => {
     return json(req, 500, { error: 'profile_lookup_failed' });
   }
 
-  // ---------- Rate limit (10 sn, mevcut profiller için) ----------
-  if (prof?.last_sync_at) {
-    const last = Date.parse(prof.last_sync_at);
-    if (!Number.isNaN(last) && now.getTime() - last < MIN_CALL_MS) {
-      return json(req, 429, { error: 'rate_limited', retryAfterMs: MIN_CALL_MS - (now.getTime() - last) });
-    }
+  // ---------- Hız sınırları ----------
+  // Aynı IP: dakikada 20 istek (kendi cihazına yeterli).
+  // IP + kullanıcı: 5 dakikada 12 deneme (anahtar tahmini yavaşlatır).
+  const ip = clientKey(req);
+  if (hit(`ip:${ip}`, 20, 60_000) || hit(`ipu:${ip}:${username}`, 12, 300_000)) {
+    return json(req, 429, { error: 'rate_limited', retryAfterMs: 60_000 });
   }
 
   // ---------- "verify": hash karşılaştır ----------
@@ -86,11 +104,7 @@ Deno.serve(async (req) => {
     }
     const ok = prof.recovery_hash === recoveryHash;
     if (!ok) {
-      // Mevcut profilin last_sync_at'ini güncelle → brute-force yavaşlar.
-      await supabase
-        .from('profiles')
-        .update({ last_sync_at: now.toISOString() })
-        .eq('username', username);
+      // Yanlış deneme: sayaç zaten hit() içinde arttı — 401 dön.
       return json(req, 401, { error: 'invalid_recovery' });
     }
     return json(req, 200, { ok: true });
@@ -115,11 +129,6 @@ Deno.serve(async (req) => {
     // Mevcut anahtar yalnızca KENDİ eski anahtarının hash'iyle değişebilir.
     // (İstemci, kurtarma akışında önce verify eder, sonra yeni set yapar.)
     if (oldHash !== prof.recovery_hash) {
-      // Yanlış deneme sayılır → brute-force'u yavaşlat.
-      await supabase
-        .from('profiles')
-        .update({ last_sync_at: now.toISOString() })
-        .eq('username', username);
       return json(req, 401, { error: 'invalid_recovery' });
     }
   }

@@ -73,6 +73,19 @@ function utcDayKey(date) {
   return date.toISOString().slice(0, 10);
 }
 
+// Bellek içi hız sınırı (best-effort; asıl koruma gateway katmanıdır).
+const rateBuckets = new Map<string, { count: number; reset: number }>();
+function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const b = rateBuckets.get(key);
+  if (!b || now > b.reset) {
+    rateBuckets.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  return b.count > limit;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return json(req, 405, { error: 'method_not_allowed' });
@@ -87,8 +100,15 @@ Deno.serve(async (req) => {
 
   const username = typeof body?.username === 'string' ? body.username.trim() : '';
   const questId = typeof body?.questId === 'string' ? body.questId.trim() : '';
-  if (!username) return json(req, 400, { error: 'username_required' });
+  if (!username || username.length < 2 || username.length > 64) {
+    return json(req, 400, { error: 'username_required' });
+  }
   if (!questId) return json(req, 400, { error: 'quest_id_required' });
+
+  // Basit hız sınırı: aynı kullanıcı 60 sn'de en fazla 20 deneme.
+  if (rateLimit(username, 20, 60_000)) {
+    return json(req, 429, { error: 'rate_limited' });
+  }
 
   const meta = CATALOG[questId];
   if (!meta) return json(req, 400, { error: 'invalid_quest' });
@@ -129,24 +149,40 @@ Deno.serve(async (req) => {
     return json(req, 403, { error: 'vip_required' });
   }
 
-  // ---------- Günlük kontrol: bu görev bugün daha önce alındı mı? ----------
-  const { data: lastClaim } = await supabase
+  // ---------- Günlük kontrol: YARIŞMASIZ (atomik) alım ----------
+  // Eski kod SELECT → UPSERT sırasıydı: eşzamanlı iki istek ikisi de
+  // "alınmamış" görüp ödülü iki kez alabiliyordu. Artık her yazma,
+  // yalnızca "daha önceki gün" satırlarına uygulanan koşullu bir UPDATE;
+  // 0 satır güncellenirse ya bugün zaten alınmıştır ya da satır yoktur.
+  const { data: updated, error: updErr } = await supabase
     .from('quest_claims')
-    .select('day')
+    .update({ day: today, claimed_at: now.toISOString() })
     .eq('username', username)
     .eq('quest_id', questId)
-    .maybeSingle();
+    .lt('day', today)
+    .select('day');
 
-  if (lastClaim?.day === today) {
+  let claimed = false;
+  if (!updErr && Array.isArray(updated) && updated.length > 0) {
+    claimed = true; // eski gün satırı bugüne çekildi → alım başarılı
+  } else {
+    // Satır yoksa EKLE (çakışta sessizce atla); var ama bugüne eşitse 409.
+    const { data: inserted, error: insErr } = await supabase
+      .from('quest_claims')
+      .insert({ username, quest_id: questId, claimed_at: now.toISOString(), day: today })
+      .select('day');
+    if (insErr) {
+      // 23505 = çakışma → başka bir istek tam bu an aldı.
+      if (insErr.code === '23505') {
+        return json(req, 409, { error: 'already_claimed_today' });
+      }
+      return json(req, 500, { error: 'claim_write_failed' });
+    }
+    claimed = Array.isArray(inserted) && inserted.length > 0;
+  }
+  if (!claimed) {
     return json(req, 409, { error: 'already_claimed_today' });
   }
-
-  // ---------- Ödülü onayla: alımı kaydet ----------
-  const { error: writeErr } = await supabase.from('quest_claims').upsert(
-    { username, quest_id: questId, claimed_at: now.toISOString(), day: today },
-    { onConflict: 'username,quest_id' }
-  );
-  if (writeErr) return json(req, 500, { error: 'claim_write_failed' });
 
   // Onaylanan ödül miktarını istemciye döndür (istemci bu miktarı uygular).
   const reward = rewardFor(meta.difficulty, isVip, meta.vip);

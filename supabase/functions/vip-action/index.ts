@@ -27,6 +27,19 @@ function json(res, status, body) {
   });
 }
 
+// Bellek içi hız sınırı: kullanıcı başına dakikada 10 deneme.
+const rateBuckets = new Map<string, { count: number; reset: number }>();
+function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const b = rateBuckets.get(key);
+  if (!b || now > b.reset) {
+    rateBuckets.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  return b.count > limit;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return json(req, 405, { error: 'method_not_allowed' });
@@ -40,11 +53,16 @@ Deno.serve(async (req) => {
   }
 
   const username = typeof body?.username === 'string' ? body.username.trim() : '';
-  if (!username) return json(req, 400, { error: 'username_required' });
+  if (!username || username.length < 2 || username.length > 64) {
+    return json(req, 400, { error: 'username_required' });
+  }
+  if (rateLimit(username, 10, 60_000)) {
+    return json(req, 429, { error: 'rate_limited' });
+  }
 
   let { data: prof, error: profErr } = await supabase
     .from('profiles')
-    .select('username, coins, vip_until, banned')
+    .select('username, coins, vip_until, banned, ban_reason')
     .eq('username', username)
     .maybeSingle();
 
@@ -66,20 +84,31 @@ Deno.serve(async (req) => {
 
   const coins = typeof prof.coins === 'number' ? prof.coins : 0;
   if (coins < VIP_PRICE_GOLD) {
-    return json(req, 409, { error: 'insufficient_gold', coins });
+    return json(req, 409, { error: 'insufficient_gold' });
   }
 
   const newVipUntil = new Date(now.getTime() + VIP_DURATION_MS).toISOString();
 
-  // Atomik: altın düş + VIP süresi uzat (upsert yerine güncelleme).
-  const { error: updateErr } = await supabase
+  // Atomik: altın düş + VIP süresi uzat. Koşullu güncelleme (.eq coins)
+  // eşzamanlı çift harcamayı engeller; .select() ile ETKİLENEN SATIR
+  // sayısına bakılır (0 satır = çakışma → indirim uygulanmadan döner).
+  const { data: updatedRows, error: updateErr } = await supabase
     .from('profiles')
-    .update({ coins: coins - VIP_PRICE_GOLD, vip_until: newVipUntil, last_sync_at: now.toISOString() })
+    .update({
+      coins: coins - VIP_PRICE_GOLD,
+      vip_until: newVipUntil,
+      last_sync_at: now.toISOString(),
+    })
     .eq('username', username)
-    .eq('coins', coins); // koşullu güncelleme: arada değişmişse çakışır
+    .eq('coins', coins)
+    .select('coins, vip_until');
 
   if (updateErr) {
     return json(req, 500, { error: 'vip_purchase_failed' });
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    // Bakiye bu arada değişti: hiçbir şey düşülmedi — kullanıcıya dene dese.
+    return json(req, 409, { error: 'concurrency_conflict' });
   }
 
   return json(req, 200, {

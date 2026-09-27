@@ -1,0 +1,15 @@
+{
+  "//": "Edge Functions — Deno ortamı. `deno check supabase/functions/**` ile denetlenir.",
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["deno.ns", "deno.unstable", "dom", "dom.iterable", "esnext"],
+    "strict": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": false,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["**/*.ts"]
+}

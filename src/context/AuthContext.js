@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { hashPassword, makeRecoveryKey } from '../logic';
 import { setRecoveryKey, verifyRecoveryKey } from '../services/recoveryService';
+import { adminLogin, setAdminToken } from '../services/adminService';
 
 const AUTH_KEY = '@habit_tracker_auth';
 // "Beni hatırla" oturumu: son giriş yapılan hesap (admin dahil) burada
@@ -28,11 +29,12 @@ function saveSession(user) {
   );
 }
 
-// Yönetici hesabı: isim + şifre sabittir, kayıtlı kullanıcıdan bağımsızdır.
-// Bu hesapla giriş yapıldığında kullanıcıya "isAdmin: true" bayrağı verilir;
-// Ayarlar'da yalnızca admin'e görünen bölüm bu bayrağa bakar.
+// Yönetici hesabı kimliği (ŞİFRE DEĞİL, yalnızca kullanıcı adı).
+// Bu isim genel görünürdür (liderlik/denetim günlüğü) — gizli değildir.
+// Yönetici ŞİFRESİ asla istemcide tutulmaz: giriş sırasında sunucuda
+// doğrulanır (admin-action `login`) ve imzalı bir token alınır.
+// Eski sürümdeki gömülü şifre hash'i bilinçli olarak kaldırılmıştır.
 const ADMIN_NAME = 'P4SH4';
-const ADMIN_PASS_HASH = hashPassword('20100830');
 
 const AuthContext = createContext(null);
 
@@ -55,8 +57,23 @@ export function AuthProvider({ children }) {
         if (session) {
           const parsed = JSON.parse(session);
           if (parsed && typeof parsed.name === 'string' && parsed.name) {
-            nextUser = parsed;
-            nextStatus = 'in';
+            if (parsed.isAdmin) {
+              // Yönetici oturumu: imzalı token geçerliyse devam et;
+              // süresi dolmuşsa yeniden giriş iste (şifre gerekir).
+              const token = parsed.adminToken;
+              const exp = typeof parsed.adminExp === 'number' ? parsed.adminExp : 0;
+              if (token && exp > Date.now()) {
+                setAdminToken(token);
+                nextUser = parsed;
+                nextStatus = 'in';
+              } else {
+                nextUser = null;
+                nextStatus = 'login';
+              }
+            } else {
+              nextUser = parsed;
+              nextStatus = 'in';
+            }
           }
         }
       } catch (e) {
@@ -160,20 +177,35 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Mevcut hesapla giriş yapar (isim + şifre doğrulanır).
-  // Yönetici ismi/şifresi doğru girilirse kayıtlı hesaptan bağımsız giriş yapılır.
+  // Yönetici girişi AYRI bir yoldur: şifre istemcide değil SUNUCUDA
+  // doğrulanır (admin-action `login`) ve 12 saatlik imzalı token alınır.
+  // Böylece yönetici kimlik bilgisi hiçbir zaman APK'ya gömülmez.
   const login = useCallback(async (name, password) => {
     const n = (name || '').trim();
-    const hash = hashPassword(password || '');
-    if (n === ADMIN_NAME && hash === ADMIN_PASS_HASH) {
-      saveSession({ name: n, passHash: hash, isAdmin: true });
-      setUser({ name: n, passHash: hash, isAdmin: true });
-      setStatus('in');
-      return { ok: true, admin: true };
+    if (n === ADMIN_NAME) {
+      try {
+        const r = await adminLogin(n, hashPassword(password || ''));
+        if (!r.ok) return { ok: false, error: r.error };
+        const session = {
+          name: n,
+          isAdmin: true,
+          adminToken: r.token,
+          adminExp: typeof r.expiresAt === 'number' ? r.expiresAt : 0,
+        };
+        saveSession(session);
+        setAdminToken(r.token);
+        setUser(session);
+        setStatus('in');
+        return { ok: true, admin: true };
+      } catch (e) {
+        return { ok: false, error: 'Yönetici girişi yapılamadı' };
+      }
     }
     try {
       const raw = await AsyncStorage.getItem(AUTH_KEY);
       if (!raw) return { ok: false, error: 'Kayıtlı hesap bulunamadı' };
       const parsed = JSON.parse(raw);
+      const hash = hashPassword(password || '');
       const ok = parsed.name === n && parsed.passHash === hash;
       if (!ok) return { ok: false, error: 'İsim veya şifre hatalı' };
       saveSession(parsed);
@@ -187,6 +219,7 @@ export function AuthProvider({ children }) {
 
   // Çıkış yapar; hesap kaydı kalır, bir dahaki sefere giriş ekranı açılır.
   const logout = useCallback(async () => {
+    setAdminToken(null);
     setUser(null);
     setStatus('login');
     try {

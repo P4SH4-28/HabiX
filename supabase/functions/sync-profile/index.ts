@@ -21,10 +21,42 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const DAY_XP_CAP = 500;
 const DAY_GOLD_CAP = 150;
+// Negatif delta (geri alma/ceza) günlük tavanı: kimlik doğrulaması
+// olmadan çağrılabilen bu uç noktada herkesin bakiyesini sıfırlama
+// saldırısı ancak BU tavanla sınırlı kalır (bkz. güvenlik geçişi 001).
+const DAY_XP_NEG_CAP = 500;
+const DAY_GOLD_NEG_CAP = 300;
 const MIN_SYNC_MS = 10_000;
+// Aynı requestId bu süreden yeniyse "uygulanmış" sayılır; daha eskiyse
+// önceki deneme yarım kalmıştır (çökme) → yeniden uygulamaya izin verilir.
+const IDEMPOTENCY_MAX_AGE_MS = 15 * 60 * 1000;
 // Cihaz günü sunucu gününden en fazla +1 gün ileride olabilir
 // (saat dilimi toleransı; daha fazlası = saat oynatma).
 const MAX_DAY_AHEAD = 1;
+
+// Bellek içi hız sınırı (IP başına; best-effort).
+const rateBuckets = new Map<string, { count: number; reset: number }>();
+function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const b = rateBuckets.get(key);
+  if (!b || now > b.reset) {
+    rateBuckets.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  return b.count > limit;
+}
+function clientKey(req): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  return (fwd ? fwd.split(',')[0].trim() : 'local') || 'local';
+}
+
+// Sütun yokluğu (migration henüz uygulanmadı) hatası mı?
+function isColumnMissing(err): boolean {
+  if (!err) return false;
+  const msg = String(err.message || '');
+  return err.code === 'PGRST204' || /neg_xp|neg_gold|column/i.test(msg);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
@@ -52,7 +84,13 @@ Deno.serve(async (req) => {
   }
 
   const username = typeof body?.username === 'string' ? body.username.trim() : '';
-  if (!username) return json(req, 400, { error: 'username_required' });
+  if (!username || username.length < 2 || username.length > 64) {
+    return json(req, 400, { error: 'username_required' });
+  }
+  // IP başına hız sınırı: dakikada 30 istek (kendi cihazına rahatça yeter).
+  if (rateLimit(clientKey(req), 30, 60_000)) {
+    return json(req, 429, { error: 'rate_limited' });
+  }
 
   // Deltalar sayı olmalı; eksikse 0 kabul edilir. NaN → reddet.
   const deltaXpRaw = Number(body?.deltaXp);
@@ -121,6 +159,75 @@ Deno.serve(async (req) => {
     prof = created;
   }
 
+  // ---------- Tekrar oynatma (idempotency) koruması ----------
+  // İstemci aynı delta'yı yanıtı kaybettiğinde yeniden dener. sync_requests
+  // tablosundaki tekil kayıt, AYNI delta'nın ikinci kez uygulanmasını engeller
+  // (çift kredi / çift ceza önlenir). Tablo yoksa (migration henüz
+  // uygulanmamış) idempotency atlanır ve akış normale döner.
+  const requestId =
+    typeof body?.requestId === 'string' && body.requestId.length <= 64
+      ? body.requestId
+      : null;
+  // Yazma başarısız olursa kaydı geri al: yarım kalan bir alım, istemcinin
+  // yeniden denemesini engellmesin (veri KAYBI yerine en fazla sınırlı
+  // tekrar uygulama riski kalır — o da günlük tavanlarla korunur).
+  const releaseRequestId = () => {
+    if (!requestId) return;
+    supabase
+      .from('sync_requests')
+      .delete()
+      .eq('username', username)
+      .eq('request_id', requestId)
+      .then(() => {})
+      .catch(() => {});
+  };
+  if (requestId) {
+    try {
+      const { data: inserted, error: insErr } = await supabase
+        .from('sync_requests')
+        .insert({ username, request_id: requestId, created_at: now.toISOString() })
+        .select('request_id');
+      if (!insErr && (!inserted || inserted.length === 0)) {
+        // Çakışma: bu id daha önce kaydedilmiş. Kayıt TAZEYSE (< 15 dk)
+        // uygulanmış demektir → duplicate dön. ESKİYSE önceki deneme
+        // tamamlanmamıştır (ör. çökme) → kayıt tazelenip akışa devam edilir
+        // (aksi halde kullanıcı verisi kalıcı olarak kaybolurdu).
+        const { data: existing } = await supabase
+          .from('sync_requests')
+          .select('created_at')
+          .eq('username', username)
+          .eq('request_id', requestId)
+          .maybeSingle();
+        const createdAt = existing?.created_at ? Date.parse(existing.created_at) : NaN;
+        const ageOk = !Number.isNaN(createdAt) && now.getTime() - createdAt < IDEMPOTENCY_MAX_AGE_MS;
+        if (ageOk) {
+          return json(req, 200, {
+            ok: true,
+            duplicate: true,
+            serverXp: prof.xp ?? 0,
+            serverGold: prof.coins ?? 0,
+            day: serverDay,
+            flagged: false,
+          });
+        }
+        await supabase
+          .from('sync_requests')
+          .update({ created_at: now.toISOString() })
+          .eq('username', username)
+          .eq('request_id', requestId);
+      }
+      // Periyodik temizlik: 2 günden eski kayıtlar silinir (~%5 istekte).
+      if (Math.random() < 0.05) {
+        await supabase
+          .from('sync_requests')
+          .delete()
+          .lt('created_at', new Date(now.getTime() - 2 * 86400000).toISOString());
+      }
+    } catch {
+      // İdempotency katmanı hatası akışı durdurmaz.
+    }
+  }
+
   // ---------- Gün seçimi: cihazın "bugün"ü mü, sunucu günü mü? ----------
   // claimedDay sunucu gününü +MAX_DAY_AHEAD aşarsa saat ileri alınmıştır:
   // isteği reddetmek yerine günü sunucu gününe kıstır ve kullanıcıyı uyar.
@@ -145,39 +252,72 @@ Deno.serve(async (req) => {
   // ---------- Günlük defter ----------
   const { data: dayRow } = await supabase
     .from('daily_earnings')
-    .select('xp, gold')
+    .select('xp, gold, neg_xp, neg_gold')
     .eq('username', username)
     .eq('day', day)
     .maybeSingle();
   const usedXp = dayRow?.xp ?? 0;
   const usedGold = dayRow?.gold ?? 0;
+  // migration uygulanana kadar bu kolonlar okunamaz → tavanlar devre dışı kalır.
+  const negXpUsed = typeof dayRow?.neg_xp === 'number' ? dayRow.neg_xp : null;
+  const negGoldUsed = typeof dayRow?.neg_gold === 'number' ? dayRow.neg_gold : null;
 
   // ---------- Tavan doğrulaması ----------
-  // Pozitif kazançlar tavana kıstırılır; negatif deltalar (geri alma/ceza)
-  // serbestçe düşülür — böylece birikmiş tavan asla aşılamaz.
+  // Pozitif kazançlar güne göre kıstırılır. Negatif deltalar (geri alma,
+  // ceza) da ARTIK sınırlı: tek istekte ve günde en fazla
+  // -500 XP / -300 altın — böylece kimliksiz bir istemci hiçbir hesabın
+  // bakiyesini serbestçe sıfırlayamaz (günlük defterde neg_* birikir).
   let acceptedXp = deltaXpRaw;
   let acceptedGold = deltaGoldRaw;
   let clamped = false;
   if (acceptedXp > 0) {
     acceptedXp = Math.min(acceptedXp, Math.max(0, DAY_XP_CAP - usedXp));
     if (acceptedXp < deltaXpRaw) clamped = true;
+  } else if (acceptedXp < 0) {
+    const room = Math.max(0, DAY_XP_NEG_CAP - (negXpUsed ?? 0));
+    const floor = Math.max(acceptedXp, -Math.min(room, DAY_XP_NEG_CAP));
+    if (floor > acceptedXp) clamped = true;
+    acceptedXp = floor;
   }
   if (acceptedGold > 0) {
     acceptedGold = Math.min(acceptedGold, Math.max(0, DAY_GOLD_CAP - usedGold));
     if (acceptedGold < deltaGoldRaw) clamped = true;
+  } else if (acceptedGold < 0) {
+    const room = Math.max(0, DAY_GOLD_NEG_CAP - (negGoldUsed ?? 0));
+    const floor = Math.max(acceptedGold, -Math.min(room, DAY_GOLD_NEG_CAP));
+    if (floor > acceptedGold) clamped = true;
+    acceptedGold = floor;
   }
 
   const newXp = Math.max(0, (prof.xp ?? 0) + Math.round(acceptedXp));
   const newGold = Math.max(0, (prof.coins ?? 0) + Math.round(acceptedGold));
   const newDayXp = Math.max(0, usedXp + Math.round(acceptedXp));
   const newDayGold = Math.max(0, usedGold + Math.round(acceptedGold));
+  const newNegXp = Math.max(0, (negXpUsed ?? 0) + Math.max(0, -Math.round(acceptedXp)));
+  const newNegGold = Math.max(0, (negGoldUsed ?? 0) + Math.max(0, -Math.round(acceptedGold)));
 
   // ---------- Yaz: defter + profil ----------
-  const { error: dayErr } = await supabase.from('daily_earnings').upsert(
-    { username, day, xp: newDayXp, gold: newDayGold, updated_at: now.toISOString() },
-    { onConflict: 'username,day' }
-  );
-  if (dayErr) return json(req, 500, { error: 'ledger_write_failed' });
+  const ledgerBase = { username, day, xp: newDayXp, gold: newDayGold, updated_at: now.toISOString() };
+  let dayErr = null;
+  if (negXpUsed === null) {
+    // migration yok: negatif tavan kolonları olmadan yaz.
+    const r = await supabase.from('daily_earnings').upsert(ledgerBase, { onConflict: 'username,day' });
+    dayErr = r.error;
+  } else {
+    const r = await supabase
+      .from('daily_earnings')
+      .upsert({ ...ledgerBase, neg_xp: newNegXp, neg_gold: newNegGold }, { onConflict: 'username,day' });
+    if (r.error && isColumnMissing(r.error)) {
+      const retry = await supabase.from('daily_earnings').upsert(ledgerBase, { onConflict: 'username,day' });
+      dayErr = retry.error;
+    } else {
+      dayErr = r.error;
+    }
+  }
+  if (dayErr) {
+    releaseRequestId();
+    return json(req, 500, { error: 'ledger_write_failed' });
+  }
 
   // Katman 4: tavan aşımı tespiti → profil bayraklanır (liderlikte ⚠️).
   const flagged = clamped || clockAhead;
@@ -203,7 +343,10 @@ Deno.serve(async (req) => {
     .from('profiles')
     .update(updateFields)
     .eq('username', username);
-  if (profUpdErr) return json(req, 500, { error: 'profile_update_failed' });
+  if (profUpdErr) {
+    releaseRequestId();
+    return json(req, 500, { error: 'profile_update_failed' });
+  }
 
   return json(req, 200, {
     ok: true,

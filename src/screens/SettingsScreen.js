@@ -28,7 +28,7 @@ import {
   ensureNotificationPermission,
   scheduleDailyReminder,
 } from '../services/notifications';
-import { checkServerConnection } from '../services/syncService';
+import { checkServerConnection } from '../services/connectionService';
 import { getTheme, useTheme } from '../theme';
 
 // Kullanıcıya bilgilendirme gösterir (mobilde Alert, web'de tarayıcı kutusu).
@@ -128,6 +128,7 @@ export default function SettingsScreen() {
     backupTs,
     resetAll,
     server,
+    refreshServer,
   } = useData();
   const { user: authUser, logout, changeName, changePassword, deleteAccount } = useAuth();
   const { colors: C } = useTheme();
@@ -194,8 +195,16 @@ export default function SettingsScreen() {
 
   const handleSync = async () => {
     setBusy('server');
-    const ok = await checkServerConnection();
-    setBusy('');
+    let ok = false;
+    try {
+      ok = await checkServerConnection();
+      // Bağlantı varsa gerçek bir senkron da tetiklensin (buton "Senkronla").
+      if (ok && refreshServer) await refreshServer();
+    } catch (e) {
+      ok = false;
+    } finally {
+      setBusy('');
+    }
     setSyncStatus(ok ? 'online' : 'offline');
     notify(
       ok ? 'Bağlantı Başarılı' : 'Bağlantı Hatası',

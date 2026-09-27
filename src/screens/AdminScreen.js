@@ -55,7 +55,9 @@ export default function AdminScreen() {
   const [transferXp, setTransferXp] = useState('');
   const [transferGold, setTransferGold] = useState('');
 
-  const actor = authUser?.name || 'P4SH4';
+  // Yönetici adı: transfer kaynak hesabını ön doldurmak için kullanılır.
+  // Kimlik doğrulama istemcide DEĞİL sunucuda yapılır (adminService token).
+  const adminName = authUser?.name || '';
 
   const notify = (ok, text) => setMessage({ ok, text });
 
@@ -65,7 +67,7 @@ export default function AdminScreen() {
     if (!q) return notify(false, 'Arama için bir isim yaz');
     setSearching(true);
     setMessage(null);
-    const r = await adminAction('search_users', actor, { q });
+    const r = await adminAction('search_users', { q });
     setSearching(false);
     if (!r.ok) return notify(false, r.error);
     setResults(r.data.users || []);
@@ -77,25 +79,25 @@ export default function AdminScreen() {
     setBusy('loading');
     setMessage(null);
     setSelected(null);
-    const r = await adminAction('get_user', actor, { target: username });
+    const r = await adminAction('get_user', { target: username });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     setSelected(r.data.user);
     // Transfer hedefini seçili kullanıcıya ön doldur (kaynak admin).
-    setTransferFrom(actor);
+    setTransferFrom(adminName);
     setTransferTo(username);
   };
 
   const refreshSelected = async () => {
     if (!selected) return;
-    const r = await adminAction('get_user', actor, { target: selected.username });
+    const r = await adminAction('get_user', { target: selected.username });
     if (r.ok) setSelected(r.data.user);
   };
 
   const doBan = async () => {
     if (!selected) return;
     setBusy('ban');
-    const r = await adminAction('ban', actor, { target: selected.username, reason: banReason.trim() });
+    const r = await adminAction('ban', { target: selected.username, reason: banReason.trim() });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     setBanReason('');
@@ -106,7 +108,7 @@ export default function AdminScreen() {
   const doUnban = async () => {
     if (!selected) return;
     setBusy('unban');
-    const r = await adminAction('unban', actor, { target: selected.username });
+    const r = await adminAction('unban', { target: selected.username });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     notify(true, `${selected.username} yasağı kaldırıldı`);
@@ -122,7 +124,7 @@ export default function AdminScreen() {
       return notify(false, 'Geçerli XP/altın değeri gir');
     }
     setBusy('adjust');
-    const r = await adminAction('adjust', actor, {
+    const r = await adminAction('adjust', {
       target: selected.username,
       xp: sign * xp,
       coins: sign * gold,
@@ -147,7 +149,7 @@ export default function AdminScreen() {
       return notify(false, 'Geçerli XP/altın miktarı gir');
     }
     setBusy('transfer');
-    const r = await adminAction('transfer', actor, {
+    const r = await adminAction('transfer', {
       source: from,
       target: to,
       xp,
@@ -171,7 +173,7 @@ export default function AdminScreen() {
   const doGrant = async (itemType, itemId) => {
     if (!selected) return;
     setBusy('grant');
-    const r = await adminAction('grant', actor, { target: selected.username, itemType, itemId });
+    const r = await adminAction('grant', { target: selected.username, itemType, itemId });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     notify(true, 'Hediye gönderildi (kullanıcı sync sonrası kullanabilir)');
@@ -181,7 +183,7 @@ export default function AdminScreen() {
   const doRevoke = async (itemType, itemId) => {
     if (!selected) return;
     setBusy('revoke');
-    const r = await adminAction('revoke', actor, { target: selected.username, itemType, itemId });
+    const r = await adminAction('revoke', { target: selected.username, itemType, itemId });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     notify(true, 'Hediye geri alındı');
@@ -191,7 +193,7 @@ export default function AdminScreen() {
   const doUnflag = async () => {
     if (!selected) return;
     setBusy('unflag');
-    const r = await adminAction('unflag', actor, { target: selected.username });
+    const r = await adminAction('unflag', { target: selected.username });
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     notify(true, 'Şüpheli bayrağı kaldırıldı');
@@ -200,7 +202,7 @@ export default function AdminScreen() {
 
   const loadLogs = async () => {
     setBusy('logs');
-    const r = await adminAction('logs', actor);
+    const r = await adminAction('logs');
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     setLogs(r.data.logs || []);
