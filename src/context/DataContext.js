@@ -56,7 +56,7 @@ import {
   GOLD_RATES,
 } from '../data/shop';
 import { COLORS, getTheme } from '../theme';
-import { refreshAndroidWidget } from '../services/widgetService';
+import { refreshAndroidWidget, drainWidgetTasks, clearWidgetTasks } from '../services/widgetService';
 import { useAuth } from './AuthContext';
 import {
   acceptFriendRequest,
@@ -262,6 +262,7 @@ export function DataProvider({ children }) {
     lastSyncedXp: 0,
     lastSyncedGold: 0,
     lastSyncedBank: 0,
+    pendingId: null,
   });
 
   // ---------- Hesap çözümleme ----------
@@ -270,6 +271,12 @@ export function DataProvider({ children }) {
   // (giriş ekranı o hesabın verisini önizler). authReady olmadan yüklenmez.
   const [activeAccount, setActiveAccount] = useState(null);
   const lastAccountRef = useRef(null);
+  // Publish/çekme işlemleri await sırasında hesap değiştirebilir; sonuçlar
+  // YALNIZCA aynı hesap için geçerlidir (bkz. publishProfile bekçi kontrolü).
+  const activeAccountRef = useRef(null);
+  useEffect(() => {
+    activeAccountRef.current = activeAccount;
+  }, [activeAccount]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -321,6 +328,17 @@ export function DataProvider({ children }) {
       const cacheKey = serverCacheKeyFor(activeAccount);
       const anchorKey = syncAnchorKeyFor(activeAccount);
       const backupKey = userBackupKeyFor(activeAccount);
+      // Hesap değişiminde köprü ÖNCE sıfırlanır: önceki hesabın onaylı
+      // toplamları bu hesabın deltasına karışmasın (aksi halde A'nın XP'si
+      // B'nin bakiyesine yansıyabilirdi). Depoda kayıt yoksa köprü
+      // "henüz init edilmedi" olarak kalır ve publishProfile sunucudan okur.
+      syncAnchorRef.current = {
+        initialized: false,
+        lastSyncedXp: 0,
+        lastSyncedGold: 0,
+        lastSyncedBank: 0,
+        pendingId: null,
+      };
       try {
         // Senkron köprüsü: bu hesabın son onaylı toplamları.
         try {
@@ -333,6 +351,7 @@ export function DataProvider({ children }) {
                 lastSyncedXp: a.lastSyncedXp,
                 lastSyncedGold: a.lastSyncedGold,
                 lastSyncedBank: a.lastSyncedBank || 0,
+                pendingId: typeof a.pendingId === 'string' ? a.pendingId : null,
               };
             }
           }
@@ -1014,7 +1033,14 @@ export function DataProvider({ children }) {
     if (!anchor.initialized) {
       // İlk senkron: sunucudaki mevcut toplamları köprü olarak al (eski
       // veri kaybolmasın; yalnızca aradaki FARK tavan kontrolüne girer).
-      const sp = await getServerProfile(name);
+      // DİKKAT: profil OKUNAMADIYSA köprü asla 0'dan başlatılmaz — yoksa
+      // sunucudaki XP tamamı "yeni kazanç" olarak tekrar gönderilirdi.
+      const res = await getServerProfile(name);
+      // Hesap bu sırada değişti: bu okuma ESKİ hesaba aitti; ortak köprüye
+      // yazılmaz (yeni hesabın köprüsü kirlenmesin).
+      if (activeAccountRef.current !== name) return { ok: true, stale: true };
+      if (!res.ok) return { ok: false, error: 'profile_unreachable' };
+      const sp = res.profile;
       anchor.lastSyncedXp = sp?.xp ?? 0;
       anchor.lastSyncedGold = sp?.coins ?? 0;
       anchor.lastSyncedBank = sp?.bank ?? 0;
@@ -1032,6 +1058,15 @@ export function DataProvider({ children }) {
     const bankDelta = freshDevice
       ? 0
       : Math.round((snap.stats.xpBank || 0) - (anchor.lastSyncedBank || 0));
+    // Tekrar-önleme kimliği (idempotency): aynı delta zinciri boyunca aynı
+    // id iletilir (başarısız deneme → yeniden gönderim), başarılı yayın
+    // sonrası sıfırlanır. Sunucu aynı id'yi yalnızca BİR KEZ uygular; yanıt
+    // kaybolduğunda istemci yeniden denediğinde çift kredi oluşmaz.
+    if (!anchor.pendingId) {
+      anchor.pendingId = `p${Date.now().toString(36)}${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+    }
     const r = await updateProfileData(name, {
       deltaXp: freshDevice ? 0 : snap.stats.totalXp - anchor.lastSyncedXp,
       deltaGold: freshDeviceGold ? 0 : snap.stats.gold - anchor.lastSyncedGold,
@@ -1039,18 +1074,28 @@ export function DataProvider({ children }) {
       totalXp: snap.stats.totalXp, // geçiş dönemi fallback'i için
       totalGold: snap.stats.gold, // geçiş dönemi fallback'i için
       claimedDay: offsetToday(),
+      requestId: anchor.pendingId,
     });
     if (!r.ok) return { ok: false, warn: r.warn, error: r.error };
+    // Yayın sürerken hesap değişti: sonuç artık bu hesaba ait değil.
+    // Ortak köprüye dokunma (yeni hesabın köprüsüne eski toplam yazılmaz);
+    // bir sonraki senkronda bu hesap ESKİ anchor + pendingId ile yeniden
+    // yayınlar — sunucu tarafı idempotency çift uygulamayı yine engeller.
+    if (activeAccountRef.current !== name) return { ok: true, stale: true };
     const d = r.data || {};
     anchor.lastSyncedXp = typeof d.serverXp === 'number' ? d.serverXp : anchor.lastSyncedXp;
     anchor.lastSyncedGold = typeof d.serverGold === 'number' ? d.serverGold : anchor.lastSyncedGold;
     anchor.lastSyncedBank = typeof d.serverBank === 'number' ? d.serverBank : anchor.lastSyncedBank;
+    // Yayın tamamlandı (duplicate dahil): zincir kapanır, sonraki delta
+    // yeni bir id ile gider.
+    anchor.pendingId = null;
     AsyncStorage.setItem(
       syncAnchorKeyFor(name),
       JSON.stringify({
         lastSyncedXp: anchor.lastSyncedXp,
         lastSyncedGold: anchor.lastSyncedGold,
         lastSyncedBank: anchor.lastSyncedBank,
+        pendingId: null,
       })
     ).catch(() => {});
     return { ok: true, warn: r.warn };
@@ -1060,8 +1105,22 @@ export function DataProvider({ children }) {
   // yerel envantere (ownedThemes/ownedAvatars/ownedFrames) birleştir +
   // bio/profil fotoğrafını LWW kuralıyla yerel veriye yansıt.
   const refreshServerMeta = useCallback(async (name) => {
-    const sp = await getServerProfile(name);
-    if (!sp) return false;
+    // Dönüş biçimi: { ok, profile }. ok=false → ağ/izin hatası: SONUÇ
+    // GÜVENİLİR DEĞİL (ban hâlâ bilinmiyor), ok=true + profile=null →
+    // kayıt yok. Eski kod yanıtı doğrudan profil nesnesi sanıyordu;
+    // bu yüzden ban/ödül/bio alanları hep undefined kalıyordu.
+    const res = await getServerProfile(name);
+    if (!res.ok) return false;
+    // Hesap değişikliği bekleyen eski istek: sonuç artık GÖSTERİLEN hesaba
+    // ait değil (yanlış ban/ödül/ürün bu hesaba yazılmasın). publishProfile
+    // içindeki guard ile aynı koruma.
+    if (activeAccountRef.current !== name) return false;
+    const sp = res.profile;
+    if (!sp) {
+      // Kayıt yok: yasaklı değil, hediye/bio da yok.
+      setServer((s) => ({ ...s, banned: false, banReason: null }));
+      return true;
+    }
     const grants = sp.grantedItems || [];
     if (grants.length > 0) {
       setData((d) => {
@@ -1189,13 +1248,24 @@ export function DataProvider({ children }) {
       // 1) MUTATION QUEUE → sunucuya boşalt (sessiz, retry'li).
       //    Kazanım item'ları tek delta çağrısıyla (syncAnchor tabanlı),
       //    bio/fotoğraf item'ları tekil updateProfileMeta ile iletilir.
-      const bannedDuringDrain = await drainQueue(name, {
+      //    DİKKAT: drainQueue her zaman bir nesne döndürür; bu yüzden ban
+      //    durumu AYRI bir bayrakla izlenir. (Eski kod `if (drainQueue(...))`
+      //    ile erken dönüyor ve 2-5. adımları — pull, ban denetimi, son
+      //    senkron — hiç çalışmıyordu.)
+      let bannedDuringDrain = false;
+      let earningsPushed = false;
+      await drainQueue(name, {
         publishEarnings: async () => {
           const published = await publishProfile(name, dataRef.current);
-          if (!published.ok && published.error === 'banned') {
+          if (published.ok) {
+            earningsPushed = true;
+            return true;
+          }
+          if (published.error === 'banned') {
+            bannedDuringDrain = true;
             await refreshServerMeta(name);
           }
-          return !!published.ok;
+          return false;
         },
         applyMeta: async (item) => {
           const p = item.payload || {};
@@ -1204,19 +1274,28 @@ export function DataProvider({ children }) {
             photoUrl: p.photoUrl !== undefined ? p.photoUrl : null,
           });
           if (!r.ok && r.error === 'banned') {
+            bannedDuringDrain = true;
             await refreshServerMeta(name);
           }
           return !!r.ok;
         },
       });
       if (bannedDuringDrain) {
+        // Ban sunucu tarafından doğrulandı: pull yapmadan dur (yasak ekranı
+        // RefreshServerMeta üzerinden hemen yansır).
         setServer((s) => ({ ...s, connected: true }));
         return;
       }
 
       // 2) Kalan delta köprüsü: kuyrukta kazanım yoksa bile yerel/sunucu
       //    farkı giderilir (eski sürümlerden gelen kullanıcılar için).
-      const published = await publishProfile(name, snap);
+      //    Drenaj sırasında aynı anlık veri zaten yayınlandıysa tekrar
+      //    çağırmaya gerek yok (boş HTTP isteği + gereksiz anchor yazımı).
+      const snapUnchanged = dataRef.current === snap;
+      const published =
+        earningsPushed && snapUnchanged
+          ? { ok: true }
+          : await publishProfile(name, dataRef.current);
       if (!published.ok) {
         // Yasak yanıtı: ban durumunu hemen uygula (uygulama yasak ekranı gösterir).
         if (published.error === 'banned') {
@@ -1712,7 +1791,7 @@ export function DataProvider({ children }) {
     const username = authRef.current?.name || activeAccount;
     if (username) {
       (async () => {
-        const itemId = await enqueueMutation(
+        const enq = await enqueueMutation(
           username,
           {
             action: 'UPDATE',
@@ -1722,8 +1801,12 @@ export function DataProvider({ children }) {
           mergeProfileMeta
         );
         // Bağlantı varsa hemen dene; başarısızsa kuyrukta kalır (retry).
+        // Temizlikte timestamp doğrulanır: bu sırada bio yeniden yazıldıysa
+        // satır silinmez (yeni değer kaybolmasın).
         const r = await updateProfileMeta(username, { bio });
-        if (r.ok && itemId) await removeFromQueue(username, [itemId]);
+        if (r.ok && enq?.id) {
+          await removeFromQueue(username, [enq.id], { [enq.id]: enq.timestamp });
+        }
       })().catch(() => {});
     }
   }, [activeAccount]);
@@ -1733,7 +1816,7 @@ export function DataProvider({ children }) {
     const username = authRef.current?.name || activeAccount;
     if (username) {
       (async () => {
-        const itemId = await enqueueMutation(
+        const enq = await enqueueMutation(
           username,
           {
             action: 'UPDATE',
@@ -1744,7 +1827,9 @@ export function DataProvider({ children }) {
         );
         // Bağlantı varsa hemen dene; başarısızsa kuyrukta kalır (retry).
         const r = await updateProfileMeta(username, { photoUrl: photoUrl || '' });
-        if (r.ok && itemId) await removeFromQueue(username, [itemId]);
+        if (r.ok && enq?.id) {
+          await removeFromQueue(username, [enq.id], { [enq.id]: enq.timestamp });
+        }
       })().catch(() => {});
     }
   }, [activeAccount]);
@@ -1904,12 +1989,17 @@ export function DataProvider({ children }) {
   const claimQuest = useCallback(
     async (questId) => {
       const quest = getQuest(questId);
-      if (!quest) return;
+      if (!quest) return 'not_found';
       const snap = dataRef.current;
       const today = offsetToday();
-      if (!canClaimQuest(quest, snap.stats.day, snap.questClaims || {}, today, snap.habits)) return;
+      if (!canClaimQuest(quest, snap.stats.day, snap.questClaims || {}, today, snap.habits)) {
+        // Zaten alınmışsa 'already', şart henüz oluşmadıysa 'blocked'.
+        return questClaimedToday(quest, snap.questClaims || {}, today)
+          ? 'already'
+          : 'blocked';
+      }
       // Çift basma / eşzamanlı ödül koruması.
-      if (claimingRef.current) return;
+      if (claimingRef.current) return 'busy';
       claimingRef.current = true;
       try {
         // Sunucu senkronu: hem taze saat hem bağlantı kontrolü (çevrimdışıysa başarısız).
@@ -1924,14 +2014,14 @@ export function DataProvider({ children }) {
               color: COLORS.danger,
             },
           ]);
-          return;
+          return 'offline';
         }
         const name = authRef.current?.name || snap.settings.name || 'Kullanıcı';
         const res = await claimQuestServer(name, questId);
         if (!res.ok) {
           if (res.error === 'banned') {
             await refreshServerMeta(name);
-            return;
+            return 'banned';
           }
           const title =
             res.error === 'already_claimed_today'
@@ -1950,7 +2040,12 @@ export function DataProvider({ children }) {
               color: COLORS.danger,
             },
           ]);
-          return;
+          // Sonuç kodu: çağıran (widget kuyruğu) tekrar deneyip
+          // denemeyeceğini bilsin. Bağlantı hataları yeniden denenir.
+          if (res.error === 'already_claimed_today') return 'already';
+          if (res.error === 'vip_required') return 'vip';
+          if (res.error === 'invalid_quest') return 'not_found';
+          return 'offline';
         }
         // Sunucu onayladı → ödül miktarı sunucudan gelir (istemci hesaplamaz).
         // Sunucu yanıtında ödül yoksa (eski fonksiyon) yerel hesaplama yapılır.
@@ -2002,16 +2097,63 @@ export function DataProvider({ children }) {
           {
             key: `quest_${questId}_${Date.now()}`,
             icon: quest.emoji,
-            title: `${quest.title} tamamlandı! +${xpGain} XP, +${goldGain} 🪙`,
-            color: COLORS.accent,
-          },
-        ]);
+              title: `${quest.title} tamamlandı! +${xpGain} XP, +${goldGain} 🪙`,
+              color: COLORS.accent,
+            },
+          ]);
+        return 'claimed';
       } finally {
         claimingRef.current = false;
       }
     },
     [refreshServer, refreshServerMeta]
   );
+
+  // ---------- Widget kuyruğu: "widget'tan tamamla" tıklamaları ----------
+  // widgetTaskHandler görevi PENDING_TASKS_KEY listesine yazar; bu effect
+  // listeyi uygulama açılışında (ve hesap değişiminde) normal görev akışıyla
+  // (claimQuest → sunucu doğrulaması + ödül) işler. Sonucu 'claimed',
+  // 'already', 'vip', 'not_found', 'blocked' olan id'ler listeden çıkarılır;
+  // bağlantı/hata ('offline', 'busy') durumunda listede kalır ve bir sonraki
+  // açılışta yeniden denenir. (Eski kod: liste hiç okunmuyordu → widget
+  // tıklamaları sessizce kayboluyordu.)
+  const widgetDrainRanFor = useRef(null);
+  useEffect(() => {
+    if (!authReady || loading || !activeAccount) return;
+    if (widgetDrainRanFor.current === activeAccount) return;
+    widgetDrainRanFor.current = activeAccount;
+    let cancelled = false;
+    (async () => {
+      try {
+        const ids = await drainWidgetTasks();
+        if (!ids || !ids.length) return;
+        const terminal = [];
+        for (const id of ids) {
+          if (cancelled) {
+            // Hesap değişti: işlenenleri temizleyip çık (veri kaybı olmasın).
+            if (terminal.length) await clearWidgetTasks(terminal);
+            return;
+          }
+          const r = await claimQuest(id);
+          if (r === 'claimed' || r === 'already' || r === 'vip' || r === 'not_found' || r === 'blocked') {
+            terminal.push(id);
+          } else if (r === 'offline' || r === 'busy') {
+            break; // bağlantı yok / başka bir alım sürüyor → sıradakiler beklesin
+          } else {
+            terminal.push(id); // 'banned' ve diğer kalıcı durumlar
+          }
+        }
+        if (terminal.length) await clearWidgetTasks(terminal);
+      } catch (e) {
+        // sessiz: widget kuyruğu bir sonraki açılışta tekrar denenir
+      } finally {
+        if (cancelled) widgetDrainRanFor.current = null;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, loading, activeAccount, claimQuest]);
 
   // ---------- VIP (Season Pass) satın alma ----------
   // Altın bakiyesi 'vip-action' Edge Function'ında SUNUCU tarafında
@@ -2130,6 +2272,13 @@ export function DataProvider({ children }) {
   const resetAll = useCallback(async () => {
     settingsRef.current = INITIAL_STATE.settings;
     setData(INITIAL_STATE);
+    syncAnchorRef.current = {
+      initialized: false,
+      lastSyncedXp: 0,
+      lastSyncedGold: 0,
+      lastSyncedBank: 0,
+      pendingId: null,
+    };
     const name = authRef.current?.name || activeAccount || 'varsayilan';
     await AsyncStorage.multiRemove([
       storageKeyFor(name),

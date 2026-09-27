@@ -43,6 +43,27 @@ export function lastSyncedKeyFor(name: string): string {
   return `${LAST_SYNCED_KEY_PREFIX}${sanitizeName(name)}`;
 }
 
+// ---------- Kuyruk serileştirme (race koruması) ----------
+// AsyncStorage read-modify-write YARIŞMASI: iki eşzamanlı enqueue
+// (ör. art arda iki alışkanlık tamamlama) aynı kuyruğu okuyup ayrı ayrı
+// yazar → bir item kaybolurdu. Kuyruk yazma işlemleri anahtar bazlı tek
+// sıra üzerinde çalıştırılır.
+const queueLocks = new Map<string, Promise<unknown>>();
+export function withQueueLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  const key = queueKeyFor(name);
+  const prev = queueLocks.get(key) || Promise.resolve();
+  const run = prev.then(fn, fn);
+  // Zincir hiçbir koşulda kopmaz; hatalar çağıran tarafa iletilir.
+  queueLocks.set(
+    key,
+    run.then(
+      () => undefined,
+      () => undefined
+    )
+  );
+  return run;
+}
+
 // ---------- 1) Mutation Queue ----------
 
 export async function getQueue(name: string): Promise<QueueItem[]> {
@@ -62,74 +83,112 @@ export async function getQueueCount(name: string): Promise<number> {
 // Kuyruğa bir mutasyon ekler. Aynı kayda (mergeKey) ait bekleyen bir
 // item varsa LAST-WRITE-WINS: daha yeni payload kazanır; timestamp
 // en yeni değere güncellenir. Eşit/zamansız durumlar eskiyi korur.
-// Dönüş: kuyruğa yazılan item'ın id'si (anında gönderim + hata durumunda
-// kuyruktan silmek için kullanılabilir).
+// Dönüş: kuyruğa yazılan item'ın { id, timestamp } bilgisi (anında gönderim
+// + başarıda temizlik için; timestamp, drain sırasında satırın değişip
+// değişmediğini anlamak için gereklidir).
+export interface QueueHandle {
+  id: string;
+  timestamp: number;
+}
 export async function enqueueMutation(
   name: string,
   input: QueueInput,
   merge?: (prev: any, next: any) => any
-): Promise<string> {
-  const item: QueueItem = {
-    id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
-    action: input.action,
-    table: input.table,
-    payload: input.payload,
-    timestamp: Date.now(),
-    retryCount: 0,
-  };
-  try {
-    const list = await getQueue(name);
-    const idx = input.mergeKey
-      ? list.findIndex(
-          (i) => i.table === input.table && i.payload?.mergeKey === input.mergeKey
-        )
-      : -1;
-    if (idx >= 0) {
-      const prev = list[idx];
-      // LWW: eski item'ın retry sayısı korunur, payload birleştirilir.
-      const mergedPayload = merge ? merge(prev.payload, item.payload) : { ...prev.payload, ...item.payload };
-      list[idx] = {
-        ...prev,
-        payload: mergedPayload,
-        // Yeni yazma her zaman "daha yeni" kabul edilir (LWW yerel taraf).
-        timestamp: item.timestamp,
-        retryCount: 0,
-      };
-    } else {
-      list.push(item);
+): Promise<QueueHandle> {
+  return withQueueLock(name, async () => {
+    const item: QueueItem = {
+      id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+      action: input.action,
+      table: input.table,
+      payload: input.payload,
+      timestamp: Date.now(),
+      retryCount: 0,
+    };
+    let resultId = item.id;
+    let resultTs = item.timestamp;
+    try {
+      const list = await getQueue(name);
+      // mergeKey hem üst seviyede (QueueInput) hem de payload içinde
+      // taşınabiliyor; çağıran kod payload içini kullanıyor → İKİSİ de
+      // kabul edilir. (Eski kod yalnızca input.mergeKey'e bakıyordu ve
+      // hiçbir çağıran onu göndermediği için birleştirme hiç çalışmıyordu:
+      // kuyruk her dokunuşta büyüyor, LWW birleşimleri ölü koddu.)
+      const mergeKey = input.mergeKey || input.payload?.mergeKey;
+      const idx = mergeKey
+        ? list.findIndex(
+            (i) => i.table === input.table && i.payload?.mergeKey === mergeKey
+          )
+        : -1;
+      if (idx >= 0) {
+        const prev = list[idx];
+        // LWW: eski item'ın retry sayısı korunur, payload birleştirilir.
+        const mergedPayload = merge ? merge(prev.payload, item.payload) : { ...prev.payload, ...item.payload };
+        list[idx] = {
+          ...prev,
+          payload: mergedPayload,
+          // Yeni yazma her zaman "daha yeni" kabul edilir (LWW yerel taraf).
+          timestamp: item.timestamp,
+          retryCount: 0,
+        };
+        // Birleştirme yapıldıysa DÖNEN id de mevcut satırın id'sidir;
+        // aksi halde çağıran taraf var olmayan bir id'yi silmeye çalışır
+        // (item kuyrukta kalır ve tekrar tekrar gönderilir).
+        resultId = prev.id;
+        resultTs = item.timestamp;
+      } else {
+        list.push(item);
+      }
+      await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(list));
+    } catch (e) {
+      // Kuyruk yazılamadıysa bile uygulama yerel veriyle devam eder.
+      console.warn('Mutation kuyruğuna yazılamadı:', e);
     }
-    await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(list));
-  } catch (e) {
-    // Kuyruk yazılamadıysa bile uygulama yerel veriyle devam eder.
-    console.warn('Mutation kuyruğuna yazılamadı:', e);
-  }
-  return item.id;
+    return { id: resultId, timestamp: resultTs };
+  });
 }
 
 // Başarıyla sunucuya iletilen item'ları kuyruktan siler.
-export async function removeFromQueue(name: string, ids: string[]): Promise<void> {
+// `expected` verilirse (id → gönderim anındaki timestamp) item'ın bu sırada
+// YENİDEN YAZILMIŞ olup olmadığına bakılır: drain sürerken kullanıcı aynı
+// kaydı güncellendiyse (LWW birleştirme) satır silinmez → yeni değer
+// kaybolmaz, bir sonraki senkronda tekrar gönderilir.
+export async function removeFromQueue(
+  name: string,
+  ids: string[],
+  expected?: Record<string, number>
+): Promise<void> {
   if (!ids.length) return;
-  try {
-    const list = await getQueue(name);
-    const keep = list.filter((i) => !ids.includes(i.id));
-    await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(keep));
-  } catch (e) {
-    console.warn('Kuyruk temizlenemedi:', e);
-  }
+  await withQueueLock(name, async () => {
+    try {
+      const list = await getQueue(name);
+      const keep = list.filter((i) => {
+        if (!ids.includes(i.id)) return true; // bu item ilgili değil → koru
+        if (expected && expected[i.id] !== undefined && i.timestamp !== expected[i.id]) {
+          return true; // gönderimden sonra güncellendi → koru
+        }
+        return false;
+      });
+      await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(keep));
+    } catch (e) {
+      console.warn('Kuyruk temizlenemedi:', e);
+    }
+  });
 }
 
 // Başarısız denemelerde retryCount'u artırır (MAX_RETRY sonrası beklemeye alır).
 export async function bumpRetryCount(name: string, ids: string[]): Promise<void> {
   if (!ids.length) return;
-  try {
-    const list = await getQueue(name);
-    const next = list.map((i) =>
-      ids.includes(i.id) ? { ...i, retryCount: Math.min(MAX_RETRY_COUNT, i.retryCount + 1) } : i
-    );
-    await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(next));
-  } catch (e) {
-    // önemli değil
-  }
+  await withQueueLock(name, async () => {
+    try {
+      const list = await getQueue(name);
+      const next = list.map((i) =>
+        ids.includes(i.id) ? { ...i, retryCount: Math.min(MAX_RETRY_COUNT, i.retryCount + 1) } : i
+      );
+      await AsyncStorage.setItem(queueKeyFor(name), JSON.stringify(next));
+    } catch (e) {
+      // önemli değil
+    }
+  });
 }
 
 // ---------- 2) Delta Sync (last_synced_at) ----------
@@ -267,7 +326,13 @@ export async function drainQueue(
     }
   }
 
-  if (synced.length) await removeFromQueue(name, synced);
+  if (synced.length) {
+    // Silme anındaki beklenen timestamp'ler: drain sırasında güncellenen
+    // satırlar silinmez (yeni değer kaybolmasın).
+    const expected: Record<string, number> = {};
+    for (const i of items) expected[i.id] = i.timestamp;
+    await removeFromQueue(name, synced, expected);
+  }
   if (retried.length) await bumpRetryCount(name, retried);
   return { synced: synced.length, retried: retried.length };
 }
