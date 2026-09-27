@@ -4,33 +4,33 @@
 > manuel / erişim yok · `[BLOCKED]` = release blocker · `[NOT EXECUTED]` = çalıştırılmadı ·
 > `[!]` = bilinen açık/karar.
 >
-> Denetim tarihi: 2026-09-27 · Dal: `main` · Detay: `docs/denetim-raporu.md`,
-> `docs/guvenlik-ve-dagitim.md`, `docs/manual-smoke-test.md`
+> Denetim tarihi: 2026-09-27 (2. oturum: FAZ 0–12 üretim ölçümü) · Dal: `main` ·
+> Detay: `docs/denetim-raporu.md`, `docs/guvenlik-ve-dagitim.md`, `docs/manual-smoke-test.md`
 
 ---
 
-## 0. RELEASE BLOCKER — hedef Supabase projesi doğrulanamadı
+## 0. RELEASE BLOCKER — hedef proje doğrulandı, YAZMA kanalı yok
 
 Bu ortamdan yapılan kontrol sonuçları (değerler yazılmaz):
 
 - [x] Hedef ref `src/config/supabase.js`'ten okundu: `abqvphwuafsnfpgfppme` (tek proje; repo'da
-      staging/production ayrımı **yok**). Dosyada üstünde "TODO: gerçek proje bilgilerinle
-      değiştir" notu var.
-- [x] Public DNS doğrulaması: `abqvphwuafsnfpgfppme.supabase.co` → **NXDOMAIN** (Cloudflare DoH
-      **ve** Google DoH, ikisi de `Status=3`). `supabase.in` varyantı da NXDOMAIN. Kontrol:
-      `supabase.co` apex'i OK, rastgele ref NXDOMAIN.
-- [x] Eski APK'daki host ile kaynaktaki host **aynı** → uygulama da bu (çözümlenmeyen) adrese
-      bakıyor.
-- [x] Erişim kanalları: Supabase CLI **kurulu değil**; CLI oturum dosyası **yok**;
-      `SUPABASE_ACCESS_TOKEN`/`SUPABASE_SERVICE_ROLE_KEY`/`GITHUB_TOKEN` **tanımlı değil**;
-      `supabase/config.toml` **yok**; `.env` **yok**; `gh` oturumu **yok**.
-- [BLOCKED] **Dolayısıyla:** migration (§4), Edge Functions deploy (§6), secret rotation (§5)
-      ve canlı güvenlik testleri (§8) **uygulanamadı**. Hedef proje doğrulanmadan deployment
-      yapılmadı (tahmini projeye bağlanılmadı).
-- [ ] **Kullanıcı aksiyonu:** gerçek proje ref'ini/URL'sini verecek (veya `src/config/supabase.js`
-      içindekini güncelleyecek) + bir erişim kanalı (Supabase CLI login **veya** Dashboard ile
-      manuel adımlar) sağlayacak. Ardından §4 → §6 → §5 sırası işletilecek.
-- [x] `git push` **yapılmadı** (push gate'i §4/§5/§6/§8 tamamlanmadan kapalı; 6 commit local).
+      staging/production ayrımı **yok**).
+- [x] **FAZ 3 — bağlantı DOĞRULANDI (2026-09-27):** `abqvphwuafsnfpgfppme.supabase.co` artık
+      çözümleniyor (Cloudflare DoH **ve** Google DoH `Status=0`, yerel DNS aynı IP). Kontrol ref'i
+      hâlâ NXDOMAIN → gerçek proje. REST uçları canlı: `profiles` salt-okunur sorgu **HTTP 200**
+      (mevcut kullanıcı verisi var → **yıkıcı işlem yasak**). Önceki oturumdaki NXDOMAIN sorunu
+      artık **yok**.
+- [x] Erişim kanalları (varlık kontrolü, değer yazılmaz): Supabase CLI **kurulu değil**; CLI oturum
+      dosyası **yok**; `SUPABASE_ACCESS_TOKEN` **yok**; `SUPABASE_SERVICE_ROLE_KEY` **yok**;
+      `GITHUB_TOKEN`/`GH_TOKEN` **yok**; `supabase/config.toml` **yok**; `.env` **yok**;
+      `gh` oturumu **yok**; repo genelinde `sbp_`/`sb_secret_`/JWT deseni araması **0**.
+- [BLOCKED] **Eksik credential (ad olarak): `SUPABASE_ACCESS_TOKEN` (Supabase CLI/Dashboard
+      kimliği), `SUPABASE_SERVICE_ROLE_KEY`, `GITHUB_TOKEN`.** Salt-okunur REST anon anahtarıyla
+      sınırlandığı için: migration (§4), Edge Functions deploy (§6), secret rotation (§5)
+      **uygulanamadı** — uydurulmadı, tahmin edilmedi.
+- [ ] **Kullanıcı aksiyonu:** erişim kanalı sağlayacak (Supabase CLI `login` token'ı **veya**
+      Dashboard'da manuel adımları kullanıcı çalıştıracak). Ardından §4 → §6 → §5 sırası.
+- [x] `git push` **yapılmadı** (push gate'i §4/§5/§6 tamamlanmadan kapalı; **7 commit** local).
 
 ---
 
@@ -76,24 +76,45 @@ Bu ortamdan yapılan kontrol sonuçları (değerler yazılmaz):
       literal'i = YOK · `ADMIN_TOKEN_SECRET`/`ADMIN_PASSWORD_HASH` = YOK · `service_role` = YOK ·
       yalnızca `sb_publishable_*` (kasıtlı) var.
 - [x] Docs'larda eski sır değerleri **redakte edildi** (yalnızca "eski APK içinde" ifadesi kaldı).
+- [x] **Süreç olayı (2026-09-27, oturum içi):** sürüm karşılaştırması için `git show` ile eski
+      `admin-action` dosyası okunurken **eski (zaten compromised + rotation kapsamında olan) admin
+      anahtarı bir kez terminal çıktısına yansıdı**. Değer rapora, docs'a veya Git'e **yazılmadı**;
+      etkisi rotation zorunluluğunu artırır (§5) — yeni üretilen secret'lar bu nedenle eski
+      anahtar sızıntısından **bağımsız** üretilmeli.
 - [ ] Yayın sonrası: CI'ın ürettiği **yeni** APK'da eski admin anahtarı/şifresi arama
       desenlerinin eşleşme sayısının **0** olduğu doğrulanacak (FAZ 12; desenler rapora yazılmaz).
 
 ## 4. Veritabanı migration / şema
 
-- [x] `001_security_hardening.sql` idempotent ve `schema.sql` ile **birebir eşit** (22 maddelik karşılaştırma: CHECK'ler, `neg_*`, unique indeksler, `admin_logs.request_id`, `sync_requests`, GRANT/REVOKE) — bu denetimde 2 eksik parça `schema.sql`'e eklendi.
+- [x] `001_security_hardening.sql` idempotent ve `schema.sql` ile **birebir eşit** (23 maddelik karşılaştırma: CHECK'ler, `neg_*`, unique indeksler, `admin_logs.request_id`, `sync_requests`, GRANT/REVOKE) — bu denetimde 2 eksik parça `schema.sql`'e eklendi.
 - [x] `recovery_hash` için kolon bazlı GRANT doğrulandı: verilen 21 kolon içinde yalnızca `recovery_hash` yok.
-- [BLOCKED] **Hedef proje doğrulanamadı** (§0: ref NXDOMAIN + CLI/oturum yok) → migration
-      **uygulanmadı**. Blind/force yöntem kullanılmadı.
-- [ ] **Yayın öncesi (Dashboard → SQL Editor):** hedef proje netleştikten sonra
-      `001_security_hardening.sql` çalıştırılacak → sonra §6 doğrulama SQL'leri.
+- [x] **Canlı marker testi (salt okunur): migration UYGULANMAMIŞ** — `daily_earnings.neg_xp` → 400,
+      `admin_logs.request_id` → 400, `sync_requests` → 404 (PostgREST şema önbelleğinde yok),
+      `profiles.recovery_hash` anon erişimi → **200 (hâlâ okunabilir)**.
+- [!] **Migration DESTRUCTIVE içerir (önce onay gerekir):** satır 24–30 negatif değerleri 0'a
+      sıkıştırır (`UPDATE … GREATEST`), satır 77 `team_members` ve satır 103 `duels` tekrar eden/
+      çakışan satırları **silir** (`DELETE … USING`); `DROP TABLE` yalnızca satır 168'de yorum
+      (geri dönüş notu). Uygulanmadan önce yedek + kullanıcı onayı şart.
+- [!] **CANLI ŞEMA DRIFT'İ (migration'ı tek başına uygulamak HATA verir):** canlı `profiles`
+      tablosunda GRANT listesindeki 22 kolondan **11'i eksik** (`name`, `emoji`, `streak`, `xp7d`,
+      `avatar_id`, `frame_id`, `last_active`, `vip_until`, `bio`, `photo_url`, `updated_at`) →
+      satır 121–126'daki kolon bazlı GRANT **çalışmaz**. Ayrıca `teams`/`team_members` anon
+      erişimde görünmüyor (satır 77/103 DELETE hedefleri riskli). `schema.sql` hedef durum;
+      canlı DB daha eski bir şemada (v1.1.0 öncesi kolon/tablo eksikleri).
+- [BLOCKED] **Migration uygulanmadı** (yazma credential'ı yok, §0) — blind/force yöntem
+      kullanılmadı; hedef proje bu kez doğrulanmış olmakla birlikte uygulama kanalı yok.
+- [ ] **Yayın öncesi sırası:** (0) canlı şema drift'i için feature kolon/tablo ekleme kararı
+      (`ADD COLUMN IF NOT EXISTS`/`CREATE TABLE IF NOT EXISTS` — yıkıcı değil, kullanıcı onayı
+      istenecek) → (1) `001_security_hardening.sql` (Dashboard → SQL Editor) → (2) §6 doğrulama.
 - [ ] Yeni kurulumlar için `schema.sql` tek kaynak olarak çalıştırılacak.
 
 ## 5. Secrets ve sırrı çevirme (rotation) — [BLOCKED]
 
-> **Durum: [BLOCKED]** — hedef projeye erişim yok (§0). Sıra asla bozulmadı: **yeni secret
-> doğrulanmadan eski secret iptal edilmedi** (eski değer henüz hiçbir yerde aktif değil).
-> Değerler hiçbir yere yazılmaz.
+> **Durum: [BLOCKED]** — yazma credential'ı yok (§0: `SUPABASE_ACCESS_TOKEN`/Dashboard).
+> Sıra asla bozulmadı: **yeni secret doğrulanmadan eski secret iptal edilmedi**.
+> Değerler hiçbir yere yazılmaz. **Aciliyet arttı:** canlıda ESKİ `admin-action` çalışıyor ve
+> eski kod `ADMIN_KEY`'i hem env'den hem **gömülü fallback'ten** alıyor → eski (compromised)
+> anahtar production'da hâlâ geçerli olabilir; `login` rate limiti de yok (6 deneme → 429 yok).
 
 Sıra (`docs/guvenlik-ve-dagitim.md` §3):
 
@@ -110,26 +131,43 @@ Sıra (`docs/guvenlik-ve-dagitim.md` §3):
 
 Sıra: **1) Migration → 2) Edge Functions deploy → 3) Secrets → 4) Doğrulama** (`docs/guvenlik-ve-dagitim.md`).
 
-> **Durum: [BLOCKED]** (§0). Deployment yöntemi docs'ta Dashboard/SQL Editor ile tarif ediliyor;
-> bu ortamda CLI/oturum/dashboard erişimi yok → **hiçbir fonksiyon deploy edilmedi**, erişilebilirlik
-> doğrulanamadı. Deploy edilmiş gibi raporlanmadı.
+> **Durum: [BLOCKED]** (§0: yazma credential'ı yok). Salt-okunur probe ile gerçek durum ölçüldü:
+> **7/7 fonksiyon zaten deploy edilmiş ama TAMAMI ESKİ (sertleştirilmemiş) sürüm.**
 
-- [BLOCKED] 1) Migration (§4).
-- [BLOCKED] 2) 7 fonksiyon deploy (`admin-action`, `sync-profile`, `sync-quest`, `duel-action`,
-      `vip-action`, `recovery-action`, `chat-action`); **"Verify JWT" KAPALI** kalacak (korumada
-      fonksiyon içi doğrulama + hız sınırı; bilinçli karar, §9/2). **0/7 deployed.**
+- [x] **Canlı sürüm probe'u (yazma yapmayan, tek isteklik ayırıcılar):** `sync-profile`
+      (`invalid_delta` = eski), `sync-quest` (`invalid_quest` = eski), `chat-action`
+      (`unknown_action` = eski), `duel-action` (`invalid_action` = eski) → **4/7 kesin ESKİ**;
+      `admin-action` 6× login denemesinde hiç 429 yok + 503 yok → **eski sürümle uyumlu**;
+      `recovery-action` 21 deneme IP limiti tetiklemedi → **eski sürümle uyumlu**;
+      `vip-action` → 500 `profile_lookup_failed` (canlı DB'de `vip_until` kolonu yok → yeni kod
+      olsa idi 400 `username_required` dönerdi) → **ESKİ**.
+- [x] Tüm fonksiyonların ihtiyaç duyduğu tablolar canlıda var görünüyor: `quest_claims`,
+      `pomodoro_rooms`, `pomodoro_room_members`, `daily_earnings`, `duels`, `chat_messages`,
+      `friendships`, `admin_logs`, `profiles` (anon 200/erişim).
+- [x] Statik kod incelemesi 7/7 tamam (authz, validasyon, hız sınırı, atomik geçiş, idempotency,
+      hata yönetimi — §2). `deno check` **çalıştırılamadı** (Deno kurulu değil) → Node `tsc`
+      yalnızca semantik bağlamda `npm:`/`Deno` hataları verdi (ortam kısıtı, kod hatası değil);
+      `sync-profile:340` üzerinde `updateFields.bio` tip hatası not edildi (runtime'da zararsız,
+      `deno check` ile doğrulanmalı).
+- [BLOCKED] 1) Migration (§4). **2) 7 fonksiyonun YENİ sürümle deploy edilmesi gerek**
+      (`admin-action`, `sync-profile`, `sync-quest`, `duel-action`, `vip-action`,
+      `recovery-action`, `chat-action`); **"Verify JWT" KAPALI** kalacak (korumada fonksiyon içi
+      doğrulama + hız sınırı; bilinçli karar, §9/2). **Yazma kanalı yok → 0/7 güncellendi.**
 - [BLOCKED] 3) Secrets (§5).
 - [BLOCKED] 4) Doğrulama listesi: `guvenlik-ve-dagitim.md` §4 (login 403/200, `recovery_hash` anon
       hata, `neg_xp` kolonu, index adları).
 - [ ] CI Artifact'inden release APK/AAB indirilip cihaza kurulacak (`docs/manual-smoke-test.md`).
 
-## 7. Test ve tip denetimi (FAZ 8 — HEAD üzerinde yeniden çalıştırıldı)
+## 7. Test ve tip denetimi (FAZ 8 — HEAD üzerinde yeniden çalıştırıldı; 4. koşu 2026-09-27)
 
-- [x] `npx jest --runInBand` → **65/65 PASS** (2 suite: `tests/unit/logic.test.js`, `tests/unit/syncQueue.test.js`) — release öncesi **3. koşu**, aynı sonuç; testler değiştirilmedi/zayıflatılmadı.
+- [x] `npx jest --runInBand` → **65/65 PASS** (2 suite: `tests/unit/logic.test.js`, `tests/unit/syncQueue.test.js`) — release öncesi **4. koşu**, aynı sonuç; testler değiştirilmedi/zayıflatılmadı.
 - [x] `npx tsc --noEmit` → **0 hata**.
 - [x] `npx expo export --platform android` → **EXIT 0**, Hermes bundle **4.52 MB**
       (`dist/_expo/static/js/android/index-68fcde091bab321b0fb0dc5de2ab0b81.hbc`, 38 dosya; `dist/` ignore içinde).
-- [x] Kırık import yok (widget'lar `.jsx` olarak çözülüyor); silinen dosyalara referans yok (`api.js`, `syncService.js` gölgesi, `config/admin.js` hâlâ mevcut değil).
+- [x] **Yeni bundle secret scan (FAZ 8):** `service_role`/JWT/private key/eski admin
+      anahtar-şifre desenleri/`ADMIN_TOKEN_SECRET`/`ADMIN_PASSWORD_HASH` atamalarının tamamı
+      **NOT FOUND**; yalnızca kasıtlı `sb_publishable_` (1 eşleşme, secret değil).
+- [x] Kırık import yok (widget'lar `.jsx` olarak çözülüyor); silinen dosyalara referans yok (`api.js`, `syncService.js` gölgesi, `config/admin.js` hâlâ mevcut değil); `react-native-url-polyfill/auto` mevcut.
 - [x] Coverage toplama yapılandırması `jest.config.js`'te (`logic.js`, `syncService.ts`, `profileService.js`, `serverClock.js`).
 - [!] Repo'da **lint aracı yok** (eslint config/scripts yok). Yayın blokeri değil; ekleme ayrı karardır.
 - [ ] CI'da `npx jest --ci` + `npx tsc --noEmit` yeşil (push sonrası — §0 nedeniyle henüz koşmadı).
@@ -137,11 +175,21 @@ Sıra: **1) Migration → 2) Edge Functions deploy → 3) Secrets → 4) Doğrul
 ## 8. Senkron / senaryo durumu
 
 - [x] Statik doğrulama: `runSync` erken dönüş + `bannedDuringDrain`/`earningsPushed`; `pendingId` yaşam döngüsü; `activeAccountRef` guard (`publishProfile` + `refreshServerMeta`); kuyruk **hesap bazlı** anahtar (`@sync_engine:mutation_queue:<hesap>`); hesap değişince köprü+önbellek sıfırlanıp kendi deposundan yeniden yüklenir; widget görev kuyruğu yazılıyor **ve** tüketiliyor (`drainWidgetTasks`).
-- [NOT EXECUTED] **Canlı senkron/idempotency negatif testleri** (yanlış şifre, token'sız admin,
-      duplicate requestId, negatif XP/altın, recovery/chat/duel/vip/admin rate limit):
-      hedef endpoint **DNS'te yok** (§0) → test edilecek canlı sistem bulunamadı.
-      Uydurma PASS verilmedi.
-- [ ] Cihaz senaryoları (A–M): **hepsi `docs/manual-smoke-test.md` içinde `[ ]`** — cihaz erişimi yok, PASS olarak işaretlenmedi.
+- [x] **Canlı güvenli testler (FAZ 7, 2026-09-27 — yazma/temizlik gerektirmeyenler):**
+  - [x] Yetkisiz admin isteği → **403 PASS**; geçersiz `x-admin-token` → **403 PASS**.
+  - [x] Anon ile negatif XP `INSERT` denemesi → **401 RLS PASS** (satır oluşturulmadı).
+  - [x] Anon `UPDATE` (imkânsız filtre = 0 satır) → 204: anon UPDATE **grant'ı hâlâ açık**;
+        migration'ın `REVOKE`'u kapatacak (gerçek satıra erişim RLS ile zaten engelli).
+  - [x] `recovery_hash` anon okuma → **200 FAIL (açık)** → migration §6 ile kapanacak.
+  - [x] Recovery 21 deneme → **429 yok FAIL** (eski koddaki IP limiti yok; yeni kod 20/dk koyar).
+  - [x] Admin login 6 deneme → **429 yok FAIL** (eski kodda login rate limiti yok; yeni kod 5/dk).
+- [NOT EXECUTED] **Yeni kodun gerektirdiği canlı testler** (expired/çalıştırılmış token, negatif
+      XP/gold fonksiyon testi, günlük negatif tavan, quest çift alım, duel çift finish, VIP
+      affected-row, sync idempotency, requestId replay, chat/duel/vip rate limit): **önce §6 deploy
+      gerekiyor** (canlıda eski kod var) + bir kısmı üretim verisine yazma gerektirir →
+      uydurma PASS verilmedi, çalıştırılmadı.
+- [x] Bu oturumda üretim veritabanına **hiçbir satır yazılmadı/silinmedi** (probeler doğrulama
+      öncesi reddedilen/0-etreli yollarda kaldı; geçici test verisi gerekmedi).
 
 ## 9. Bilinen sınırlılıklar / kabul edilen riskler
 
@@ -177,15 +225,22 @@ Sıra: **1) Migration → 2) Edge Functions deploy → 3) Secrets → 4) Doğrul
 
 ## 12. Eski APK kontrolü (FAZ 13) + yayın öncesi kararlar
 
-- [x] **Tespit:** repo kökündeki `HabitTracker.apk` (binary) eski admin sırlarını içeriyor →
-      **compromised artifact** (§3). `releases/latest` linki de bu dosyayı dağıtıyor.
-- [BLOCKED] **Kaldırma/revocation:** `gh` oturumu yok + GitHub token tanımlı değil → GitHub
-      Release'i **ben kaldır/amadım**. Otomatik yapılmış gibi raporlanmadı.
-- [ ] **Manuel aksiyon (kullanıcı):** GitHub → Releases → eski `HabitTracker.apk`/ilgili release'i
+- [x] **Tespit:** repo kökündeki `HabitTracker.apk` (90.6 MB, binary) eski admin sırlarını içeriyor →
+      **compromised artifact** (§3).
+- [x] **GitHub Releases (public API, salt okunur) ölçüldü:** yayında **10 release** var;
+      en yenisi `build-20` → `HabitTracker.apk` (90.6 MB, **7 indirme**) + `app-release.aab`;
+      `build-17` 6, `build-20` … `build-13` arası tüm release'ler `HabitTracker.apk` dağıtıyor
+      (toplam ölçünen indirmeler: 20+). Yani **eski (büyük ihtimalle compromised) APK aktif
+      olarak dağıtılıyor**.
+- [BLOCKED] **Kaldırma/revocation:** `gh` oturumu yok + `GITHUB_TOKEN` tanımlı değil → GitHub
+      Release asset'leri **ben kaldır/amadım**. Otomatik yapılmış gibi raporlanmadı.
+- [ ] **Manuel aksiyon (kullanıcı):** GitHub → Releases → eski `HabitTracker.apk`/ilgili release'ler
       sil veya "revoked/deprecated" notu ekle; dağıtım linkini yeni build'e yönlendir.
 - [ ] `HabitTracker.apk`'nin repodan çıkarılması + CI'ın commit adımının yeniden düşünülmesi
-      (şu an CI her derlemede APK'yı geri itiyor).
-- [ ] **Rotation** onayı (§5) — hedef proje erişimi açılır açılmaz.
+      (şu an CI her derlemede APK'yı geri itiyor; git geçmişindeki sırlar ancak rotation ile
+      anlamsızlaşır).
+- [ ] **Rotation** onayı (§5) — yazma kanalı açılır açılmaz (eski anahtar canlı kodda + APK'da +
+      git geçmişinde → **acil**).
 - [ ] Yayında kalacak eski sürümler: kullanıcıların yeni APK'ya güncellenmesi (eski APK'lar sırları taşır).
 
 ## 13. Yayın sonrası izleme
