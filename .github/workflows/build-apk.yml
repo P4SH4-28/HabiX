@@ -49,6 +49,14 @@ jobs:
       - name: Paketleri Yükle (npm install)
         run: npm ci
 
+      # 5b. ADIM: Kod doğrulama — birim testler + TypeScript denetimi.
+      # Hatalı kod APK'ye ulaşmadan önce burada düşer.
+      - name: Birim Testleri Çalıştır (jest)
+        run: npx jest --ci
+
+      - name: TypeScript Denetimi (tsc)
+        run: npx tsc --noEmit
+
       # 6. ADIM: Expo yapısını yerel Android klasörüne dönüştürüyoruz
       - name: Expo Prebuild Oluştur
         run: npx expo prebuild --platform android
