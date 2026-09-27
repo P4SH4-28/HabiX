@@ -1,4 +1,24 @@
 {
-  "compilerOptions": {},
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["App.js", "index.js", "src/**/*.js", "src/**/*.ts", "src/**/*.jsx", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "android",
+    "ios",
+    "server",
+    // Edge Functions Deno ortamında çalışır (Deno.* importları vardır);
+    // bunlar `supabase/functions/tsconfig.json` kapsamında ayrı denetlenir.
+    "supabase/functions"
+  ]
 }

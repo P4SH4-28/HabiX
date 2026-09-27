@@ -70,10 +70,12 @@ export function calcStreak(completedDates, today, freezeDay = null) {
   const set = new Set(completedDates);
   const isDone = (key) => set.has(key) || key === freezeDay;
   const todayDate = parseKey(today);
+  // Kural: bugün GERÇEKTEN tamamlanmadıysa seri 0'dır (farm koruması).
+  // freezeDay dışındaysa bugün yapılmadıysa zincir kırılır → 0.
+  if (!isDone(today)) return 0;
   const yesterday = new Date(todayDate);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayKey = dateKey(yesterday);
-  if (!set.has(today) && !set.has(yesterdayKey)) return 0;
   let streak = 0;
   let d = isDone(today) ? todayDate : yesterday;
   while (isDone(dateKey(d))) {
