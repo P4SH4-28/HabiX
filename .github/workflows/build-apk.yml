@@ -43,7 +43,10 @@ jobs:
 
       # 4. ADIM: Android SDK araçlarını yüklüyoruz
       - name: Android SDK Kur
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          accept-license: true
+          reset: true
 
       # 5. ADIM: Proje bağımlılıklarını yüklüyoruz
       - name: Paketleri Yükle (npm install)
