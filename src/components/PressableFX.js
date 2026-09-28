@@ -51,6 +51,7 @@ export default function PressableFX({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled}
+      accessibilityRole="button"
       {...rest}
     >
       {({ pressed: p }) => (

@@ -1,12 +1,17 @@
 # Güvenlik Geçişi ve Dağıtım Kılavuzu
 
-Bu belge, `supabase/migrations/001_security_hardening.sql` + yenilenen Edge
+Bu belge, `supabase/migrations/002_reconciled_baseline.sql` + yenilenen Edge
 Functions'ların **doğru sırayla** uygulanmasını ve admin sırlarının
 **üretilmesini/çevrilmesini** anlatır. Sıra önemlidir:
 
 ```
 1) Migration (SQL)  →  2) Edge Functions deploy  →  3) Secrets  →  4) Doğrulama
 ```
+
+> ⚠️ **`001_security_hardening.sql` DEPRECATED (2026-09-28).** Canlı denetimde
+> 001'in canlı şemada hata verdiği ve (Dashboard tek transaction'ında) hiçbir
+> şey uygulamadan geri döndüğü kanıtlandı → **production'da çalıştırılmaz**.
+> Ayrıntı: `docs/denetim-raporu.md` §8.
 
 > Fonksiyonlar migration'dan ÖNCE deploy edilirse senkron çalışmaya devam
 > eder (kod, eksik kolonları güvenli biçimde atlar); ancak negatif delta
@@ -18,23 +23,33 @@ Functions'ların **doğru sırayla** uygulanmasını ve admin sırlarının
 ## 1) Migration
 
 Supabase Dashboard → **SQL Editor** → yeni sorgu →
-`supabase/migrations/001_security_hardening.sql` içeriğini yapıştır → **Run**.
+`supabase/migrations/002_reconciled_baseline.sql` içeriğini yapıştır → **Run**
+(tek gönderim = tek transaction).
 
-Betik **idempotenttir** (ikinci kez çalıştırmak zararsız). Yaptıkları:
+> ⚠️ `001_security_hardening.sql` **DEPRECATED — çalıştırmayın** (bkz. belge
+> başlığı). Betik **idempotenttir**; başlıktaki PRE-FLIGHT ölçümü çalıştırma
+> anında yeniden ölçer, değişmişse **DUR**.
 
-| Bölüm | Değişiklik | Etkisi |
+Yaptıkları (002 FAZ'ları):
+
+| FAZ | Değişiklik | Etkisi |
 |---|---|---|
-| 0–1 | `xp/coins/xp7d/streak/duels.start_xp_*` için `CHECK (>= 0)` | Negatif bakiye DB seviyesinde imkânsız |
-| 2 | `daily_earnings.neg_xp/neg_gold` kolonları | Günlük **negatif** delta tavanı (-500 XP / -300 🪙) |
-| 3 | `team_members` tek takım (UNIQUE + temizlik) | Aynı kişi iki takımda olamaz |
-| 4 | `duels` yön bağımsız tek aktif düello | A→B + B→A çift kayıt kapanır |
-| 5 | `recovery_hash` için `REVOKE` + kolon bazlı `GRANT` | **pass-the-hash hesap ele geçirme kapatılır** |
-| 6 | Eksik indeksler (arkadaşlık, sohbet, oda, liderlik, düello) | N+1 sorgu yükü azalır |
-| 7 | `admin_logs.request_id` tekil indeks | Admin işlemi iki kez uygulanamaz |
-| 8 | `sync_requests` tablosu (RLS açık, istemciye kapalı) | Aynı delta iki kez uygulanamaz (idempotency) |
+| 0 | `profiles`'e 11 eksik kolon + `chat_messages.avatar_photo` | clamp/CHECK/GRANT ön koşulu (canlı şema drift'i) |
+| 1 | 7 clamp (`xp/coins/xp7d/streak`, `daily_earnings.xp/gold`, `duels.start_xp_*`) | Ölçüm: **0 satır** etki |
+| 2 | 8 `CHECK (>= 0)` + `daily_earnings.neg_xp/neg_gold` | Negatif bakiye DB seviyesinde imkânsız; günlük **negatif** delta tavanı (-500 XP / -300 🪙) |
+| 3 | `admin_logs.request_id` + tekil indeks | Admin işlemi iki kez uygulanamaz |
+| 4 | `sync_requests` + `teams`/`team_members` tabloları, RLS, 4 politika, GRANT | Idempotency + kulüpler (canlıda hiç yoktu) |
+| 5 | 2 dedup `DELETE` + unique index (DO korumalı) | Tek takım / tek aktif düello; ölçüm: **0 satır** |
+| 6 | 12 eksik indeks | N+1 sorgu yükü azalır |
+| 7 | `recovery_hash` `REVOKE` + 22 kolonluk kolon bazlı `GRANT` | **pass-the-hash hesap ele geçirme kapatılır** |
+| 8 | `avatars` bucket + 4 storage politikası | Profil fotoğrafı yüklenir (canlıda bucket yoktu) |
+| 9 | Opsiyonel, **varsayılan kapalı** | derinlik savunması — ayrıca onay ister |
+| 10 | Salt-SELECT doğrulama sorguları | Uygulama sonrası kontrol |
 
-Geri alma: her bölümün altındaki `-- Geri dönüş:` yorum satırlarına bakın.
-Veri silinmez, yalnızca kısıt/indeks eklenir.
+Geri alma: uygulama öncesi **yedek** (Dashboard → Backups) + kullanıcı onayı
+şarttır; herhangi bir FAZ'da hata olursa transaction tamamen geri alınır
+(tek gönderim). Veri silinmez; FAZ 5'teki iki DELETE'in ikisi de denetimde
+**0 satır** ölçülmuştur.
 
 ---
 

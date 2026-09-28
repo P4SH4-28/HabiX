@@ -7,6 +7,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme';
+import Progress from './ui/Progress';
 
 export default function TopHabits({ items }) {
   const { colors: C } = useTheme();
@@ -29,15 +30,13 @@ export default function TopHabits({ items }) {
               </Text>
               <Text style={styles.count}>{count} kez</Text>
             </View>
-            {/* Çubuk genişliği ilk sıradaki alışkanlığa oranlanır */}
-            <View style={styles.track}>
-              <View
-                style={[
-                  styles.fill,
-                  { backgroundColor: habit.color, width: `${(count / maxCount) * 100}%` },
-                ]}
-              />
-            </View>
+            {/* Çubuk genişliği ilk sıradaki alışkanlığa oranlanır (animasyonlu ortak Progress) */}
+            <Progress
+              value={maxCount > 0 ? count / maxCount : 0}
+              height={8}
+              colors={[habit.color, habit.color]}
+              accessibilityLabel={`${habit.name} sıralama ilerlemesi`}
+            />
           </View>
         </View>
       ))}
@@ -101,16 +100,6 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 12,
       fontWeight: '700',
-    },
-    track: {
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
-      borderRadius: 3,
     },
   });
 }

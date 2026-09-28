@@ -65,6 +65,9 @@ export default function PillTabBar({ state, descriptors, navigation }) {
                 onPress={onPress}
                 scale={0.93}
                 style={styles.itemWrap}
+                accessibilityRole="tab"
+                accessibilityLabel={String(label)}
+                accessibilityState={{ selected: focused }}
               >
                 {focused ? (
                   <LinearGradient
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
   },
 });

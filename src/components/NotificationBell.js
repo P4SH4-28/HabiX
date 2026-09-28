@@ -30,7 +30,13 @@ export default function NotificationBell() {
 
   return (
     <>
-      <Pressable style={styles.bellWrap} onPress={() => setVisible(true)} hitSlop={8}>
+      <Pressable
+        style={styles.bellWrap}
+        onPress={() => setVisible(true)}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={count > 0 ? `Bildirimler, ${count} bekleyen istek` : 'Bildirimler, bekleyen istek yok'}
+      >
         <Icon emoji="🔔" size={18} color={C.text} />
         {count > 0 && (
           <View style={styles.badge}>
@@ -124,7 +130,7 @@ function makeStyles(C) {
     },
     badgeText: {
       color: '#FFFFFF',
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '800',
     },
     emptyBox: {

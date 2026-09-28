@@ -32,6 +32,8 @@ export default function TopBar({ title, onBack, right }) {
           ]}
           onPress={onBack || openMenu}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={onBack ? 'Geri' : 'Menüyü aç'}
         >
           <Ionicons
             name={onBack ? 'arrow-back' : 'menu'}

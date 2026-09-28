@@ -25,6 +25,7 @@ export default function Card({ children, style, onPress, glowColor, selected, ..
           pressed && { transform: [{ scale: 0.985 }] },
           style,
         ]}
+        accessibilityRole="button"
         {...rest}
       >
         {children}

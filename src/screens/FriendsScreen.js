@@ -3,11 +3,11 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import AddFriendModal from '../components/AddFriendModal';
 import AvatarCircle from '../components/AvatarCircle';
 import Icon from '../components/ui/icons';
-import IconTile from '../components/ui/IconTile';
 import { confirmDialog } from '../components/HabitCard';
 import DuelCard from '../components/DuelCard';
 import PlayerProfileModal from '../components/PlayerProfileModal';
 import { useData } from '../context/DataContext';
+import EmptyState from '../components/ui/EmptyState';
 import { useTheme } from '../theme';
 
 export default function FriendsScreen() {
@@ -161,14 +161,12 @@ export default function FriendsScreen() {
           );
         }}
         ListEmptyComponent={
-          <View style={styles.emptyBox}>
-            <IconTile icon="people" emoji="👥" variant="primary" size={64} iconSize={28} />
-            <Text style={styles.emptyTitle}>Henüz arkadaş yok</Text>
-            <Text style={styles.emptyText}>
-              Arkadaş ekleyerek liderlik tablosunda rekabet etmeye başla. Uzun basarak
-              arkadaşını silebilirsin.
-            </Text>
-          </View>
+          <EmptyState
+            icon="people"
+            emoji="👥"
+            title="Henüz arkadaş yok"
+            subtitle="Arkadaş ekleyerek liderlik tablosunda rekabet etmeye başla. Uzun basarak arkadaşını silebilirsin."
+          />
         }
       />
       <AddFriendModal
@@ -213,7 +211,8 @@ function makeStyles(C) {
       backgroundColor: C.primary,
       borderRadius: 12,
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      minHeight: 44,
+      justifyContent: 'center',
     },
     addButtonText: {
       color: C.onPrimary,
@@ -293,24 +292,6 @@ function makeStyles(C) {
       width: 10,
       height: 10,
       borderRadius: 5,
-    },
-    emptyBox: {
-      alignItems: 'center',
-      paddingVertical: 50,
-      paddingHorizontal: 24,
-      gap: 10,
-    },
-    emptyTitle: {
-      color: C.text,
-      fontSize: 16,
-      fontWeight: '700',
-      marginBottom: 6,
-    },
-    emptyText: {
-      color: C.textMuted,
-      fontSize: 13,
-      textAlign: 'center',
-      lineHeight: 20,
     },
   });
 }

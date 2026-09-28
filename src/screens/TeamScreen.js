@@ -16,8 +16,11 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { useTheme } from '../theme';
 import Icon from '../components/ui/icons';
+import Progress from '../components/ui/Progress';
+import Skeleton from '../components/ui/Skeleton';
 import AvatarCircle from '../components/AvatarCircle';
 import {
   createTeam,
@@ -42,6 +45,7 @@ export default function TeamScreen() {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
   const { user } = useAuth();
+  const { pushToast } = useData();
   const myName = user?.name || '';
 
   const [loading, setLoading] = useState(true);
@@ -86,7 +90,7 @@ export default function TeamScreen() {
     try {
       const r = await createTeam(newName, newEmoji, myName);
       if (!r.ok) {
-        Alert.alert('Kurulamadı', r.error || 'Takım kurulamadı.');
+        pushToast({ icon: '⚠️', title: r.error || 'Takım kurulamadı', color: C.danger });
       } else {
         setNewName('');
         setNewEmoji(TEAM_EMOJIS[0]);
@@ -105,7 +109,7 @@ export default function TeamScreen() {
       async () => {
         const r = await joinTeam(team.id, myName);
         if (!r.ok) {
-          Alert.alert('Katılınamadı', r.error || 'Katılım başarısız.');
+          pushToast({ icon: '⚠️', title: r.error || 'Katılım başarısız', color: C.danger });
           return;
         }
         await refresh();
@@ -124,7 +128,7 @@ export default function TeamScreen() {
       async () => {
         const r = await leaveTeam(myTeam.id, myName, myRole);
         if (!r.ok) {
-          Alert.alert('Ayrılınamadı', r.error || 'İşlem başarısız.');
+          pushToast({ icon: '⚠️', title: r.error || 'İşlem başarısız', color: C.danger });
           return;
         }
         await refresh();
@@ -134,8 +138,11 @@ export default function TeamScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.loadingText}>Takım bilgileri yükleniyor…</Text>
+      <View style={[styles.container, styles.content]}>
+        <Skeleton h={120} r={18} />
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} h={64} r={14} style={{ marginTop: 12 }} />
+        ))}
       </View>
     );
   }
@@ -178,9 +185,13 @@ export default function TeamScreen() {
                   {weeklyXp}/{WEEKLY_GOAL_XP} XP
                 </Text>
               </View>
-              <View style={styles.goalTrack}>
-                <View style={[styles.goalFill, { width: `${Math.round(goalPct * 100)}%` }]} />
-              </View>
+              <Progress
+                value={goalPct}
+                height={10}
+                trackColor={C.surface}
+                colors={[C.primary, C.primaryDark]}
+                accessibilityLabel={`Haftalık takım hedefi yüzde ${Math.round(goalPct * 100)}`}
+              />
               <Text style={styles.goalHint}>
                 Takımın toplam haftalık XP'si — her üyenin bu haftaki kazancı sayılır.
               </Text>
@@ -303,14 +314,6 @@ function makeStyles(C) {
       flex: 1,
       backgroundColor: C.background,
     },
-    center: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    loadingText: {
-      color: C.textMuted,
-      fontSize: 14,
-    },
     content: {
       padding: 20,
       gap: 14,
@@ -381,17 +384,6 @@ function makeStyles(C) {
       color: C.primary,
       fontSize: 13,
       fontWeight: '800',
-    },
-    goalTrack: {
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: C.surface,
-      overflow: 'hidden',
-    },
-    goalFill: {
-      height: '100%',
-      borderRadius: 5,
-      backgroundColor: C.primary,
     },
     goalHint: {
       color: C.textMuted,

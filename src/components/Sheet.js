@@ -13,7 +13,12 @@ export default function Sheet({ visible, onClose, title, children }) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <BlurView intensity={26} tint="dark" style={styles.frost} pointerEvents="none" />
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable
+          style={styles.backdrop}
+          onPress={onClose}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
         <View style={styles.sheet}>
           <View style={styles.handle} />
           <View style={styles.titleRow}>
@@ -21,6 +26,8 @@ export default function Sheet({ visible, onClose, title, children }) {
             <Pressable
               onPress={onClose}
               hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Kapat"
               style={({ pressed }) => [
                 styles.closeBtn,
                 { backgroundColor: C.surfaceLight, borderColor: C.border },

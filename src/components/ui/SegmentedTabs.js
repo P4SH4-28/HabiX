@@ -33,6 +33,9 @@ export default function SegmentedTabs({ options, value, onChange, style }) {
             }}
             scale={0.97}
             haptic={false}
+            accessibilityRole="tab"
+            accessibilityLabel={opt.label}
+            accessibilityState={{ selected: active }}
             style={[
               styles.seg,
               { borderRadius: radius.control - 2 },
@@ -72,6 +75,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 44,
     paddingVertical: 9,
     paddingHorizontal: 8,
     gap: 6,

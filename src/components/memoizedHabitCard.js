@@ -73,6 +73,9 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
           onDelete(habit.id)
         )
       }
+      accessibilityRole="button"
+      accessibilityLabel={`${habit.name}, ${completedToday ? 'bugün tamamlandı' : 'bugün henüz yapılmadı'}, seri ${streak}`}
+      accessibilityHint="Uzun bas: alışkanlığı sil"
     >
       {/* Alışkanlığın rengiyle boyanmış emoji rozeti */}
       <View style={[styles.emojiBox, { backgroundColor: habit.color + '1F', borderColor: habit.color + '33' }]}>
@@ -80,7 +83,14 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
       </View>
 
       {/* Tamamlama butonu: dolu emerald gradient = bugün tamamlandı */}
-      <Pressable style={styles.checkbox} onPress={() => onToggle(habit.id)} hitSlop={8}>
+      <Pressable
+        style={styles.checkbox}
+        onPress={() => onToggle(habit.id)}
+        hitSlop={8}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: !!completedToday }}
+        accessibilityLabel={`${habit.name} tamamlandı`}
+      >
         <View>
           <Animated.View
             pointerEvents="none"

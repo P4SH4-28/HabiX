@@ -165,7 +165,13 @@ export default function AppMenu() {
                 <Text style={styles.profileLevel}>{data.stats.gold || 0}</Text>
               </View>
             </View>
-            <Pressable style={styles.closeBtn} onPress={() => closeAnim()} hitSlop={8}>
+            <Pressable
+              style={styles.closeBtn}
+              onPress={() => closeAnim()}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Menüyü kapat"
+            >
               <Ionicons name="close" size={20} color={C.textMuted} />
             </Pressable>
           </View>
@@ -195,6 +201,8 @@ export default function AppMenu() {
                       pressed && { backgroundColor: C.surfaceLight },
                     ]}
                     onPress={() => go(item.key)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.label}
                   >
                     <View style={[styles.itemIcon, { backgroundColor: C.surfaceLight }]}>
                       <Ionicons name={item.icon} size={19} color={C.primary} />

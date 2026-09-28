@@ -118,13 +118,13 @@ function makeStyles(C) {
     },
     badgeDesc: {
       color: C.textMuted,
-      fontSize: 9,
+      fontSize: 11,
       textAlign: 'center',
       marginTop: 2,
     },
     badgeReward: {
       color: C.gold,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '800',
       marginTop: 3,
     },

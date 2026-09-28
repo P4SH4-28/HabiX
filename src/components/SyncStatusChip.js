@@ -27,7 +27,9 @@ export default function SyncStatusChip() {
     <Pressable
       style={[styles.chip, { backgroundColor: offline ? C.danger + '18' : C.gold + '1f' }]}
       onPress={() => refreshServer()}
-      hitSlop={8}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel={`Senkron durumu: ${syncing ? 'eşitleniyor' : offline ? 'çevrimdışı' : 'bağlı'}, ${pendingCount} değişiklik bekliyor. Tekrar dene`}
     >
       {syncing ? (
         <Ionicons name="sync" size={13} color={C.primary} />
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
     maxWidth: 150,
   },
   text: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
   },
 });

@@ -9,7 +9,7 @@
 //   Gelişim verilerine bakabilir ve arkadaşlık isteği gönderebilirsin.
 // ============================================================
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import PlayerProfileModal from '../components/PlayerProfileModal';
 import AvatarCircle from '../components/AvatarCircle';
 import SoftButton from '../components/ui/SoftButton';
@@ -22,16 +22,21 @@ import { useTheme } from '../theme';
 import Icon from '../components/ui/icons';
 import IconTile from '../components/ui/IconTile';
 import Pill from '../components/ui/Pill';
+import Progress from '../components/ui/Progress';
 
 const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
-// Madalya renkleri sabittir (tema değişse bile kupa renkleri değişmez).
-const PODIUM_COLORS = { 1: '#FFD75E', 2: '#C0C8D8', 3: '#D98E5A' };
 
 export default function LeaderboardScreen() {
   const { data, today, leaderboardMinLevel, leaderboardMinXp, refreshServer, refreshing } = useData();
   const { user: authUser } = useAuth();
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  // Madalya renkleri tema token'larından gelir (koyu temada klasik
+  // altın/gümüş/bronz, açık temada kontrast için uyarlanır).
+  const PODIUM_COLORS = useMemo(
+    () => ({ 1: C.gold, 2: C.silver, 3: C.bronze }),
+    [C]
+  );
   const { stats, friends, players } = data;
   const meName = authUser?.name || 'Sen';
   const myLevel = levelFromTotalXp(stats.totalXp).level;
@@ -141,9 +146,12 @@ export default function LeaderboardScreen() {
               <Text style={styles.lockProgressLabel}>Seviye {leaderboardMinLevel} yolu</Text>
               <Text style={styles.lockProgressValue}>%{Math.round(pct)}</Text>
             </View>
-            <View style={styles.lockTrack}>
-              <View style={[styles.lockFill, { width: `${pct}%` }]} />
-            </View>
+            <Progress
+              value={pct / 100}
+              height={10}
+              colors={[C.gold, C.accent]}
+              accessibilityLabel={`Seviye ${leaderboardMinLevel} yolunun yüzdesi ${Math.round(pct)}`}
+            />
             <Text style={styles.lockHint}>
               Şu an Seviye {myLevel} — Seviye {leaderboardMinLevel} için {neededXp} XP daha
               kazanmalısın
@@ -168,6 +176,13 @@ export default function LeaderboardScreen() {
       >
         <Text style={styles.screenTitle}>Liderlik</Text>
         <Text style={styles.screenSub}>Herkes burada — profillere dokunarak göz at</Text>
+
+        {live === null && (
+          <View style={styles.liveLoading} accessibilityRole="progressbar">
+            <ActivityIndicator size="small" color={C.textMuted} />
+            <Text style={styles.liveLoadingText}>Canlı sıralama yükleniyor…</Text>
+          </View>
+        )}
 
         {live && !live.ok && (
           <View style={styles.offlineBox}>
@@ -200,6 +215,8 @@ export default function LeaderboardScreen() {
                   key={e.id}
                   style={[styles.podiumCard, { height: isTop ? 130 : 100 }, e.isMe && styles.meCard]}
                   onPress={() => setSelected(e)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${rank}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
                 >
                   <Icon emoji={MEDALS[rank]} size={24} color={PODIUM_COLORS[rank]} style={styles.podiumMedal} />
                   <AvatarCircle
@@ -238,6 +255,8 @@ export default function LeaderboardScreen() {
                 pressed && { opacity: 0.85 },
               ]}
               onPress={() => setSelected(e)}
+              accessibilityRole="button"
+              accessibilityLabel={`${i + 1}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
             >
               <View style={styles.rankBox}>
                 <Pill
@@ -334,6 +353,24 @@ function makeStyles(C) {
       fontSize: 13,
       marginBottom: 4,
     },
+    liveLoading: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      alignSelf: 'flex-start',
+      backgroundColor: C.surface,
+      borderWidth: 1,
+      borderColor: C.border,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginBottom: 6,
+    },
+    liveLoadingText: {
+      color: C.textMuted,
+      fontSize: 12,
+      fontWeight: '700',
+    },
     offlineBox: {
       backgroundColor: C.surface,
       borderRadius: 14,
@@ -389,18 +426,6 @@ function makeStyles(C) {
       fontSize: 12,
       fontWeight: '800',
     },
-    lockTrack: {
-      width: '100%',
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    lockFill: {
-      height: '100%',
-      borderRadius: 5,
-      backgroundColor: C.primary,
-    },
     lockHint: {
       color: C.textMuted,
       fontSize: 12,
@@ -443,7 +468,7 @@ function makeStyles(C) {
     },
     podiumCoins: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '700',
     },
     podiumCoinRow: {
@@ -453,7 +478,7 @@ function makeStyles(C) {
     },
     meLabel: {
       color: C.primary,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '800',
       letterSpacing: 1,
     },
@@ -506,7 +531,7 @@ function makeStyles(C) {
     },
     friendChip: {
       color: C.accent,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '800',
       backgroundColor: C.accent + '22',
       paddingHorizontal: 6,
@@ -525,7 +550,7 @@ function makeStyles(C) {
     },
     flagChipText: {
       color: C.danger,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '800',
     },
     rowStreak: {

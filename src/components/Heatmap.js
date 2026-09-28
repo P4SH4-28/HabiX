@@ -140,7 +140,7 @@ function makeStyles(C) {
     },
     legendText: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
     },
     legendCell: {
       width: 12,

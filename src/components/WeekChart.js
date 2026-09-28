@@ -116,12 +116,12 @@ function makeStyles(C) {
     },
     value: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '600',
     },
     totalSlash: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       opacity: 0.6,
     },
     valueToday: {

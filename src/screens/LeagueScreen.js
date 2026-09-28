@@ -5,9 +5,11 @@
 // ulaştığın lige göre altın ödülünü bir kez alırsın.
 // ============================================================
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useData } from '../context/DataContext';
 import { getLeague, LEAGUES, nextLeagueInfo, weekEndFor, weekKeyFor } from '../data/leagues';
+import { success } from '../services/sfx';
+import Progress from '../components/ui/Progress';
 import { useTheme } from '../theme';
 import Icon from '../components/ui/icons';
 
@@ -22,7 +24,7 @@ function formatCountdown(ms) {
 export default function LeagueScreen() {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
-  const { data, server, claimLeagueReward, refreshServer } = useData();
+  const { data, server, claimLeagueReward, refreshServer, pushToast } = useData();
   const [claiming, setClaiming] = useState(false);
 
   // Kendi ligim: sunucunun 7 günlük XP trendinden (en güncel senkron).
@@ -49,12 +51,18 @@ export default function LeagueScreen() {
       await refreshServer();
       const r = claimLeagueReward();
       if (r.ok === false) {
-        Alert.alert('Ödül alınamadı', r.error || 'Bu haftanın ödülü zaten alındı.');
+        pushToast({
+          icon: '⚠️',
+          title: r.error || 'Bu haftanın ödülü zaten alındı',
+          color: C.danger,
+        });
       } else {
-        Alert.alert(
-          'Ödül alındı!',
-          `Bu hafta ${r.league.name} ligindesin: +${r.reward} altın hesabına eklendi. Haftaya daha üst lig hedefle!`
-        );
+        success();
+        pushToast({
+          icon: '🏆',
+          title: `Ödül alındı! +${r.reward} altın · ${r.league.name} ligi`,
+          color: C.gold,
+        });
       }
     } finally {
       setClaiming(false);
@@ -85,19 +93,16 @@ export default function LeagueScreen() {
           </View>
         </View>
         <View style={styles.tierProgress}>
-          <View style={styles.tierTrack}>
-            <View
-              style={[
-                styles.tierFill,
-                {
-                  width: nextInfo.next
-                    ? `${Math.min(100, Math.round((myXp7d / nextInfo.next.minXp) * 100))}%`
-                    : '100%',
-                  backgroundColor: myLeague.color,
-                },
-              ]}
-            />
-          </View>
+          <Progress
+            value={nextInfo.next ? Math.min(1, myXp7d / nextInfo.next.minXp) : 1}
+            height={10}
+            colors={[myLeague.color, myLeague.color]}
+            accessibilityLabel={
+              nextInfo.next
+                ? `Sonraki lige kalan yüzde ${Math.max(0, Math.round((1 - myXp7d / nextInfo.next.minXp) * 100))}`
+                : 'En üst lig'
+            }
+          />
           <Text style={styles.tierProgressText}>
             {nextInfo.next
               ? `${nextInfo.needed} XP kala ${nextInfo.next.emoji} ${nextInfo.next.name}`
@@ -243,7 +248,7 @@ function makeStyles(C) {
     },
     weekChipText: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
     },
     weekChipCount: {
       color: C.text,
@@ -252,16 +257,6 @@ function makeStyles(C) {
     },
     tierProgress: {
       gap: 6,
-    },
-    tierTrack: {
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    tierFill: {
-      height: '100%',
-      borderRadius: 5,
     },
     tierProgressText: {
       color: C.textMuted,

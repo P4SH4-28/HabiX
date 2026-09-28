@@ -84,7 +84,13 @@ export default function PlayerProfileModal({ player, onClose }) {
         <View style={styles.screen}>
           {/* Üst çubuk: kapatma butonu */}
           <View style={styles.topBar}>
-            <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
+            <Pressable
+              onPress={onClose}
+              hitSlop={12}
+              style={styles.closeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Profili kapat"
+            >
               <Ionicons name="close" size={20} color={C.textMuted} />
             </Pressable>
           </View>
@@ -166,6 +172,9 @@ export default function PlayerProfileModal({ player, onClose }) {
                 style={[styles.actionButton, sending && styles.actionDisabled]}
                 onPress={sendRequest}
                 disabled={sending}
+                accessibilityRole="button"
+                accessibilityLabel={`${player.name} arkadaşlık isteği gönder`}
+                accessibilityState={{ disabled: sending, busy: sending }}
               >
                 {sending ? (
                   <ActivityIndicator size="small" color={C.onPrimary} />

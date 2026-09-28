@@ -18,6 +18,10 @@ export default function ColorPicker({ value, onChange }) {
               value === c && styles.swatchSelected,
             ]}
             onPress={() => onChange(c)}
+            hitSlop={5}
+            accessibilityRole="button"
+            accessibilityLabel={`Renk ${c}`}
+            accessibilityState={{ selected: value === c }}
           >
             {value === c && <Text style={styles.check}>✓</Text>}
           </Pressable>

@@ -81,7 +81,8 @@ Test kapsamı: tarih/seri/ekonomi/hash saf fonksiyonları; kuyruk yarışması, 
 ## 6. Derleme / dağıtım
 
 - APK CI hattı: `npm ci` → test → tsc → prebuild → Gradle (imza Secret'lardan) → artifact + release.
-- **Dağıtım sırası (zorunlu)**: ① `001_security_hardening.sql` → ② 7 Edge Function yeniden deploy (Verify JWT kapalı) → ③ Secrets (`ADMIN_TOKEN_SECRET`, `ADMIN_PASSWORD_HASH`, `ADMIN_KEY` kaldır) → ④ kılavuzdaki doğrulama listesi. Ayrıntı: `docs/guvenlik-ve-dagitim.md`.
+- ~~**Dağıtım sırası (zorunlu)**: ① `001_security_hardening.sql` → ② 7 Edge Function yeniden deploy (Verify JWT kapalı) → ③ Secrets (`ADMIN_TOKEN_SECRET`, `ADMIN_PASSWORD_HASH`, `ADMIN_KEY` kaldır) → ④ kılavuzdaki doğrulama listesi.~~
+- **Güncelleme (2026-09-28, §8):** `001_security_hardening.sql` **DEPRECATED — canlıda hata verir, çalıştırma**. Yerine ① `supabase/migrations/002_reconciled_baseline.sql` (FAZ 0-10, henüz uygulanmadı) → ② 7 Edge Function deploy → ③ Secrets → ④ doğrulama listesi. Ayrıntı: §8.
 
 ## 7. Sınırlılıklar ve sonraki adımlar
 
@@ -91,3 +92,121 @@ Test kapsamı: tarih/seri/ekonomi/hash saf fonksiyonları; kuyruk yarışması, 
 4. **Negatif tavan kasıtlı** — yedekten çok büyük XP düşüşü sunucuya tam yansımayabilir (cihaz yerel değeri korur).
 5. Bileşen/E2E testi, ESLint ve `pullDeltaProfiles`/`localWins` gibi henüz çağrılmayan yardımcılar için net karar (bağla veya sil) sonraki iş kalemidir.
 6. Edge Functions yerelde çalıştırılıp **deploy edilemedi** — canlı doğrulama dağıtımdan sonra yapılmalıdır.
+
+---
+
+## 8. Canlı Şema Denetimi — Live / 001 / schema.sql Üçlü Reconciliation (2026-09-28)
+
+> **Kapsam ve kısıt:** yalnızca salt-okunur REST/SELECT. Bu bölüm üretilirken **hiçbir mutation yok**: migration çalıştırılmadı, Edge Function deploy edilmedi, secret döndürülmedi, push yapılmadı. Hedef: `abqvphwuafsnfpgfppme` (anon key üzerinden).
+>
+> **Ölçüm özet (2026-09-28):** profiles 8 · daily_earnings 25 · friendships 3 (pending 0 / accepted 3 / rejected 0, self-pair 0) · duels 1 (`Alttantre vs P4SH4`, `pending`, benzersiz çift 1, tekrarlı çift 0) · chat 1 · rooms 2 · members 1 · quest_claims 0 · admin_logs 0 · storage bucket `[]` · teams/team_members/sync_requests **YOK** (6 bağımsız kanıt: REST 404 `PGRST205`, columns, table_privileges, pg_indexes, pg_constraint, pg_policies).
+
+### A) Live → expected farkları
+
+| Alan | Live (2026-09-28) | Beklenen (schema.sql) | 001 kapatıyor mu? |
+|---|---|---|---|
+| Tablo | 9 | 12 | **Hayır** (`teams`,`team_members`,`sync_requests` CREATE yok) |
+| `profiles` kolon | **11 eksik** (name, emoji, streak, xp7d, avatar_id, frame_id, last_active, vip_until, bio, photo_url, updated_at) | 23 | **Hayır** |
+| `daily_earnings.neg_*` | yok | var | ✅ |
+| `admin_logs.request_id` | yok | var | ✅ |
+| `chat_messages.avatar_photo` | yok (canlı REST 400) | var | **Hayır** |
+| Index | 17 beklenen → 5 var, **12 eksik** | 17 | 10/12 (eksik: `profiles_updated_at_idx`, `team_members_username_idx`) |
+| CHECK | 6 var, **8 eksik** | 14 | ✅ tamamı 001'de |
+| RLS | 9/9 açık ✅ | 12 tablo | tablo yokluğundan 9 |
+| Policy | 9/13 (eksik 4'ü team politikası) | 13 | **Hayır** (001 policy üretmez) |
+| GRANT `profiles` | anon tam yetki; `recovery_hash` REST 200 = **AÇIK** | REVOKE + 22 kolonluk SELECT | ⚠️ §5 var ama 11 kolon eksik → hata verir |
+| Storage | bucket `[]` | `avatars` + 4 policy | **Hayır** |
+| Drift | `friendships_status_check` = pending/accepted/**rejected**; `user_id<>friend_id` CHECK **yok** | pending/accepted + self-check | **Hayır** |
+
+### B) 001 migration risk analizi (satır bazlı)
+
+| Bölüm | Sınıf | Live durumu |
+|---|---|---|
+| 24–25 (`xp`,`coins` clamp) | veri değiştiren + idempotent | **0 satır** → güvenli |
+| **26–27 (`xp7d`,`streak` clamp)** | **canlıda olmayan kolona bağlı** | **İLK HATA 42703** → Dashboard tek transaction → **tüm script geri alınır, hiçbir şey uygulanmaz** |
+| 35–39 CHECK | güvenli | ✅ |
+| **41–45 (`xp7d`,`streak` CHECK)** | **kolon bağımlı → hata** | çalışmazdı |
+| 47–55 CHECK | idempotent (DROP+ADD), ölçüm 0 ihlal | ✅ |
+| 62–66 `neg_*` + CHECK | güvenli, sıra doğru | ✅ |
+| **71–91 `team_members` DO** | **olmayan tabloya bağlı → hata** | tablo yok |
+| 96–114 `duels` DO | veri değiştiren (DELETE) + idempotent koruma | ölçüm: 1 satır, 0 çakışma → **DELETE 0 satır**, index güvenli |
+| 121–125 GRANT | **ön koşul gerektiren** (11 kolon yok → hata) | FAZ 0'dan sonra |
+| 132–143 index | güvenli/idempotent | ✅ |
+| 148–150 `request_id` + partial unique | güvenli (admin_logs **0 satır**) | ✅ |
+| 157–167 `sync_requests` | güvenli (CREATE + RLS + REVOKE) | ✅ |
+| **Eksik kalanlar** | `profiles_updated_at_idx`, `team_members_username_idx`, `chat.avatar_photo`, `teams`/`team_members` CREATE + RLS + 4 policy, storage, friendships drift | — |
+
+Ek bulgular: 001'de BEGIN/COMMIT yok (Dashboard tek gönderimde transaction'a alır; `psql` ile parça parça uygulanırsa 24–25 kalıp sonrası uygulanmaz). Satır 102 yorumu **yanlış**: "daha yenisi silinir" derken koşul `a.created_at < b.created_at` → **eskisini siler** ("id'ye göre" ifadesi de yanlış, `created_at`).
+**schema.sql'i de aynı audit göçertiyordu:** §1 mevcut tabloya yalnızca bio/photo_url/updated_at ekliyordu (diğer 8 kolon yalnızca `CREATE TABLE` içindeydi) → §1.5'teki `xp7d` clamp'i orada da hata verirdi; §1.5'teki `CREATE POLICY IF NOT EXISTS` **PostgreSQL'de geçersiz sözdizimi** (4 satır) → "idempotent" iddiası tutmuyordu.
+
+### C) 2 DELETE + 7 UPDATE etkisi (yalnızca SELECT ile ölçüldü)
+
+| İfadeler | Etkilenen satır |
+|---|---|
+| `profiles.xp<0` / `coins<0` | **0 / 0** |
+| `profiles.xp7d<0` / `streak<0` | ölçülemedi (kolon yok) → eklendikten sonra `DEFAULT 0` → **0** |
+| `daily_earnings.xp<0` / `gold<0` | **0 / 0** (25 satır üzerinden) |
+| `duels.start_xp_*<0` | **0 / 0** |
+| **DELETE `team_members`** | **0** (tablo yok; 002 FAZ 4'te boş oluşur) |
+| **DELETE `duels` (dedup)** | **0** (1 satır; status<>done=1, benzersiz çift=1, tekrar=0, eşit created_at=0) |
+
+### D) Gerekli migration sırası
+
+`FAZ 0 kolonlar` → `FAZ 1 clamp` → `FAZ 2 CHECK + neg_*` → `FAZ 3 request_id` → `FAZ 4 tablolar + RLS + policy + GRANT` → `FAZ 5 dedup DELETE + unique index` → `FAZ 6 index` → `FAZ 7 profiles REVOKE/GRANT` → `FAZ 8 storage` → `FAZ 9 (opsiyonel)` → `FAZ 10 doğrulama`.
+Kritik sıra kuralları: kolonlar clamp/CHECK/GRANT'ten önce; tablolar `team_members` DO ve `team_members_username_idx`'den önce; unique index'ler dedup DELETE'ten sonra; `profiles_updated_at_idx` `updated_at`'ten sonra.
+
+### E) 001'de değiştirilmesi gereken bölümler
+
+1. 26–27 ve 41–45 → FAZ 0'a taşınmalı (11 kolon `ADD COLUMN IF NOT EXISTS`).
+2. §3 (71–91): `teams`/`team_members` CREATE + RLS + `read/write_teams` + `read/write_team_members` + GRANT eklenmeli.
+3. §5 (121–125): FAZ 0'dan **sonraya** taşınmalı (liste schema.sql §10.5 ile birebir ✅, `recovery_hash` hariç ✅).
+4. §6'ya ek: `profiles_updated_at_idx`, `team_members_username_idx`.
+5. Yeni bölüm: `chat_messages.avatar_photo ADD COLUMN`.
+6. Yeni bölüm: storage `avatars` + 4 policy (DO drop/create ile; `CREATE POLICY IF NOT EXISTS` sözdizimi bug).
+7. 102/104 yorumu düzelt (eskisini siler; `created_at`).
+8. friendships drift kararı (I).
+9. schema.sql §1'e 8 eksik ALTER + §1.5 sözdizimi düzeltilmeli → **bu bölümde yapıldı**.
+
+### F) Storage / avatar planı
+
+1. `INSERT INTO storage.buckets (...) ON CONFLICT DO NOTHING` — idempotent (canlıda 0 bucket).
+2. `avatars_{read,insert,update,delete}` 4 politika (DO drop/create) — `avatarService` `upsert:true` kullandığı için **update politikası şart**.
+3. Sıra: bucket → policy → `GET /storage/v1/bucket` = `[avatars]`.
+4. **Önceden var olan tasarım riski (migration'dan bağımsız):** yol `${username}.${ext}` + anon `INSERT/UPDATE` → her anon istemci başka kullanıcının fotoğrafını **ezabilir**. Kabul edilecekse dokümante et; kapatmak yükleme işini Edge Function'a taşımak gerekir (deploy = ayrı, BLOCKED adım).
+
+### G) RLS / GRANT planı
+
+- `profiles`: `REVOKE ALL FROM anon, authenticated` → 22 kolonluk `GRANT SELECT`. **Ön koşul FAZ 0.** Doğrulama: `column_privileges` = 22 satır, `recovery_hash` YOK; REST `select=recovery_hash` 200 dönmemeli.
+- İstemci güvenliği ölçüldü: `src/` içinde `profiles` yazması 0, `select('*')` 0, `recovery_hash` okuma 0 → REVOKE kırılma yaratmaz; Edge Function'lar `service_role`.
+- Yeni tablolar: RLS + policy + explicit GRANT aynı blokta (aksi halde default privilege ile anon tam yetkili, policiesiz açık kalır).
+- `sync_requests`: RLS açık + politika yok + REVOKE → yalnızca servis rolü ✅.
+- Mevcut 9 tabloda anon yazma grant'ı RLS ile zaten etkisiz (kanıt: 401 RLS + read-only policy); derinlik için `REVOKE` opsiyonel (002 FAZ 9, kapalı).
+
+### H) Index / constraint planı
+
+- **12 eksik index:** 001'in zaten eklediği 10 (`admin_logs_request_id_idx`, `duels_active_unordered_idx`, `duels_opponent_idx`, `friendships_{user,friend}_id_idx`, `chat_messages_username_created_idx`, `pomodoro_rooms_last_active_idx`, `profiles_xp_desc_idx`, `sync_requests_created_idx`, `team_members_one_team_idx`) + **001'de olmayan 2 → 002 ekliyor:** `profiles_updated_at_idx`, `team_members_username_idx`. Mevcut 5'e dokunma.
+- **8 eksik CHECK:** `profiles_{xp,coins,xp7d,streak}_nonneg`, `daily_earnings_{xp,gold,neg}_nonneg`, `duels_start_xp_nonneg` → 002 FAZ 2; clamp 0 satır + `neg_*` `DEFAULT 0` → validation geçer.
+
+### I) `friendships_status_check` drift çözümü
+
+- Ölçüm: `rejected` **0 satır**, schema-dışı status 0, `user_id = friend_id` **0**; uygulama yalnızca `pending`/`accepted` (`friendService` sabitleri).
+- **Karar (0 risk):** canlıya dokunmadı → `schema.sql`'e `rejected` eklenerek drift kapatıldı (§5, bu bölümde). Canlı daha geniş olduğu için dar DDL gerekmedi.
+- `user_id <> friend_id` CHECK canlıda yok, ihlal 0 → 002 FAZ 9'da **kapalı/opsiyonel**.
+
+### J) Production öncesi son kontroller
+
+1. Yedek (Dashboard → Backups) — şart.
+2. C1–C3 sayım/anahtarları **çalıştırma anında yeniden ölç**; değişmişse DUR.
+3. Tek gönderim = tek transaction (Dashboard); `psql` ile `--single-transaction`.
+4. Hata → tam rollback → FAZ'ları tek tek çalıştırıp ilk hata noktasını izole et.
+5. Sonrası 002 FAZ 10 doğrulama (index/policy/grant + 2 REST probe).
+6. PostgREST şema önbelleği yenilenmezse 400 devam eder → `NOTIFY pgrst, 'reload schema'`.
+7. Edge Function deploy, secret rotation, push **[BLOCKED]** (credential yok) — bu rapor kapsamaz.
+8. Realtime publication (`supabase_realtime`) salt-SELECT ile doğrulanamadı → `pg_publication_tables`.
+9. Bilinçli kararlar: storage anon `upsert` riski (F4), FAZ 9 opsiyonel REVOKE'lar.
+
+### K) Önerilen migration dosyası
+
+**`supabase/migrations/002_reconciled_baseline.sql`** (DRAFT, 294 satır, **uygulanmadı, değişmedi**) — 001'i çalıştırmak yerine bu kullanılır: FAZ 0 (11 kolon + avatar_photo) · FAZ 1 (7 clamp) · FAZ 2 (8 CHECK + `neg_*`) · FAZ 3 (`request_id`) · FAZ 4 (sync_requests/teams/team_members + RLS + 4 policy + GRANT) · FAZ 5 (2 dedup DELETE, DO korumalı, ölçüm yorumlu) · FAZ 6 (12 index) · FAZ 7 (`recovery_hash` REVOKE/GRANT) · FAZ 8 (storage, DO'lu politika) · FAZ 9 (opsiyonel/kapalı) · FAZ 10 (salt-SELECT doğrulama). Başlıkta PRE-FLIGHT ölçüm bloğu ve DUR koşulu var.
+
+**Bu bölümde yapılan repo değişiklikleri (DB'ye uygulanmadı):** `schema.sql` §1 11 ALTER + §1.5 storage DO düzeltmesi + §5 friendships status genişletme; `001` başına DEPRECATED başlığı; §6 dağıtım sırası 002'ye çevrildi.

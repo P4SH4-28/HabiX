@@ -26,7 +26,7 @@ function confirmDialog(title, message, onOk) {
 export default function InventoryScreen() {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
-  const { data, useItem, today } = useData();
+  const { data, useItem, today, pushToast } = useData();
   const gold = data.stats.gold || 0;
   const inv = data.inventory || {};
   const fx = data.activeEffects || { streakFreeze: null, penaltyShield: null, xpBoost: { usesLeft: 0 } };
@@ -52,7 +52,11 @@ export default function InventoryScreen() {
     confirmDialog(item.name, `${item.desc}\n\nKullanmak istediğine emin misin?`, () => {
       const r = useItem(item.id);
       if (r && r.ok === false) {
-        Alert.alert('Kullanılamadı', r.error || 'Bu eşya şu an kullanılamıyor.');
+        pushToast({
+          icon: '⚠️',
+          title: r.error || 'Bu eşya şu an kullanılamıyor',
+          color: C.danger,
+        });
       }
     });
   };

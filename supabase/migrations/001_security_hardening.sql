@@ -1,4 +1,19 @@
 -- ============================================================
+-- ⚠️ DEPRECATED — 2026-09-28 CANLI DENETİMİ · PRODUCTION'DA ÇALIŞTIRMA.
+--
+-- Bu dosya CANLI DB'de HATA VERİR ve (Dashboard tek transaction'ında)
+-- hiçbir şey uygulamadan geri alınır:
+--   * satır 26/27 + 41-45: profiles.xp7d / profiles.streak canlıda YOK
+--     (11 eksik kolon) → "column does not exist".
+--   * §3 (satır 71-91): public.team_members tablosu canlıda YOK → hata.
+--   * §5 (satır 121-125): GRANT, listedeki 11 kolon canlıda yok → hata.
+--   * storage/avatar, teams/team_members RLS, profiles_updated_at_idx,
+--     team_members_username_idx, chat_messages.avatar_photo kapsam dışı.
+--
+-- PRODUCTION İÇİN KULLANILACAK DOSYA:
+--   supabase/migrations/002_reconciled_baseline.sql (DRAFT, FAZ 0-10).
+-- Bu dosya yalnızca tarihsel kayıt olarak korunur.
+-- ============================================================
 -- 001_security_hardening.sql — Güvenlik sertleştirme geçişi
 -- Mevcut PRODUCTION veritabanına uygulanacak IDEMPOTENT betik.
 -- (Yeni kurulumlar için supabase/schema.sql günceldir; bu dosya yalnızca

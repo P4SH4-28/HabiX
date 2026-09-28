@@ -368,7 +368,7 @@ function makeStyles(C) {
       paddingVertical: 2,
     },
     mineChipText: {
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '800',
     },
     roomMeta: {

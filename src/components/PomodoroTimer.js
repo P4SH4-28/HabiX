@@ -14,7 +14,6 @@
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useData } from '../context/DataContext';
 import { formatDuration, POMODORO_DURATION_MS } from '../logic';
 import { useTheme } from '../theme';
@@ -81,24 +80,18 @@ export default function PomodoroTimer() {
 
       <Text style={styles.timer}>{formatDuration(remainingMs)}</Text>
 
-      {/* İlerleme çubuğu: koşarken canlı gradyan, durduğunda düz */}
-      <View style={styles.track}>
-        {running ? (
-          <LinearGradient
-            colors={[C.accent, C.primary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.fill, { width: `${progress * 100}%` }]}
-          />
-        ) : (
-          <View
-            style={[
-              styles.fill,
-              { width: `${progress * 100}%`, backgroundColor: C.surfaceLight },
-            ]}
-          />
-        )}
-      </View>
+      {/* İlerleme çubuğu: ortak Progress (animasyonlu, GPU dostu, reduce-motion güvenli) */}
+      <Progress
+        value={progress}
+        height={8}
+        trackColor={C.background}
+        colors={
+          running
+            ? [C.accent, C.primary]
+            : [C.surfaceLight, C.surfaceLight]
+        }
+        accessibilityLabel={`Seans ilerlemesi yüzde ${Math.round(progress * 100)}`}
+      />
 
       <View style={styles.buttons}>
         {pomodoro.state === 'idle' && (
@@ -178,16 +171,6 @@ function makeStyles(C, radius) {
       textAlign: 'center',
       marginVertical: 8,
       fontVariant: ['tabular-nums'],
-    },
-    track: {
-      height: 8,
-      borderRadius: radius.pill,
-      backgroundColor: C.background,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
-      borderRadius: radius.pill,
     },
     buttons: {
       flexDirection: 'row',

@@ -40,6 +40,7 @@ export const RADIUS = {
   sheet: 24, // alt-sheet/modallar
   pill: 999, // rozetler/etiketler
   chip: 12, // küçük çipler
+  tile: 14, // ikon kutuları (IconTile)
 };
 
 export const SPACE = {
@@ -50,6 +51,49 @@ export const SPACE = {
   xl: 20,
   xxl: 28,
 };
+
+// ---------- Tipografi skala ----------
+// Her ekran bu skaladan okur; rastgele fontSize KULLANMAZ.
+// Rakamlar (XP/altın/süre) tabular-nums ile hizalı ve okunur.
+export const TYPE = {
+  display: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: -0.6 },
+  h1: { fontSize: 22, lineHeight: 28, fontWeight: '800', letterSpacing: -0.4 },
+  h2: { fontSize: 18, lineHeight: 24, fontWeight: '800', letterSpacing: -0.2 },
+  title: { fontSize: 15, lineHeight: 21, fontWeight: '700' },
+  body: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  bodyStrong: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
+  caption: { fontSize: 12.5, lineHeight: 17, fontWeight: '600' },
+  label: { fontSize: 11, lineHeight: 14, fontWeight: '800', letterSpacing: 0.8 },
+  micro: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
+  stat: { fontSize: 22, lineHeight: 27, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  statSm: { fontSize: 15, lineHeight: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
+};
+
+// ---------- Motion dileri ----------
+// Mikro: ~120ms · standart: ~180-260ms · büyük: ~300-420ms.
+// easing: yumuşak ease-out (üstten iniş hissi); spring ise dokunma için.
+export const MOTION = {
+  tap: 120,
+  quick: 180,
+  standard: 260,
+  slow: 420,
+  spring: { damping: 18, stiffness: 340, mass: 0.8 },
+  springSoft: { damping: 20, stiffness: 260, mass: 0.9 },
+  springPop: { damping: 12, stiffness: 260, mass: 0.6 },
+  easeOut: [0.22, 1, 0.36, 1], // cubic-bezier (RN Easing.bezier ile)
+  easeInOut: [0.65, 0, 0.35, 1],
+};
+
+// Minimum dokunma hedefi (erişilebilirlik): 44pt Apple / 48dp Material
+// ortak zemin. Dar görünen kontrolvisual küçük KALABİLİR ama hitSlop ile
+// bu değere tamamlanır.
+export const TOUCH = { min: 44 };
+
+// Renk alpha üretici: C.surface + '1A' yerine `tint(C.surface, '1A')`.
+// (Aynı çıktı; niyeti görünür kılar, tema değiştirince de çalışmaya devam eder.)
+export function tint(color, hexAlpha = '1A') {
+  return `${color}${hexAlpha}`;
+}
 
 // Glow gölge fabrikası: rengine göre yumuşak dış ışıma üretir.
 // iOS'ta shadow* alanları, Android'de elevation kullanır.
@@ -328,7 +372,7 @@ const ThemeContext = createContext({ colors: BASE_COLORS, radius: RADIUS, space:
 export const ThemeProvider = ThemeContext.Provider;
 
 // Bileşenler useTheme() ile renk paletine + yapısal token'lara tek yerden erişir:
-//   const { colors: C, radius, space, glow } = useTheme();
+//   const { colors: C, radius, space, type, motion, glow } = useTheme();
 // Colors API'si eski kullanımlarla birebir uyumludur (bozma yok).
 export function useTheme() {
   const ctx = useContext(ThemeContext);
@@ -336,6 +380,9 @@ export function useTheme() {
     colors: ctx.colors || BASE_COLORS,
     radius: ctx.radius || RADIUS,
     space: ctx.space || SPACE,
+    type: TYPE,
+    motion: MOTION,
+    touch: TOUCH,
     glow,
   };
 }

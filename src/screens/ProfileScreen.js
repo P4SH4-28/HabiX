@@ -12,6 +12,7 @@ import AvatarCircle from '../components/AvatarCircle';
 import PressableFX from '../components/PressableFX';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import Progress from '../components/ui/Progress';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { levelFromTotalXp, bestStreak } from '../logic';
 import Icon from '../components/ui/icons';
@@ -21,7 +22,7 @@ import { useTheme } from '../theme';
 export default function ProfileScreen() {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
-  const { data, today, updateBio, setProfilePhoto } = useData();
+  const { data, today, updateBio, setProfilePhoto, pushToast } = useData();
   const { user: authUser } = useAuth();
   const navigation = useNavigation();
   const { stats, habits, settings } = data;
@@ -51,13 +52,15 @@ export default function ProfileScreen() {
     setPhotoBusy(true);
     const picked = await pickProfilePhoto();
     if (!picked.ok) {
-      if (!picked.canceled) alert(picked.error || 'Fotoğraf seçilemedi');
+      if (!picked.canceled) {
+        pushToast({ icon: '⚠️', title: picked.error || 'Fotoğraf seçilemedi', color: C.danger });
+      }
       setPhotoBusy(false);
       return;
     }
     const uploaded = await uploadProfilePhoto(username, picked.uri);
     if (!uploaded.ok) {
-      alert(uploaded.error || 'Yükleme başarısız');
+      pushToast({ icon: '⚠️', title: uploaded.error || 'Yükleme başarısız', color: C.danger });
       setPhotoBusy(false);
       return;
     }
@@ -170,9 +173,13 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.xpValue}>%{xpPct}</Text>
         </View>
-        <View style={styles.xpTrack}>
-          <View style={[styles.xpFill, { width: `${xpPct}%` }]} />
-        </View>
+        <Progress
+          value={xpPct / 100}
+          height={8}
+          colors={[C.xp, C.accent]}
+          style={{ marginTop: 10 }}
+          accessibilityLabel={`Seviye ilerlemesi yüzde ${xpPct}`}
+        />
 
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCell}>
@@ -359,18 +366,6 @@ function makeStyles(C) {
       fontSize: 18,
       fontWeight: '800',
     },
-    xpTrack: {
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-      marginTop: 10,
-    },
-    xpFill: {
-      height: '100%',
-      borderRadius: 4,
-      backgroundColor: C.xp,
-    },
     summaryGrid: {
       flexDirection: 'row',
       marginTop: 16,
@@ -391,7 +386,7 @@ function makeStyles(C) {
     },
     summaryCellLabel: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '600',
       textAlign: 'center',
     },

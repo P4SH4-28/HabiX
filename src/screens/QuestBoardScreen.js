@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useData } from '../context/DataContext';
+import Progress from '../components/ui/Progress';
 import { serverNow } from '../services/serverClock';
 import {
   getDailyQuests,
@@ -109,9 +110,13 @@ export default function QuestBoardScreen() {
           </View>
         </View>
 
-        <View style={styles.track}>
-          <View style={[styles.fill, { width: `${pct}%`, backgroundColor: accent }]} />
-        </View>
+        <Progress
+          value={pct / 100}
+          height={6}
+          trackColor={C.surface}
+          colors={[accent, accent]}
+          accessibilityLabel={`Görev ilerlemesi yüzde ${Math.round(pct)}`}
+        />
         <View style={styles.questBottom}>
           <Text style={[styles.progressText, { color: C.textMuted }]}>
             {progress}/{quest.target}
@@ -131,6 +136,9 @@ export default function QuestBoardScreen() {
               ]}
               onPress={() => handleClaim(quest.id)}
               disabled={!ready || !!claimingId || offline}
+              accessibilityRole="button"
+              accessibilityLabel={ready ? `${quest.title} ödülünü al` : `${quest.title} devam ediyor`}
+              accessibilityState={{ disabled: !ready || !!claimingId || offline, busy: claimingId === quest.id }}
             >
               {claimingId === quest.id ? (
                 <ActivityIndicator size="small" color={C.background} />
@@ -354,7 +362,7 @@ function makeStyles(C) {
       paddingVertical: 2,
     },
     vipChipText: {
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '800',
     },
     questDesc: {
@@ -375,22 +383,12 @@ function makeStyles(C) {
       paddingVertical: 2,
     },
     rewardText: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '800',
     },
     multiplierNote: {
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '700',
-    },
-    track: {
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: C.surface,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
-      borderRadius: 3,
     },
     questBottom: {
       flexDirection: 'row',

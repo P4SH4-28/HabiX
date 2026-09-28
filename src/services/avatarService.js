@@ -36,11 +36,12 @@ export async function uploadProfilePhoto(username, uri) {
   try {
     const extMatch = /\.(jpe?g|png|webp)$/i.exec(uri || '');
     const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+    const mimeExt = ext === 'jpg' || ext === 'jpeg' ? 'jpeg' : ext;
     const path = `${username}.${ext}`;
     const body = await fetch(uri).then((r) => r.blob());
     const { error } = await supabase.storage
       .from(BUCKET)
-      .upload(path, body, { upsert: true, contentType: `image/${ext}` });
+      .upload(path, body, { upsert: true, contentType: `image/${mimeExt}` });
     if (error) throw error;
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
     return { ok: true, photoUrl: data.publicUrl };

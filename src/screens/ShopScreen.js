@@ -90,13 +90,15 @@ export default function ShopScreen() {
     setPhotoBusy(true);
     const picked = await pickProfilePhoto();
     if (!picked.ok) {
-      if (!picked.canceled) alert(picked.error || 'Fotoğraf seçilemedi');
+      if (!picked.canceled) {
+        pushToast({ icon: '⚠️', title: picked.error || 'Fotoğraf seçilemedi', color: C.danger });
+      }
       setPhotoBusy(false);
       return;
     }
     const uploaded = await uploadProfilePhoto(username, picked.uri);
     if (!uploaded.ok) {
-      alert(uploaded.error || 'Yükleme başarısız');
+      pushToast({ icon: '⚠️', title: uploaded.error || 'Yükleme başarısız', color: C.danger });
       setPhotoBusy(false);
       return;
     }
@@ -672,7 +674,7 @@ function makeStyles(C) {
     },
     currentLabel: {
       color: C.gold,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '800',
       letterSpacing: 1,
     },
@@ -796,7 +798,7 @@ function makeStyles(C) {
     },
     previewHint: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '600',
     },
     previewHintRow: {
@@ -838,7 +840,7 @@ function makeStyles(C) {
     },
     ownedCount: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
     },
     itemBtn: {
       width: '100%',

@@ -86,26 +86,34 @@ Bu ortamdan yapılan kontrol sonuçları (değerler yazılmaz):
 
 ## 4. Veritabanı migration / şema
 
-- [x] `001_security_hardening.sql` idempotent ve `schema.sql` ile **birebir eşit** (23 maddelik karşılaştırma: CHECK'ler, `neg_*`, unique indeksler, `admin_logs.request_id`, `sync_requests`, GRANT/REVOKE) — bu denetimde 2 eksik parça `schema.sql`'e eklendi.
+- [x] (2026-09-27) `001_security_hardening.sql` ↔ `schema.sql` 23 maddelik karşılaştırma: CHECK'ler,
+      `neg_*`, unique indeksler, `admin_logs.request_id`, `sync_requests`, GRANT/REVOKE — 2 eksik
+      parça `schema.sql`'e eklendi.
+      → **2026-09-28 GÜNCELLEME: `001_security_hardening.sql` DEPRECATED.** Canlı denetimde 001'in
+      canlı şemada hata verdiği (11 eksik kolon, `team_members` tablosu yok) ve hiçbir şey
+      uygulamadan geri döneceği kanıtlandı → **production migration'ı
+      `supabase/migrations/002_reconciled_baseline.sql` (FAZ 0-10)**.
+      Ayrıntı: `docs/denetim-raporu.md` §8.
 - [x] `recovery_hash` için kolon bazlı GRANT doğrulandı: verilen 21 kolon içinde yalnızca `recovery_hash` yok.
 - [x] **Canlı marker testi (salt okunur): migration UYGULANMAMIŞ** — `daily_earnings.neg_xp` → 400,
       `admin_logs.request_id` → 400, `sync_requests` → 404 (PostgREST şema önbelleğinde yok),
       `profiles.recovery_hash` anon erişimi → **200 (hâlâ okunabilir)**.
-- [!] **Migration DESTRUCTIVE içerir (önce onay gerekir):** satır 24–30 negatif değerleri 0'a
-      sıkıştırır (`UPDATE … GREATEST`), satır 77 `team_members` ve satır 103 `duels` tekrar eden/
-      çakışan satırları **silir** (`DELETE … USING`); `DROP TABLE` yalnızca satır 168'de yorum
-      (geri dönüş notu). Uygulanmadan önce yedek + kullanıcı onayı şart.
-- [!] **CANLI ŞEMA DRIFT'İ (migration'ı tek başına uygulamak HATA verir):** canlı `profiles`
-      tablosunda GRANT listesindeki 22 kolondan **11'i eksik** (`name`, `emoji`, `streak`, `xp7d`,
-      `avatar_id`, `frame_id`, `last_active`, `vip_until`, `bio`, `photo_url`, `updated_at`) →
-      satır 121–126'daki kolon bazlı GRANT **çalışmaz**. Ayrıca `teams`/`team_members` anon
-      erişimde görünmüyor (satır 77/103 DELETE hedefleri riskli). `schema.sql` hedef durum;
-      canlı DB daha eski bir şemada (v1.1.0 öncesi kolon/tablo eksikleri).
+- [!] **Migration içeriği onay ister (002 FAZ 1 + FAZ 5):** 7 clamp `UPDATE` (`… GREATEST`) ve
+      2 dedup `DELETE` (`team_members`/`duels` tekrar-çakışan satırları) içerir. Salt-SELECT ile
+      ölçüldü: **her ikisi de 0 satır etki**. Yine de uygulama öncesi yedek + kullanıcı onayı şart.
+- [!] **CANLI ŞEMA DRIFT'İ (2026-09-28 denetimi):** canlı `profiles` tablosunda GRANT listesindeki
+      22 kolondan **11'i eksik** (`name`, `emoji`, `streak`, `xp7d`, `avatar_id`, `frame_id`,
+      `last_active`, `vip_until`, `bio`, `photo_url`, `updated_at`) → 001'deki kolon bazlı GRANT
+      **çalışmazdı**; ayrıca `teams`/`team_members`/`sync_requests` canlıda **YOK** ve
+      `friendships_status_check` `rejected` içeriyor (schema.sql ile drift). **002 bu üçünü de
+      kapatır** (FAZ 0 kolonlar, FAZ 4 tablolar, §5/FAZ 9 drift notu). `schema.sql` hedef durum
+      (2026-09-28'de canlı denetimle hizalandı); canlı DB daha eski bir şemada.
 - [BLOCKED] **Migration uygulanmadı** (yazma credential'ı yok, §0) — blind/force yöntem
       kullanılmadı; hedef proje bu kez doğrulanmış olmakla birlikte uygulama kanalı yok.
-- [ ] **Yayın öncesi sırası:** (0) canlı şema drift'i için feature kolon/tablo ekleme kararı
-      (`ADD COLUMN IF NOT EXISTS`/`CREATE TABLE IF NOT EXISTS` — yıkıcı değil, kullanıcı onayı
-      istenecek) → (1) `001_security_hardening.sql` (Dashboard → SQL Editor) → (2) §6 doğrulama.
+- [ ] **Yayın öncesi sırası:** (0) yedek + kullanıcı onayı → (1)
+      `supabase/migrations/002_reconciled_baseline.sql` (Dashboard → SQL Editor, tek gönderim;
+      başlıktaki PRE-FLIGHT ölçümü değişmişse DUR) → (2) §6 doğrulama.
+      **`001_security_hardening.sql` DEPRECATED — production'da çalıştırma.**
 - [ ] Yeni kurulumlar için `schema.sql` tek kaynak olarak çalıştırılacak.
 
 ## 5. Secrets ve sırrı çevirme (rotation) — [BLOCKED]
@@ -179,8 +187,8 @@ Sıra: **1) Migration → 2) Edge Functions deploy → 3) Secrets → 4) Doğrul
   - [x] Yetkisiz admin isteği → **403 PASS**; geçersiz `x-admin-token` → **403 PASS**.
   - [x] Anon ile negatif XP `INSERT` denemesi → **401 RLS PASS** (satır oluşturulmadı).
   - [x] Anon `UPDATE` (imkânsız filtre = 0 satır) → 204: anon UPDATE **grant'ı hâlâ açık**;
-        migration'ın `REVOKE`'u kapatacak (gerçek satıra erişim RLS ile zaten engelli).
-  - [x] `recovery_hash` anon okuma → **200 FAIL (açık)** → migration §6 ile kapanacak.
+        002 FAZ 7'nin `REVOKE`'u kapatacak (gerçek satıra erişim RLS ile zaten engelli).
+  - [x] `recovery_hash` anon okuma → **200 FAIL (açık)** → 002 FAZ 7 ile kapanacak.
   - [x] Recovery 21 deneme → **429 yok FAIL** (eski koddaki IP limiti yok; yeni kod 20/dk koyar).
   - [x] Admin login 6 deneme → **429 yok FAIL** (eski kodda login rate limiti yok; yeni kod 5/dk).
 - [NOT EXECUTED] **Yeni kodun gerektirdiği canlı testler** (expired/çalıştırılmış token, negatif

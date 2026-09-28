@@ -9,7 +9,7 @@
 // otomatik yeni güne geçer (bayat "bugün" durumu yaşanmaz).
 // ============================================================
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Animated, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import AddHabitModal from '../components/AddHabitModal';
@@ -24,8 +24,9 @@ import Sheet from '../components/Sheet';
 import XpBar from '../components/XpBar';
 import Icon from '../components/ui/icons';
 import IconTile from '../components/ui/IconTile';
+import Progress from '../components/ui/Progress';
+import SectionHeader from '../components/ui/SectionHeader';
 import { useData } from '../context/DataContext';
-import { tap } from '../services/sfx';
 import { canClaimQuest, getDailyQuests, questClaimedToday } from '../data/quests';
 import { STARTER_HABITS } from '../data/starterHabits';
 import {
@@ -131,6 +132,50 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
+
+      {/* HERO: "Bugün ne durumdayım?" — en üstte, en güçlü vurgu. */}
+      <Card style={styles.todayCard} glowColor={C.accent}>
+        <View style={styles.todayHeader}>
+          <Text style={styles.todayTitle}>Bugünkü İlerleme</Text>
+          <View style={styles.todayValueRow}>
+            <Text style={styles.todayValue}>%</Text>
+            <AnimatedCounter value={Math.round(pct * 100)} style={styles.todayValue} />
+          </View>
+        </View>
+        <Progress
+          value={pct}
+          height={12}
+          colors={[C.accent, C.primary]}
+          glowColor={C.accent}
+          accessibilityLabel={`Bugünkü ilerleme yüzde ${Math.round(pct * 100)}`}
+        />
+        {/* Özet bloğu: en uzun seri · bugün XP · tamamlanan */}
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryItem}>
+            <Icon emoji="🔥" size={15} color={C.textMuted} />
+            <AnimatedCounter value={bestStreakValue} style={styles.summaryValue} />
+            <Text style={styles.summaryLabel}>En uzun seri</Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
+            <Icon emoji="⚡" size={15} color={C.textMuted} />
+            <AnimatedCounter value={todayXp} style={styles.summaryValue} />
+            <Text style={styles.summaryLabel}>Bugün XP</Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
+            <Icon emoji="✅" size={15} color={C.textMuted} />
+            <Text style={styles.summaryValue}>
+              <AnimatedCounter value={doneToday} style={styles.summaryValue} />/{total}
+            </Text>
+            <Text style={styles.summaryLabel}>Tamamlanan</Text>
+          </View>
+        </View>
+        <Text style={styles.todayHint}>
+          Alışkanlık başına +{settings.xpPerHabit} XP kazanırsın
+        </Text>
+      </Card>
+
       <Card>
         <XpBar
           level={levelInfo.level}
@@ -171,50 +216,13 @@ export default function HomeScreen() {
         </Text>
       </Card>
       <PomodoroTimer />
-      <Card style={styles.todayCard}>
-        <View style={styles.todayHeader}>
-          <Text style={styles.todayTitle}>Bugünkü İlerleme</Text>
-          <Text style={styles.todayValue}>%{Math.round(pct * 100)}</Text>
-        </View>
-        <View style={styles.todayTrack}>
-          <LinearGradient
-            colors={[C.accent, C.primary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.todayFill, { width: `${pct * 100}%` }]}
-          />
-        </View>
-        {/* Özet bloğu: en uzun seri · bugün XP · tamamlanan */}
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryItem}>
-            <Icon emoji="🔥" size={15} color={C.textMuted} />
-            <AnimatedCounter value={bestStreakValue} style={styles.summaryValue} />
-            <Text style={styles.summaryLabel}>En uzun seri</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Icon emoji="⚡" size={15} color={C.textMuted} />
-            <AnimatedCounter value={todayXp} style={styles.summaryValue} />
-            <Text style={styles.summaryLabel}>Bugün XP</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Icon emoji="✅" size={15} color={C.textMuted} />
-            <Text style={styles.summaryValue}>
-              <AnimatedCounter value={doneToday} style={styles.summaryValue} />/{total}
-            </Text>
-            <Text style={styles.summaryLabel}>Tamamlanan</Text>
-          </View>
-        </View>
-        <Text style={styles.todayHint}>
-          Alışkanlık başına +{settings.xpPerHabit} XP kazanırsın
-        </Text>
-      </Card>
-      <Text style={styles.sectionTitle}>Alışkanlıklar ({habits.length})</Text>
+      <SectionHeader title={`Alışkanlıklar (${habits.length})`} style={styles.sectionHeader} />
     </View>
   );
 
-  const itemHeight = 78; // habit card fixed height
+  // Kart yüksekliği: border(2) + padding(32) + emoji kutusu(42) = 76;
+  // + marginBottom(10) = 86 toplam pitch (getItemLayout offset hesabı için).
+  const itemHeight = 86;
 
   return (
     <View style={styles.container}>
@@ -242,12 +250,13 @@ export default function HomeScreen() {
           <EmptyState C={C} styles={styles} glow={glow} onQuickAdd={quickAdd} />
         }
       />
-      {/* Yeni alışkanlık ekleme butonu (FAB) — gradient + indigo glow */}
-      <Pressable
+      {/* Yeni alışkanlık ekleme butonu (FAB) — spring basınç FX + haptik + glow */}
+      <PressableFX
         style={styles.fab}
         hitSlop={10}
         onPress={() => setModalVisible(true)}
-        onPressIn={() => tap()}
+        accessibilityRole="button"
+        accessibilityLabel="Yeni alışkanlık ekle"
       >
         <LinearGradient
           colors={[C.primary, C.primaryDark]}
@@ -255,7 +264,7 @@ export default function HomeScreen() {
         >
           <Text style={styles.fabIcon}>+</Text>
         </LinearGradient>
-      </Pressable>
+      </PressableFX>
       <AddHabitModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -491,7 +500,7 @@ function makeStyles(C) {
     },
     summaryLabel: {
       color: C.textMuted,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '600',
     },
     summaryDivider: {
@@ -506,30 +515,21 @@ function makeStyles(C) {
     },
     todayValue: {
       color: C.accent,
-      fontSize: 14,
+      fontSize: 26,
       fontWeight: '800',
+      fontVariant: ['tabular-nums'],
     },
-    todayTrack: {
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    todayFill: {
-      height: '100%',
-      borderRadius: 5,
+    todayValueRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
     },
     todayHint: {
       color: C.textMuted,
       fontSize: 11,
     },
-    sectionTitle: {
-      color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-      marginTop: 6,
+    sectionHeader: {
+      marginTop: 8,
+      marginBottom: 4,
     },
     listContent: {
       paddingBottom: 120,

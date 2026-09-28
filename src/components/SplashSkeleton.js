@@ -1,65 +1,29 @@
 // ============================================================
 // SplashSkeleton.js — Uygulama verisi yüklenirken gösterilen
-// titreşimli (pulse) iskelet ekranı. Spinner yerine ana sayfanın
-// ana hatlarını ipucu gibi göstererek yükleme hissi verir.
-// Faz C3 (modal revizyonu) sonrası yalnızca statik bir yer tutucu.
+// iskelet ekranı. Ortak ui/Skeleton primitive'ini kullanır:
+// pulse reduce-motion'da durur, renkler temadan gelir
+// (eski sabit #22262f kalmadı — açık temalarda da doğru görünür).
 // ============================================================
-import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
-
-function SkeletonBlock({ width, height, radius = 10, opacity, style }) {
-  return (
-    <Animated.View
-      style={[
-        styles.block,
-        { width, height, borderRadius: radius, opacity },
-        style,
-      ]}
-    />
-  );
-}
+import Skeleton from './ui/Skeleton';
 
 export default function SplashSkeleton() {
   const { colors: C } = useTheme();
-  const pulse = useRef(new Animated.Value(0.6)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0.6, duration: 700, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse]);
-
-  const block = {
-    backgroundColor: C.surfaceLight,
-    opacity: pulse,
-  };
-
   return (
     <View style={[styles.root, { backgroundColor: C.background }]}>
       <View style={styles.topRow}>
         <View style={styles.topText}>
-          <SkeletonBlock width={140} height={20} {...block} />
-          <SkeletonBlock width={190} height={14} {...block} style={{ marginTop: 8 }} />
+          <Skeleton w={140} h={20} />
+          <Skeleton w={190} h={14} style={{ marginTop: 8 }} />
         </View>
-        <SkeletonBlock width={48} height={48} radius={24} {...block} />
+        <Skeleton.Circle s={48} />
       </View>
 
-      <SkeletonBlock width="100%" height={90} {...block} style={{ marginTop: 16 }} />
+      <Skeleton h={90} r={16} style={{ marginTop: 16 }} />
 
       {[0, 1, 2].map((i) => (
-        <SkeletonBlock
-          key={i}
-          width="100%"
-          height={64}
-          {...block}
-          style={{ marginTop: 12 }}
-        />
+        <Skeleton key={i} h={64} r={16} style={{ marginTop: 12 }} />
       ))}
     </View>
   );
@@ -78,8 +42,5 @@ const styles = StyleSheet.create({
   },
   topText: {
     gap: 2,
-  },
-  block: {
-    backgroundColor: '#22262f',
   },
 });

@@ -265,7 +265,7 @@ export default function SettingsScreen() {
           label="İsim değiştir"
           description="Liderlik tablosunda görünen adını güncelle"
           right={
-            <Pressable style={styles.primaryChip} onPress={() => setEditSheet('name')}>
+            <Pressable style={styles.primaryChip} hitSlop={8} onPress={() => setEditSheet('name')}>
               <Text style={styles.primaryChipText}>Değiştir</Text>
             </Pressable>
           }
@@ -274,7 +274,7 @@ export default function SettingsScreen() {
           label="Şifre değiştir"
           description="Yeni şifre belirlemek için eski şifreni doğrula"
           right={
-            <Pressable style={styles.primaryChip} onPress={() => setEditSheet('password')}>
+            <Pressable style={styles.primaryChip} hitSlop={8} onPress={() => setEditSheet('password')}>
               <Text style={styles.primaryChipText}>Değiştir</Text>
             </Pressable>
           }
@@ -285,6 +285,7 @@ export default function SettingsScreen() {
           right={
             <Pressable
               style={styles.dangerButton}
+                hitSlop={8}
               onPress={() =>
                 confirmDialog('Çıkış yap', 'Hesabından çıkış yapılsın mı?', () => logout())
               }
@@ -308,6 +309,9 @@ export default function SettingsScreen() {
             <View style={styles.stepper}>
               <Pressable
                 style={styles.stepperButton}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="Hatirlatma saatini azalt"
                 onPress={() =>
                   setReminderHour(reminderHour == null ? 20 : (reminderHour + 23) % 24)
                 }
@@ -319,6 +323,9 @@ export default function SettingsScreen() {
               </Text>
               <Pressable
                 style={styles.stepperButton}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="Hatirlatma saatini artir"
                 onPress={() =>
                   setReminderHour(reminderHour == null ? 20 : (reminderHour + 1) % 24)
                 }
@@ -403,6 +410,7 @@ export default function SettingsScreen() {
               />
               <Pressable
                 style={[styles.primaryChip, busy === 'server' && styles.chipBusy]}
+                hitSlop={8}
                 onPress={handleSync}
                 disabled={busy !== ''}
               >
@@ -426,7 +434,7 @@ export default function SettingsScreen() {
             label="Yönetici Paneli"
             description="Kullanıcı ara, yasakla, ceza/ödül ver, hediye gönder"
             right={
-              <Pressable style={styles.primaryChip} onPress={openAdminPanel}>
+              <Pressable style={styles.primaryChip} hitSlop={8} onPress={openAdminPanel}>
                 <Text style={styles.primaryChipText}>Aç</Text>
               </Pressable>
             }
@@ -437,6 +445,7 @@ export default function SettingsScreen() {
             right={
               <Pressable
                 style={styles.dangerButton}
+                hitSlop={8}
                 onPress={() =>
                   confirmDialog(
                     'Kullanıcı hesabını sil',
@@ -464,6 +473,7 @@ export default function SettingsScreen() {
           right={
             <Pressable
               style={[styles.primaryChip, busy === 'backup' && styles.chipBusy]}
+              hitSlop={8}
               onPress={handleBackup}
               disabled={busy !== ''}
             >
@@ -479,6 +489,7 @@ export default function SettingsScreen() {
           right={
             <Pressable
               style={[styles.primaryChip, busy === 'restore' && styles.chipBusy]}
+              hitSlop={8}
               onPress={handleRestore}
               disabled={busy !== '' || !backupTs}
             >
@@ -494,6 +505,7 @@ export default function SettingsScreen() {
           right={
             <Pressable
               style={styles.dangerButton}
+                hitSlop={8}
               onPress={() =>
                 confirmDialog('Verileri sıfırla', 'Tüm verilerin silinecek. Emin misin?', () =>
                   resetAll()
@@ -622,9 +634,9 @@ function makeStyles(C) {
       gap: 10,
     },
     stepperButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 10,
+      width: 40,
+      height: 40,
+      borderRadius: 12,
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
@@ -646,7 +658,8 @@ function makeStyles(C) {
       backgroundColor: C.primary + '22',
       borderRadius: 10,
       paddingHorizontal: 14,
-      paddingVertical: 8,
+      minHeight: 40,
+      justifyContent: 'center',
     },
     chipBusy: {
       opacity: 0.5,
@@ -660,7 +673,8 @@ function makeStyles(C) {
       backgroundColor: C.danger + '22',
       borderRadius: 10,
       paddingHorizontal: 14,
-      paddingVertical: 8,
+      minHeight: 40,
+      justifyContent: 'center',
     },
     serverStatusRow: {
       flexDirection: 'row',

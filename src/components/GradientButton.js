@@ -66,6 +66,9 @@ export default function GradientButton({
         onPressIn={handleIn}
         onPressOut={handleOut}
         disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={typeof label === 'string' ? label : undefined}
+        accessibilityState={{ disabled: !!disabled }}
       >
         {({ pressed }) => (
           <LinearGradient

@@ -6,6 +6,10 @@
 --
 -- Kurulum: Supabase Dashboard → SQL Editor → bu dosyayı yapıştır → Run
 -- Betik idempotent'tir: hatalara takılmadan tekrar çalıştırılabilir.
+-- 2026-09-28 CANLI DENETİMİYLE HİZALI: mevcut tablolara eksik ALTER'lar,
+-- storage politika sözdizimi düzeltmesi ve friendships status drift'i
+-- (§5) giderildi. Mevcut VERİYİ değiştiren tek durum, §1.5'teki 0 satırlık
+-- clamp'ler ve §5'teki genişletmedir (ikisi de denetimde 0 satır etki).
 --
 -- Güvenlik modeli:
 --   - profiles / daily_earnings / quest_claims / duels / admin_logs:
@@ -47,11 +51,24 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Profil fotoğrafı ve bio (mevcut veritabanlarına eksik sütunlar eklenir).
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT '';
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS photo_url TEXT;
+-- Mevcut veritabanlarına eksik sütunlar eklenir (IF NOT EXISTS → tekrar
+-- çalıştırmak güvenli). CANLI DENETİM 2026-09-28: canlı profiles tablosunda
+-- 11 sütun eksikti; CREATE TABLE yalnızca YENİ kurulumu tanımladığı için
+-- aşağıdaki ALTER'lar zorunludur — aksi hâlde aşağıdaki 1.5 bölümündeki
+-- xp7d/streak clamp'i canlıda "column does not exist" hatası verir.
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name        TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS emoji       TEXT DEFAULT '😀';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS streak      INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS xp7d        INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_id   TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS frame_id    TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_active TIMESTAMPTZ;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS vip_until   TIMESTAMPTZ;
+-- Profil fotoğrafı ve bio
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bio         TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS photo_url   TEXT;
 -- Offline-First delta senkronu için değişiklik zaman damgası.
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at  TIMESTAMPTZ NOT NULL DEFAULT now();
 CREATE INDEX IF NOT EXISTS profiles_updated_at_idx ON public.profiles (updated_at);
 
 -- ---------- 1.5) EKONOMİ BÜTÜNLÜĞÜ ----------
@@ -76,10 +93,24 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES ('avatars', 'avatars', true, 2097152, ARRAY['image/jpeg', 'image/png', 'image/webp'])
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY IF NOT EXISTS "avatars_read"   ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY IF NOT EXISTS "avatars_insert" ON storage.objects FOR INSERT TO anon WITH CHECK (bucket_id = 'avatars');
-CREATE POLICY IF NOT EXISTS "avatars_update" ON storage.objects FOR UPDATE TO anon USING (bucket_id = 'avatars') WITH CHECK (bucket_id = 'avatars');
-CREATE POLICY IF NOT EXISTS "avatars_delete" ON storage.objects FOR DELETE TO anon USING (bucket_id = 'avatars');
+-- NOT (canlı denetim 2026-09-28): `CREATE POLICY IF NOT EXISTS` PostgreSQL'de
+-- GEÇERLİ BİR SÖZDİZİMİ DEĞİLDİR — buradaki eski 4 satır betiğin burada
+-- her zaman hata vermesine neden oluyordu. Yerine önce DROP eden DO bloğu.
+DO $$
+DECLARE pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname IN ('avatars_read', 'avatars_insert', 'avatars_update', 'avatars_delete')
+  LOOP
+    EXECUTE format('DROP POLICY %I ON storage.objects', pol.policyname);
+  END LOOP;
+END $$;
+CREATE POLICY "avatars_read"   ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "avatars_insert" ON storage.objects FOR INSERT TO anon WITH CHECK (bucket_id = 'avatars');
+CREATE POLICY "avatars_update" ON storage.objects FOR UPDATE TO anon USING (bucket_id = 'avatars') WITH CHECK (bucket_id = 'avatars');
+CREATE POLICY "avatars_delete" ON storage.objects FOR DELETE TO anon USING (bucket_id = 'avatars');
 
 -- ---------- 2) GÜNLÜK KAZANÇ DEFTERİ (sync-profile tavanı) ----------
 CREATE TABLE IF NOT EXISTS public.daily_earnings (
@@ -145,14 +176,37 @@ CREATE INDEX IF NOT EXISTS sync_requests_created_idx ON public.sync_requests (cr
 -- İki yönlü ilişki: user_id isteği gönderen, friend_id isteği alandır.
 -- status: pending (beklemede) → accepted (arkadaş). Reddetme/arkadaşlığı
 -- silme = satırı silme. Aynı çift arasında yalnızca BİR aktif ilişki.
+-- 'rejected': CANLI DENETİM (2026-09-28) canlı constraint'inin
+-- ('pending','accepted','rejected') içerdiğini ve 0 satır kullanıldığını
+-- gösterdi → tarafları eşitlemek için eklendi (uygulama bugün yalnızca
+-- pending/accepted kullanır; ret = satır silme).
 CREATE TABLE IF NOT EXISTS public.friendships (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    UUID NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
   friend_id  UUID NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
-  status     TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted')),
+  status     TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CHECK (user_id <> friend_id)
 );
+
+-- Eski kurulumlarda status CHECK yalnızca ('pending','accepted') idi;
+-- canlı DB'de constraint daha geniştir. Var olan dar constraint'i genişlet
+-- (yoksa hiçbir şey yapma). Canlı DB'de `user_id <> friend_id` kontrolü
+-- HENÜZ YOK (denetimde ihlal 0 satır) → 002_reconciled_baseline.sql
+-- FAZ 9'da opsiyonel olarak eklenmeyi bekliyor.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'friendships_status_check'
+      AND conrelid = 'public.friendships'::regclass
+      AND pg_get_constraintdef(oid) NOT LIKE '%rejected%'
+  ) THEN
+    ALTER TABLE public.friendships DROP CONSTRAINT friendships_status_check;
+    ALTER TABLE public.friendships ADD CONSTRAINT friendships_status_check
+      CHECK (status IN ('pending', 'accepted', 'rejected'));
+  END IF;
+END $$;
 
 -- Aynı çift arasında çift istek/çift arkadaşlık engellenir (yönden bağımsız).
 CREATE UNIQUE INDEX IF NOT EXISTS friendships_active_pair_idx

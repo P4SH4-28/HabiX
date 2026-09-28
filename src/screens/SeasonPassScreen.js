@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useData } from '../context/DataContext';
+import Progress from '../components/ui/Progress';
 import {
   BADGES,
   PASS_LEVELS,
@@ -198,20 +199,16 @@ export default function SeasonPassScreen() {
               Pass Seviyesi {pass.level}
               {pass.level >= PASS_MAX_LEVEL ? ' (Maksimum)' : ''}
             </Text>
-            <View style={styles.track}>
-              <View
-                style={[
-                  styles.fill,
-                  {
-                    width: `${
-                      pass.level >= PASS_MAX_LEVEL
-                        ? 100
-                        : Math.min(100, (pass.curXp / pass.nextThreshold) * 100)
-                    }%`,
-                  },
-                ]}
-              />
-            </View>
+            <Progress
+              value={
+                pass.level >= PASS_MAX_LEVEL
+                  ? 1
+                  : Math.min(1, pass.curXp / pass.nextThreshold)
+              }
+              height={8}
+              colors={[C.primary, C.accent]}
+              accessibilityLabel={`Pass seviyesi ilerlemesi`}
+            />
             <Text style={styles.progressHint}>
               {pass.level >= PASS_MAX_LEVEL
                 ? 'Tüm seviyeler tamamlandı!'
@@ -367,17 +364,6 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 14,
       fontWeight: '800',
-    },
-    track: {
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
-      borderRadius: 4,
-      backgroundColor: C.primary,
     },
     progressHint: {
       color: C.textMuted,
@@ -554,7 +540,7 @@ function makeStyles(C) {
       gap: 2,
     },
     boxTrack: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '900',
       letterSpacing: 0.5,
     },
@@ -583,7 +569,7 @@ function makeStyles(C) {
     },
     claimedChipText: {
       color: C.accent,
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '900',
     },
     lockChip: {
@@ -597,7 +583,7 @@ function makeStyles(C) {
     },
     lockChipText: {
       color: C.textMuted,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '700',
     },
     inlineIcon: {

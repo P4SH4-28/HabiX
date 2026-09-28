@@ -1,18 +1,14 @@
 import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme';
 import ColorPicker from './ColorPicker';
 import EmojiPicker from './EmojiPicker';
 import GradientButton from './GradientButton';
 import Icon from './ui/icons';
+import AppTextField from './ui/AppTextField';
 import Sheet from './Sheet';
+
+const NAME_MAX = 30;
 
 export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0, maxHabits = 10 }) {
   const { colors: C } = useTheme();
@@ -22,11 +18,11 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
   const [color, setColor] = useState(C.primary);
   // Anti-farm (Katman 1): sınırsız alışkanlık farm'ına karşı limit.
   const limitReached = habitsCount >= maxHabits;
+  const trimmed = name.trim();
+  const tooShort = trimmed.length > 0 && trimmed.length < 2;
 
   const submit = () => {
-    if (limitReached) return;
-    const trimmed = name.trim();
-    if (!trimmed) return;
+    if (limitReached || tooShort || !trimmed) return;
     onAdd(trimmed, emoji, color);
     setName('');
     setEmoji('💧');
@@ -36,34 +32,37 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Yeni Alışkanlık">
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ gap: 14 }}>
         {/* Canlı önizleme: isim + sembol + renk anında burada görünür */}
         <View style={[styles.preview, { backgroundColor: color + '22', borderColor: color + '66' }]}>
-          <View style={[styles.previewCircle, { backgroundColor: color }]}>
+          <View style={[styles.previewCircle, { backgroundColor: color, shadowColor: color }]}>
             <Text style={styles.previewEmoji}>{emoji}</Text>
           </View>
-          <Text style={[styles.previewName, !name.trim() && styles.previewNameEmpty]} numberOfLines={1}>
-            {name.trim() || 'Alışkanlık adı'}
+          <Text style={[styles.previewName, !trimmed && styles.previewNameEmpty]} numberOfLines={1}>
+            {trimmed || 'Alışkanlık adı'}
           </Text>
           <Text style={styles.previewHint}>
-            {name.trim() ? 'Harika görünüyor!' : 'Yukarıdan bir ad yaz'}
+            {trimmed ? 'Harika görünüyor!' : 'Yukarıdan bir ad yaz'}
           </Text>
         </View>
 
-        <TextInput
-          style={styles.input}
+        <AppTextField
+          icon="create-outline"
           placeholder="Alışkanlık adı..."
-          placeholderTextColor={C.textMuted}
           value={name}
-          onChangeText={setName}
+          onChangeText={(t) => setName(t.slice(0, NAME_MAX))}
           onSubmitEditing={submit}
           returnKeyType="done"
           autoFocus
+          maxLength={NAME_MAX}
+          error={tooShort ? 'En az 2 karakter olmalı.' : undefined}
+          hint={`${trimmed.length}/${NAME_MAX} karakter · Uzun basınca düzenleme/­silme`}
+          accessibilityLabel="Alışkanlık adı"
         />
         <EmojiPicker value={emoji} onChange={setEmoji} />
         <ColorPicker value={color} onChange={setColor} />
         {limitReached && (
-          <View style={styles.limitBox}>
+          <View style={styles.limitBox} accessibilityRole="alert">
             <View style={styles.limitRow}>
               <Icon emoji="⛔" size={15} color={C.danger} />
               <Text style={styles.limitText}>
@@ -83,7 +82,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
           colors={[color, color]}
           glowColor={color}
           onPress={submit}
-          disabled={!name.trim() || limitReached}
+          disabled={!trimmed || tooShort || limitReached}
           style={styles.button}
         />
       </KeyboardAvoidingView>
@@ -107,9 +106,8 @@ function makeStyles(C) {
       borderRadius: 32,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
       shadowOffset: { width: 0, height: 4 },
       elevation: 4,
     },
@@ -128,30 +126,10 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 12,
     },
-    input: {
-      height: 50,
-      borderRadius: 14,
-      backgroundColor: C.surfaceLight,
-      borderWidth: 1,
-      borderColor: C.border,
-      paddingHorizontal: 16,
-      color: C.text,
-      fontSize: 15,
-    },
     button: {
       height: 50,
-      borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 4,
-    },
-    buttonDisabled: {
-      opacity: 0.4,
-      shadowOpacity: 0,
     },
     limitBox: {
       backgroundColor: C.danger + '1A',
@@ -171,11 +149,6 @@ function makeStyles(C) {
       fontSize: 12,
       lineHeight: 17,
       fontWeight: '600',
-    },
-    buttonText: {
-      color: '#FFFFFF',
-      fontSize: 15,
-      fontWeight: '800',
     },
   });
 }

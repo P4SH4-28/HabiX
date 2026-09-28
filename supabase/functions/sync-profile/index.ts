@@ -187,7 +187,8 @@ Deno.serve(async (req) => {
         .from('sync_requests')
         .insert({ username, request_id: requestId, created_at: now.toISOString() })
         .select('request_id');
-      if (!insErr && (!inserted || inserted.length === 0)) {
+      const duplicateKey = insErr?.code === '23505';
+      if (duplicateKey || (!insErr && (!inserted || inserted.length === 0))) {
         // Çakışma: bu id daha önce kaydedilmiş. Kayıt TAZEYSE (< 15 dk)
         // uygulanmış demektir → duplicate dön. ESKİYSE önceki deneme
         // tamamlanmamıştır (ör. çökme) → kayıt tazelenip akışa devam edilir

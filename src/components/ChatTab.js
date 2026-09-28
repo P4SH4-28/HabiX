@@ -20,6 +20,9 @@ import { useData } from '../context/DataContext';
 import AvatarCircle from './AvatarCircle';
 import { fetchChatHistory, sendChatMessage, subscribeChat } from '../services/socialService';
 import { useTheme } from '../theme';
+import EmptyState from './ui/EmptyState';
+import ErrorState from './ui/ErrorState';
+import Skeleton from './ui/Skeleton';
 
 function timeLabel(iso) {
   const d = new Date(iso);
@@ -37,20 +40,23 @@ export default function ChatTab() {
   const me = authUser?.name || 'Kullanıcı';
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const listRef = useRef(null);
 
   // Geçmişi çek + canlı akışa abone ol.
+  // ÇEKİM HATASI → sahte "boş" durum gösterme; ErrorState + Tekrar Dene.
   useEffect(() => {
     let mounted = true;
     (async () => {
       const r = await fetchChatHistory(60);
-      if (mounted) {
-        setMessages(r.ok ? r.messages : []);
-        setLoading(false);
-      }
+      if (!mounted) return;
+      setMessages(r.ok ? r.messages : []);
+      setFetchFailed(!r.ok);
+      setLoading(false);
     })();
     const unsub = subscribeChat((msg) => {
       if (!mounted) return;
@@ -63,6 +69,12 @@ export default function ChatTab() {
       mounted = false;
       unsub();
     };
+  }, [reloadKey]);
+
+  const retryFetch = useCallback(() => {
+    setFetchFailed(false);
+    setLoading(true);
+    setReloadKey((k) => k + 1);
   }, []);
 
   const handleSend = async () => {
@@ -127,21 +139,39 @@ export default function ChatTab() {
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptyLoad} size="large" color={C.primary} />
-          ) : (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyEmoji}>💬</Text>
-              <Text style={styles.emptyTitle}>Henüz mesaj yok</Text>
-              <Text style={styles.emptyText}>
-                Genel sohbete ilk mesajı sen at — topluluğa merhaba de!
-              </Text>
+            <View style={styles.skeletonList}>
+              {[72, 56, 64].map((w, i) => (
+                <View key={i} style={styles.skeletonRow}>
+                  <Skeleton.Circle s={34} />
+                  <View style={{ gap: 6 }}>
+                    <Skeleton w={w + 60} h={12} />
+                    <Skeleton w={w} h={12} />
+                  </View>
+                </View>
+              ))}
             </View>
+          ) : fetchFailed ? (
+            <ErrorState
+              title="Sohbet yüklenemedi"
+              message="Bağlantını kontrol edip tekrar deneyebilirsin."
+              retryLabel="Tekrar Dene"
+              onRetry={retryFetch}
+            />
+          ) : (
+            <EmptyState
+              emoji="💬"
+              title="Henüz mesaj yok"
+              subtitle="Genel sohbete ilk mesajı sen at — topluluğa merhaba de!"
+              compact
+            />
           )
         }
       />
 
       {error && (
-        <Text style={[styles.error, { color: C.danger }]}>{error}</Text>
+        <Text style={[styles.error, { color: C.danger }]} accessibilityRole="alert">
+          {error}
+        </Text>
       )}
 
       <View style={[styles.inputRow, { borderTopColor: C.border }]}>
@@ -160,6 +190,9 @@ export default function ChatTab() {
           style={[styles.sendBtn, { backgroundColor: C.primary }, (!text.trim() || sending) && styles.disabled]}
           onPress={handleSend}
           disabled={!text.trim() || sending}
+          accessibilityRole="button"
+          accessibilityLabel="Mesaj gönder"
+          accessibilityState={{ disabled: !text.trim() || sending, busy: sending }}
         >
           {sending ? (
             <ActivityIndicator size="small" color={C.onPrimary} />
@@ -208,34 +241,20 @@ function makeStyles(C) {
       lineHeight: 20,
     },
     msgTime: {
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '600',
       alignSelf: 'flex-end',
       marginTop: 2,
     },
-    emptyLoad: {
-      marginTop: 40,
+    skeletonList: {
+      paddingTop: 16,
+      paddingHorizontal: 4,
+      gap: 18,
     },
-    emptyBox: {
+    skeletonRow: {
+      flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 40,
-      paddingHorizontal: 24,
-    },
-    emptyEmoji: {
-      fontSize: 44,
-      marginBottom: 12,
-    },
-    emptyTitle: {
-      color: C.text,
-      fontSize: 16,
-      fontWeight: '700',
-      marginBottom: 6,
-    },
-    emptyText: {
-      color: C.textMuted,
-      fontSize: 13,
-      textAlign: 'center',
-      lineHeight: 20,
+      gap: 10,
     },
     error: {
       fontSize: 12,
@@ -260,8 +279,8 @@ function makeStyles(C) {
       fontWeight: '600',
     },
     sendBtn: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       borderRadius: 12,
       alignItems: 'center',
       justifyContent: 'center',

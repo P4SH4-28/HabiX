@@ -14,6 +14,10 @@ export default function EmojiPicker({ value, onChange }) {
             key={e}
             style={[styles.item, value === e && styles.itemSelected]}
             onPress={() => onChange(e)}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={`Sembol ${e}`}
+            accessibilityState={{ selected: value === e }}
           >
             <Text style={styles.emoji}>{e}</Text>
           </Pressable>

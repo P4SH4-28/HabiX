@@ -13,7 +13,6 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -23,49 +22,12 @@ import { useTheme } from '../theme';
 import BrandMark from '../components/ui/BrandMark';
 import GradientButton from '../components/GradientButton';
 import SoftButton from '../components/ui/SoftButton';
+import AppTextField from '../components/ui/AppTextField';
 import { Icon, IconTile } from '../components/ui';
 
-// Focus'lu, ikonlu premium input kutusu.
-const fieldStyles = StyleSheet.create({
-  wrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    height: 50,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    paddingVertical: 0,
-  },
-});
-
-function Field({ icon, focused, style, ...rest }) {
-  const { colors: C, radius, glow } = useTheme();
-  return (
-    <View
-      style={[
-        fieldStyles.wrap,
-        {
-          backgroundColor: C.surfaceLight,
-          borderColor: focused ? C.primary : C.border,
-          borderRadius: radius.control,
-        },
-        focused ? glow(C.primary, { opacity: 0.16, radius: 14, offset: 0, elevation: 0 }) : null,
-        style,
-      ]}
-    >
-      <Icon name={icon} size={16} color={focused ? C.primary : C.textMuted} />
-      <TextInput
-        placeholderTextColor={C.textMuted}
-        style={[fieldStyles.input, { color: C.text }]}
-        {...rest}
-      />
-    </View>
-  );
-}
+// Not: Input kutusu artık ortak AppTextField primitive'inden geliyor
+// (focus glow, error ve hint davranışı tüm uygulamada tek dil). Field
+// tanımı bu dosyadan kaldırıldı.
 
 // Kayıt sonrası gösterilen kurtarma anahtarı ekranı (tek sefer, glass).
 function RecoveryKeyModal({ recoveryKey, onDone }) {
@@ -219,7 +181,7 @@ export default function AuthScreen() {
                 : 'İsim ve şifrenle devam edersin.'}
           </Text>
 
-          <Field
+          <AppTextField
             icon="person"
             focused={focus === 'name'}
             onFocus={() => setFocus('name')}
@@ -233,7 +195,7 @@ export default function AuthScreen() {
 
           {view === 'recover' ? (
             <>
-              <Field
+              <AppTextField
                 icon="key"
                 focused={focus === 'key'}
                 onFocus={() => setFocus('key')}
@@ -244,7 +206,7 @@ export default function AuthScreen() {
                 autoCapitalize="characters"
                 autoCorrect={false}
               />
-              <Field
+              <AppTextField
                 icon="lock-closed"
                 focused={focus === 'pw2'}
                 onFocus={() => setFocus('pw2')}
@@ -254,7 +216,7 @@ export default function AuthScreen() {
                 onChangeText={setPassword2}
                 secureTextEntry
               />
-              <Field
+              <AppTextField
                 icon="lock-closed"
                 focused={focus === 'pw3'}
                 onFocus={() => setFocus('pw3')}
@@ -267,7 +229,7 @@ export default function AuthScreen() {
             </>
           ) : (
             <>
-              <Field
+              <AppTextField
                 icon="lock-closed"
                 focused={focus === 'pw'}
                 onFocus={() => setFocus('pw')}
@@ -278,7 +240,7 @@ export default function AuthScreen() {
                 secureTextEntry
               />
               {signup && (
-                <Field
+                <AppTextField
                   icon="lock-closed"
                   focused={focus === 'pw2'}
                   onFocus={() => setFocus('pw2')}

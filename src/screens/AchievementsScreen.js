@@ -7,6 +7,7 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useData } from '../context/DataContext';
+import Progress from '../components/ui/Progress';
 import {
   ACHIEVEMENTS,
   computeAchievementState,
@@ -117,12 +118,12 @@ export default function AchievementsScreen() {
             </View>
             {!unlocked && prog ? (
               <View style={styles.progressRow}>
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      { width: `${Math.round(pct * 100)}%` },
-                    ]}
+                <View style={{ flex: 1 }}>
+                  <Progress
+                    value={pct}
+                    height={8}
+                    colors={[C.primary, C.primaryDark]}
+                    accessibilityLabel={`${a.title} ilerlemesi yüzde ${Math.round(pct * 100)}`}
                   />
                 </View>
                 <Text style={styles.progressText}>
@@ -253,18 +254,6 @@ function makeStyles(C) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
-    },
-    progressTrack: {
-      flex: 1,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    progressFill: {
-      height: '100%',
-      borderRadius: 4,
-      backgroundColor: C.primary,
     },
     progressText: {
       color: C.textMuted,

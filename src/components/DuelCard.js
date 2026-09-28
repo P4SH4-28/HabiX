@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme';
 import IconTile from './ui/IconTile';
+import Progress from './ui/Progress';
 
 // Kalan süreyi "3g 4s" / "1s 12dk" biçiminde gösterir.
 function formatRemaining(endsAt) {
@@ -42,10 +43,20 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
             7 günlük XP yarışı — kazanan +100 XP ve +50 altın kazanır.
           </Text>
           <View style={styles.actions}>
-            <Pressable style={styles.acceptBtn} onPress={() => onAccept(duel.id)}>
+            <Pressable
+              style={styles.acceptBtn}
+              onPress={() => onAccept(duel.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${duel.opponent} düello davetini kabul et`}
+            >
               <Text style={styles.acceptText}>Kabul Et</Text>
             </Pressable>
-            <Pressable style={styles.declineBtn} onPress={() => onDecline(duel.id)}>
+            <Pressable
+              style={styles.declineBtn}
+              onPress={() => onDecline(duel.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${duel.opponent} düello davetini reddet`}
+            >
               <Text style={styles.declineText}>Reddet</Text>
             </Pressable>
           </View>
@@ -78,11 +89,19 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
               <Text style={styles.scoreText}>Sen: +{myGain} XP</Text>
               <Text style={styles.scoreText}>{duel.opponent}: +{theirGain} XP</Text>
             </View>
-            <View style={styles.barTrack}>
-              <View style={[styles.barFill, { width: `${myPct}%`, backgroundColor: C.primary }]} />
-            </View>
+            <Progress
+              value={myPct / 100}
+              height={8}
+              colors={[C.primary, C.primaryDark]}
+              accessibilityLabel={`Düello ilerlemesi yüzde ${Math.round(myPct)}`}
+            />
             {finished ? (
-              <Pressable style={styles.acceptBtn} onPress={() => onFinish(duel.id)}>
+              <Pressable
+                style={styles.acceptBtn}
+                onPress={() => onFinish(duel.id)}
+                accessibilityRole="button"
+                accessibilityLabel="Düello sonucunu gör"
+              >
                 <View style={styles.finishBtnContent}>
                   <Text style={styles.acceptText}>Sonucu Gör</Text>
                   <IconTile icon="trophy" emoji="🏆" variant="gold" size={18} iconSize={10} />
@@ -130,7 +149,8 @@ function makeStyles(C) {
       backgroundColor: C.primary,
       borderRadius: 10,
       paddingHorizontal: 16,
-      paddingVertical: 9,
+      minHeight: 44,
+      justifyContent: 'center',
     },
     acceptText: {
       color: C.onPrimary,
@@ -162,16 +182,6 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
-    },
-    barTrack: {
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    barFill: {
-      height: 8,
-      borderRadius: 4,
     },
   });
 }

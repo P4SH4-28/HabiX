@@ -2,10 +2,11 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import Progress from './ui/Progress';
 
-// Günlük XP göstergesi (anti-farm şeffaflığı): bugün kazanılan XP,
-// günlük tavanla birlikte gösterilir. Tavan dolduysa sarı uyarı rengi.
-// Premium: gradient seviye rozeti + gradient dolu çubuk + soft glow.
+// Günlük XP göstergesi (anti-farm şeffaflığı): bugünkü kazanılan XP,
+// günlük tavanla birlikte gösterilir. Tavan dolduysa kırmızı uyarı rengi.
+// Premium: gradient seviye rozeti + animasyonlu dolu çubuk + soft glow.
 export default function XpBar({ level, curXp, nextThreshold, todayXp = null, todayCap = null }) {
   const { colors: C, glow } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
@@ -27,19 +28,17 @@ export default function XpBar({ level, curXp, nextThreshold, todayXp = null, tod
             {curXp} / {nextThreshold} XP
           </Text>
         </View>
-        <View style={styles.track}>
-          <LinearGradient
-            colors={capReached ? [C.danger, '#B91C5C'] : [C.xp, C.accent]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.fill, { width: `${percent}%` }]}
-          />
-        </View>
+        <Progress
+          value={percent / 100}
+          height={12}
+          colors={capReached ? [C.danger, '#B91C5C'] : [C.xp, C.accent]}
+          accessibilityLabel={`Seviye ilerlemesi yüzde ${Math.round(percent)}`}
+        />
         {todayCap != null && todayXp != null ? (
           <Text style={[styles.hint, capReached && styles.hintCap]}>
             {capReached
               ? `Bugünün XP sınırı doldu (${todayXp}/${todayCap})`
-              : `Bugünkü XP: ${todayXp}/${todayCap} • Sonraki seviyeye ${nextThreshold - curXp} XP kaldı`}
+              : `Bugünkü XP: ${todayXp}/${todayCap} · Sonraki seviyeye ${nextThreshold - curXp} XP kaldı`}
           </Text>
         ) : (
           <Text style={styles.hint}>Sonraki seviyeye {nextThreshold - curXp} XP kaldı</Text>
@@ -70,7 +69,7 @@ function makeStyles(C) {
     },
     levelLabel: {
       color: C.onPrimary + 'CC',
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: '700',
       letterSpacing: 1.5,
     },
@@ -92,16 +91,7 @@ function makeStyles(C) {
       color: C.xp,
       fontSize: 13,
       fontWeight: '700',
-    },
-    track: {
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: C.surfaceLight,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
-      borderRadius: 6,
+      fontVariant: ['tabular-nums'],
     },
     hint: {
       color: C.textMuted,

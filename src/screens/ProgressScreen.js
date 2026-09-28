@@ -16,6 +16,7 @@ import TopHabits from '../components/TopHabits';
 import WeekChart from '../components/WeekChart';
 import WeeklyCompare from '../components/WeeklyCompare';
 import { useData } from '../context/DataContext';
+import EmptyState from '../components/ui/EmptyState';
 import {
   bestStreak,
   buildDailyCompletions,
@@ -24,7 +25,6 @@ import {
   weeklyComparison,
 } from '../logic';
 import { useTheme } from '../theme';
-import IconTile from '../components/ui/IconTile';
 
 export default function ProgressScreen() {
   const { colors: C } = useTheme();
@@ -95,13 +95,12 @@ export default function ProgressScreen() {
           {overview.top.length > 0 && <TopHabits items={overview.top} />}
         </>
       ) : (
-        <View style={styles.emptyBox}>
-          <IconTile icon="bar-chart" emoji="📊" variant="primary" size={60} iconSize={26} />
-          <Text style={styles.emptyTitle}>Henüz veri yok</Text>
-          <Text style={styles.emptyText}>
-            Alışkanlık ekleyip tamamladıkça grafiklerin burada oluşacak.
-          </Text>
-        </View>
+        <EmptyState
+          icon="bar-chart"
+          emoji="📊"
+          title="Henüz veri yok"
+          subtitle="Alışkanlık ekleyip tamamladıkça grafiklerin burada oluşacak."
+        />
       )}
 
       {/* Başarım rozetleri: veri olsa da olmasa da görünür (sosyal rozet vb.). */}
@@ -134,25 +133,6 @@ function makeStyles(C) {
     statsRow: {
       flexDirection: 'row',
       gap: 10,
-    },
-    emptyBox: {
-      alignItems: 'center',
-      paddingVertical: 50,
-      paddingHorizontal: 24,
-      gap: 4,
-    },
-    emptyTitle: {
-      marginTop: 8,
-      color: C.text,
-      fontSize: 16,
-      fontWeight: '700',
-      marginBottom: 6,
-    },
-    emptyText: {
-      color: C.textMuted,
-      fontSize: 13,
-      textAlign: 'center',
-      lineHeight: 20,
     },
   });
 }
