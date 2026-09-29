@@ -5,7 +5,7 @@
 // - Varsayılan küçük haptik; disabled'da matlaşır
 // ============================================================
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { tap } from '../services/sfx';
@@ -27,6 +27,7 @@ export default function GradientButton({
   glowColor,
   haptic = true,
   compact = false,
+  loading = false,
 }) {
   const { colors: C, radius, glow } = useTheme();
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
@@ -38,18 +39,18 @@ export default function GradientButton({
   }));
 
   const handleIn = () => {
-    if (disabled) return;
+    if (disabled || loading) return;
     anim.value = withSpring(0.97, SPRING);
     if (haptic) tap();
   };
   const handleOut = () => {
-    if (disabled) return;
+    if (disabled || loading) return;
     anim.value = withSpring(1, SPRING);
   };
 
   const gradient = colors || [C.primary, C.primaryDark];
   const glowStyle = glowColor
-    ? glow(glowColor, { opacity: disabled ? 0 : 0.4, radius: 18, offset: 6 })
+    ? glow(glowColor, { opacity: disabled || loading ? 0 : 0.4, radius: 18, offset: 6 })
     : null;
 
   return (
@@ -58,17 +59,18 @@ export default function GradientButton({
         styles.wrap,
         glowStyle,
         disabled && glowStyle && { shadowOpacity: 0 },
+        loading && glowStyle && { shadowOpacity: 0 },
         style,
       ]}
     >
       <Pressable
-        onPress={onPress}
+        onPress={loading ? undefined : onPress}
         onPressIn={handleIn}
         onPressOut={handleOut}
-        disabled={disabled}
+        disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={typeof label === 'string' ? label : undefined}
-        accessibilityState={{ disabled: !!disabled }}
+        accessibilityState={{ disabled: !!disabled || loading, busy: loading }}
       >
         {({ pressed }) => (
           <LinearGradient
@@ -78,11 +80,15 @@ export default function GradientButton({
             style={[
               styles.btn,
               compact && styles.btnCompact,
-              disabled && styles.disabled,
-              pressed && !disabled && styles.pressed,
+              (disabled || loading) && styles.disabled,
+              pressed && !disabled && !loading && styles.pressed,
             ]}
           >
-            {icon ? <Icon emoji={icon} size={15} color={C.onPrimary} style={styles.icon} /> : null}
+            {loading ? (
+              <ActivityIndicator size="small" color={C.onPrimary} style={styles.icon} />
+            ) : icon ? (
+              <Icon emoji={icon} size={15} color={C.onPrimary} style={styles.icon} />
+            ) : null}
             <Text style={[styles.label, disabled && styles.labelDisabled, textStyle]}>
               {label}
             </Text>

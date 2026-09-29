@@ -203,7 +203,9 @@ export function AuthProvider({ children }) {
     }
     try {
       const raw = await AsyncStorage.getItem(AUTH_KEY);
-      if (!raw) return { ok: false, error: 'Kayıtlı hesap bulunamadı' };
+      // Hesap var/yok bilgisi sızdırılmaz: her başarısızlık aynı genel
+      // mesajı verir (kullanıcı adı ya da şifre yanlış olabilir).
+      if (!raw) return { ok: false, error: 'İsim veya şifre hatalı' };
       const parsed = JSON.parse(raw);
       const hash = hashPassword(password || '');
       const ok = parsed.name === n && parsed.passHash === hash;
