@@ -2,8 +2,8 @@
 // AppTextField.js — Ortak premium input primitive'i.
 // Durumlar: focus (animasyonlu kenarlık + hafif dolgu + glow),
 // error (danger kenarlık + satır içi metin), disabled, hint
-// (açıklayıcı satır, isteğe bağlı renk). AuthScreen ve formlarda
-// TEK görsel dil sağlar (odak davranışı her yerde aynı).
+//   (açıklayıcı satır, isteğe bağlı renk). Formlarda TEK görsel dil
+//   sağlar (odak davranışı her yerde aynı). Tüketici: AddHabitModal.
 //   `focused`  — verilirse dışarıdan yönetilir (AuthScreen modu);
 //                verilmezse bileşen kendi odağını yönetir.
 //   `secure`   — göster/gizle düğmesi ekler; odağı VE klavyeyi korur.
@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
+  cancelAnimation,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -40,12 +41,12 @@ export default function AppTextField({
   secureTextEntry,
   ...rest
 }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius, type, space, glow } = useTheme();
   const [innerFocus, setInnerFocus] = useState(false);
   const [hidden, setHidden] = useState(true);
   const controlled = focusedProp !== undefined;
   const focused = controlled ? focusedProp : innerFocus;
-  const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
+  const styles = useMemo(() => makeStyles(C, radius, type, space), [C, radius, type, space]);
 
   const localInputRef = useRef(null);
   const setInputRef = (el) => {
@@ -64,6 +65,7 @@ export default function AppTextField({
       duration: FOCUS_MS,
       easing: Easing.out(Easing.cubic),
     });
+    return () => cancelAnimation(ring);
   }, [ringOn, ring]);
 
   const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value }));
@@ -171,16 +173,14 @@ export default function AppTextField({
   );
 }
 
-function makeStyles(C, radius) {
+function makeStyles(C, radius, type, space) {
   return StyleSheet.create({
     wrap: {
-      gap: 6,
+      gap: space.sm,
     },
     label: {
       color: C.textMuted,
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.3,
+      ...type.label,
     },
     box: {
       borderWidth: 1,
@@ -200,10 +200,9 @@ function makeStyles(C, radius) {
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: space.md,
       minHeight: 48,
-      paddingHorizontal: 14,
-      paddingVertical: 5,
+      paddingHorizontal: space.lg,
     },
     icon: {
       marginRight: 0,
@@ -231,9 +230,7 @@ function makeStyles(C, radius) {
     },
     msg: {
       color: C.textMuted,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '600',
+      ...type.small,
     },
   });
 }

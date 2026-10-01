@@ -18,7 +18,7 @@ import { useData } from '../context/DataContext';
 import { formatDuration, POMODORO_DURATION_MS } from '../logic';
 import { useTheme } from '../theme';
 import GradientButton from './GradientButton';
-import { IconTile, Pill, SoftButton } from './ui';
+import { IconTile, Pill, Progress, SoftButton } from './ui';
 
 export default function PomodoroTimer() {
   const {

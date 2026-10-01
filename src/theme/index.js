@@ -1,77 +1,29 @@
 // ============================================================
-// Tema sistemi
+// theme/index.js — Tema sistemi (design system girişi)
+//
+// Token dosyaları: ./colors · ./spacing · ./typography · ./radius · ./shadows
+//   colors.js     → C.background / C.primary / ...
+//   spacing.js    → space.lg (8dp grid)
+//   typography.js → type.h1 / type.body / ...
+//   radius.js     → radius.card / radius.lg / ...
+//   shadows.js    → SHADOWS.card · glow(color, opts)
+//
 // THEMES: Dükkan'da satılan tema tanımları (ad, ikon, fiyat, renkler, desen).
 // useTheme: Bileşenlerin "şu an uygulanan renkleri" aldığı hook. Tema
 // değişince ThemeProvider'ın değeri değişir, tüm bileşenler yeniden
 // çizilir ve yeni renklerle stil üretir.
 // ============================================================
 import { createContext, useContext } from 'react';
+import { COLORS } from './colors';
+import { SPACE } from './spacing';
+import { TYPE } from './typography';
+import { RADIUS } from './radius';
+import { SHADOWS, glow } from './shadows';
 
-// Varsayılan (Gece teması) renkler — temalar bu değerlerin üzerine yazar.
-// Premium "Linear/Vercel" kimliği: derin zinc siyahı zemin, muted indigo CTA,
-// neon-emerald tamamlama/badge aksanı. Göz yormayan, düşük doygunluk tonları.
-const BASE_COLORS = {
-  background: '#09090B',
-  surface: '#131316',
-  surfaceLight: '#1C1C21',
-  border: 'rgba(255,255,255,0.07)',
-  primary: '#6366F1',
-  primaryDark: '#4F46E5',
-  accent: '#10B981',
-  danger: '#F0436E',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  xp: '#FFB454',
-  gold: '#FFD75E',
-  silver: '#C0C8D8',
-  bronze: '#D98E5A',
-  // Birincil butonların ÜZERİNDEKİ yazı rengi (açık/koyu temaya göre değişir).
-  onPrimary: '#FFFFFF',
-  // Ekran arka planına serpiştirilen dekoratif desen emojisi (null = desensiz).
-  pattern: null,
-};
-
-// ---------- Design tokens (yapısal) ----------
-// Bileşenler useTheme() üzerinden alır; köşe yarıçapı, boşluk ve glow
-// fabrikaları tüm uygulamada tutarlı premium geometri üretir.
-export const RADIUS = {
-  card: 20, // ana kartlar/kapsayıcılar
-  control: 14, // butonlar/inputlar/sekmeler
-  sheet: 24, // alt-sheet/modallar
-  pill: 999, // rozetler/etiketler
-  chip: 12, // küçük çipler
-  tile: 14, // ikon kutuları (IconTile)
-};
-
-export const SPACE = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 28,
-};
-
-// ---------- Tipografi skala ----------
-// Her ekran bu skaladan okur; rastgele fontSize KULLANMAZ.
-// Rakamlar (XP/altın/süre) tabular-nums ile hizalı ve okunur.
-export const TYPE = {
-  display: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: -0.6 },
-  h1: { fontSize: 22, lineHeight: 28, fontWeight: '800', letterSpacing: -0.4 },
-  h2: { fontSize: 18, lineHeight: 24, fontWeight: '800', letterSpacing: -0.2 },
-  title: { fontSize: 15, lineHeight: 21, fontWeight: '700' },
-  body: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
-  bodyStrong: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
-  caption: { fontSize: 12.5, lineHeight: 17, fontWeight: '600' },
-  label: { fontSize: 11, lineHeight: 14, fontWeight: '800', letterSpacing: 0.8 },
-  micro: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
-  stat: { fontSize: 22, lineHeight: 27, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  statSm: { fontSize: 15, lineHeight: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
-};
+export { COLORS, SPACE, TYPE, RADIUS, SHADOWS, glow };
 
 // ---------- Motion dileri ----------
 // Mikro: ~120ms · standart: ~180-260ms · büyük: ~300-420ms.
-// easing: yumuşak ease-out (üstten iniş hissi); spring ise dokunma için.
 export const MOTION = {
   tap: 120,
   quick: 180,
@@ -80,37 +32,17 @@ export const MOTION = {
   spring: { damping: 18, stiffness: 340, mass: 0.8 },
   springSoft: { damping: 20, stiffness: 260, mass: 0.9 },
   springPop: { damping: 12, stiffness: 260, mass: 0.6 },
-  easeOut: [0.22, 1, 0.36, 1], // cubic-bezier (RN Easing.bezier ile)
+  easeOut: [0.22, 1, 0.36, 1],
   easeInOut: [0.65, 0, 0.35, 1],
 };
 
-// Minimum dokunma hedefi (erişilebilirlik): 44pt Apple / 48dp Material
-// ortak zemin. Dar görünen kontrolvisual küçük KALABİLİR ama hitSlop ile
-// bu değere tamamlanır.
+// Minimum dokunma hedefi (erişilebilirlik): 44pt Apple / 48dp Material.
 export const TOUCH = { min: 44 };
 
-// Renk alpha üretici: C.surface + '1A' yerine `tint(C.surface, '1A')`.
-// (Aynı çıktı; niyeti görünür kılar, tema değiştirince de çalışmaya devam eder.)
+// Renk alpha üretici: tint(C.surface, '1A') → `${C.surface}1A`.
 export function tint(color, hexAlpha = '1A') {
   return `${color}${hexAlpha}`;
 }
-
-// Glow gölge fabrikası: rengine göre yumuşak dış ışıma üretir.
-// iOS'ta shadow* alanları, Android'de elevation kullanır.
-export function glow(color, opts = {}) {
-  const { radius = 16, opacity = 0.35, offset = 6, elevation = 8 } = opts;
-  return {
-    shadowColor: color,
-    shadowOpacity: opacity,
-    shadowRadius: radius,
-    shadowOffset: { width: 0, height: offset },
-    elevation,
-  };
-}
-
-// Eski bileşenlerin importunu kırmamak için aynı isimde export.
-// Yeni kod doğrudan useTheme() kullanır; bu nesne yalnızca varsayılandır.
-export const COLORS = { ...BASE_COLORS };
 
 // Alışkanlık oluştururken seçilebilecek semboller (EmojiPicker).
 export const EMOJIS = [
@@ -126,7 +58,7 @@ export const HABIT_COLORS = [
   '#4ADE80', '#C084FC', '#F472B6', '#EF4444', '#60A5FA',
 ];
 
-// Tema tanımları. "colors" yalnızca BASE_COLORS'tan farklı olanları içerir.
+// Tema tanımları. "colors" yalnızca COLORS'tan farklı olanları içerir.
 export const THEMES = [
   {
     id: 'dark',
@@ -359,25 +291,20 @@ export function getTheme(id) {
 // Tema id'si için TAM renk sözlüğünü üretir (temel + tema farkları + desen).
 export function resolveTheme(themeId) {
   const theme = getTheme(themeId);
-  return { ...BASE_COLORS, ...theme.colors, pattern: theme.pattern || null };
+  return { ...COLORS, ...theme.colors, pattern: theme.pattern || null };
 }
 
 // ---------- Tema Context ----------
-// App.js kökünde ThemeProvider ile "şu anki renkler" verilir; her bileşen
-// useTheme() ile alır. Tema değişince provider değeri değişir ve tüm
-// bileşenler yeni renklerle yeniden çizilir.
-
-const ThemeContext = createContext({ colors: BASE_COLORS, radius: RADIUS, space: SPACE });
+const ThemeContext = createContext({ colors: COLORS, radius: RADIUS, space: SPACE });
 
 export const ThemeProvider = ThemeContext.Provider;
 
 // Bileşenler useTheme() ile renk paletine + yapısal token'lara tek yerden erişir:
 //   const { colors: C, radius, space, type, motion, glow } = useTheme();
-// Colors API'si eski kullanımlarla birebir uyumludur (bozma yok).
 export function useTheme() {
   const ctx = useContext(ThemeContext);
   return {
-    colors: ctx.colors || BASE_COLORS,
+    colors: ctx.colors || COLORS,
     radius: ctx.radius || RADIUS,
     space: ctx.space || SPACE,
     type: TYPE,

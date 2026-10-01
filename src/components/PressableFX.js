@@ -7,9 +7,14 @@
 // Normal Pressable'a 1:1 alternatiftir (style prop'u çözülmüş stil bekler;
 // children bir render-props olabilir: ({ pressed }) => node).
 // ============================================================
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { tap } from '../services/sfx';
 
 const SPRING = { damping: 18, stiffness: 340, mass: 0.8 };
@@ -27,6 +32,8 @@ export default function PressableFX({
 }) {
   const tapGuard = useRef(0);
   const anim = useSharedValue(1);
+  // Prensip: animasyon başlatan her bileşen unmount olurken iptal etmeli.
+  useEffect(() => () => cancelAnimation(anim), [anim]);
 
   const handlePressIn = (e) => {
     if (disabled) return;

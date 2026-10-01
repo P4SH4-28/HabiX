@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import Animated, {
   Easing,
+  cancelAnimation,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -30,9 +31,10 @@ export default function Enter({
   useEffect(() => {
     if (reduced) {
       p.value = 1;
-      return;
+      return undefined;
     }
     p.value = withDelay(delay, withTiming(1, { duration, easing: EASE }));
+    return () => cancelAnimation(p);
   }, [delay, duration, reduced, p]);
 
   const animatedStyle = useAnimatedStyle(() => ({

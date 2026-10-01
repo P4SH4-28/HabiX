@@ -3,6 +3,7 @@
 // Fazlar boyunca ekranlar bu primitives'lere taşınır.
 // ============================================================
 export { default as Icon, ICON_MAP, iconForEmoji } from './icons';
+export { default as Button } from './Button';
 export { default as IconTile } from './IconTile';
 export { default as Pill } from './Pill';
 export { default as EmptyState } from './EmptyState';
