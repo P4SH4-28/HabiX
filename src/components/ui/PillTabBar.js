@@ -9,7 +9,6 @@
 // ============================================================
 import { StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme';
 import PressableFX from '../PressableFX';
@@ -70,17 +69,12 @@ export default function PillTabBar({ state, descriptors, navigation }) {
                 accessibilityState={{ selected: focused }}
               >
                 {focused ? (
-                  <LinearGradient
-                    colors={[C.primary, C.primaryDark]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.item}
-                  >
+                  <View style={[styles.item, { backgroundColor: C.primary }]}>
                     <View style={styles.itemInner}>{glyph}</View>
                     <Text style={[styles.label, { color: '#FFFFFF' }]} numberOfLines={1}>
                       {label}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 ) : (
                   <View style={styles.item}>
                     <View style={styles.itemInner}>{glyph}</View>

@@ -26,14 +26,11 @@ export default function LevelUpModal() {
   // Kart animasyonu: görünür olduğunda sıçrama (spring) ile büyür.
   const scale = useRef(new Animated.Value(0.5)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  // Seviye numarası çevresindeki altın halka nabzı.
-  const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!visible) return;
     scale.setValue(0.5);
     opacity.setValue(0);
-    pulse.setValue(0);
     // Cihazda kısa kutlama titreşimi (web'de etkisizdir).
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -52,42 +49,15 @@ export default function LevelUpModal() {
         duration: 250,
         useNativeDriver: true,
       }),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulse, {
-            toValue: 1,
-            duration: 900,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulse, {
-            toValue: 0,
-            duration: 900,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start(),
     ]).start();
-  }, [visible, scale, opacity, pulse]);
+  }, [visible, scale, opacity]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismissLevelUp}>
       <View style={styles.backdrop}>
         <Animated.View style={[styles.card, { opacity, transform: [{ scale }] }]}>
-          {/* Altın nabız halkası */}
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.glowRing,
-              {
-                opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.75] }),
-                transform: [
-                  {
-                    scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.15] }),
-                  },
-                ],
-              },
-            ]}
-          />
+          {/* Altın vurgu halkası (v2: nabız animasyonu yok) */}
+          <View pointerEvents="none" style={styles.glowRing} />
           <Text style={styles.label}>SEVİYE ATLADIN!</Text>
           <Text style={styles.bigLevel}>{levelUpEvent?.level}</Text>
           <View style={styles.subtitleRow}>

@@ -1,10 +1,8 @@
 // ============================================================
-// BrandMark.js — Auth/onboarding markası: gradient amblem + isim.
-// Gece temasında indigo→violet LinearGradient + dış indigo glow;
-// ikon eşlenik tablosundan gelir (ör. 🎯 → navigate).
+// BrandMark.js — Auth/onboarding markası: amblem + isim.
+// v2: düz birincil zemin (gradient/glow yok) + ikon emoji tablosundan gelir.
 // ============================================================
 import { StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme';
 import Icon from './icons';
 
@@ -19,14 +17,19 @@ export default function BrandMark({
   return (
     <View style={styles.wrap}>
       <View style={styles.amblemWrap}>
-        <LinearGradient
-          colors={[C.primary, C.primaryDark]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.amblem, { width: size, height: size, borderRadius: size * 0.3 }]}
+        <View
+          style={[
+            styles.amblem,
+            {
+              width: size,
+              height: size,
+              borderRadius: size * 0.3,
+              backgroundColor: C.primary,
+            },
+          ]}
         >
           <Icon emoji={emblem} size={size * 0.4} color="#FFFFFF" />
-        </LinearGradient>
+        </View>
       </View>
       <Text style={[styles.name, { color: C.text }]}>{name}</Text>
       {subtitle ? (

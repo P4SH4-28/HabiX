@@ -1,13 +1,10 @@
 // ============================================================
-// BackgroundPattern — Premium ambient zemin katmanı
-// - Yumuşak gradyan ışımalar (indigo üstte, emerald altta) derinlik verir;
-//   Linear/Vercel tarzı ekranın arka planına hafif "atmosphere" katar.
-// - Temanın emoji deseni (örn. ❤️ ✨ 🌊) şimdi çok düşük opaklıkta ince bir
-//   doku olarak korunur (tema kimliği kaybolmaz).
-// - Tüm katman pointerEvents="none" — dokunuşları asla engellemez.
+// BackgroundPattern — Zemin katmanı
+// v2: gradyan "atmosphere" katmanı KALDIRILDI (zemin saf siyah);
+// kalan tek katman temaya özgü emoji dokusudur (çok düşük opaklık).
+// Tüm katman pointerEvents="none" — dokunuşları asla engellemez.
 // ============================================================
 import { StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 
 export default function BackgroundPattern() {
@@ -15,12 +12,6 @@ export default function BackgroundPattern() {
 
   return (
     <View style={styles.layer} pointerEvents="none">
-      {/* Ambient ışıma: üstte birincil aksan, altta emerald — çok yumuşak */}
-      <LinearGradient
-        colors={['rgba(99,102,241,0.10)', 'transparent', 'rgba(16,185,129,0.05)', 'transparent']}
-        locations={[0, 0.35, 0.7, 1]}
-        style={styles.atmosphere}
-      />
       {/* Temaya özgü emoji dokusu (burnu varsa) */}
       {C.pattern ? <EmojiTexture pattern={C.pattern} /> : null}
     </View>
@@ -49,13 +40,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 0,
     overflow: 'hidden',
-  },
-  atmosphere: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   grid: {
     flex: 1,

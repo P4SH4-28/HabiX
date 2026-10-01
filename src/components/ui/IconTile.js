@@ -7,7 +7,6 @@
 // ============================================================
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme';
 import Icon from './icons';
 
@@ -39,12 +38,12 @@ export default function IconTile({
   const inner = iconSize || Math.round(size * 0.46);
   const isGlass = variant === 'glass' && !tint;
 
-  const gradient = useMemo(() => {
-    if (tint) return [tint, tint + 'CC'];
-    if (variant === 'primary') return [C.primary, C.primaryDark];
-    if (isGlass) return null;
-    return MARK_GRADIENTS[variant] || [C.primary, C.primaryDark];
-  }, [tint, variant, isGlass, C.primary, C.primaryDark]);
+  const bgColor = useMemo(() => {
+    if (tint) return tint;
+    if (variant === 'primary') return C.primary;
+    const pair = MARK_GRADIENTS[variant];
+    return pair ? pair[0] : C.primary;
+  }, [tint, variant, C.primary]);
 
   return (
     <View
@@ -58,25 +57,20 @@ export default function IconTile({
         style,
       ]}
     >
-      {isGlass ? (
-        <View style={[styles.body, { borderRadius, borderWidth: 1, borderColor: C.border }]}>
-          <Icon
-            name={name}
-            emoji={emoji || icon}
-            size={inner}
-            color={iconColor || C.text}
-          />
-        </View>
-      ) : (
-        <LinearGradient
-          colors={gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.body, { borderRadius }]}
-        >
-          <Icon name={name} emoji={emoji || icon} size={inner} color={iconColor || '#FFFFFF'} />
-        </LinearGradient>
-      )}
+      <View
+        style={[
+          styles.body,
+          { borderRadius, backgroundColor: isGlass ? 'transparent' : bgColor },
+          isGlass && { borderWidth: 1, borderColor: C.border },
+        ]}
+      >
+        <Icon
+          name={name}
+          emoji={emoji || icon}
+          size={inner}
+          color={iconColor || (isGlass ? C.text : '#FFFFFF')}
+        />
+      </View>
     </View>
   );
 }

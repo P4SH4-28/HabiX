@@ -3,7 +3,8 @@
 // Her hücre bir günü temsil eder; renk koyulaştıkça o gün tamamlanan
 // alışkanlık oranı artar. Veri: ProgressScreen'in merkezi "daily" dizisi.
 // GUI modernizasyonu (Faz C): veri değişince hücreler soldan sağa
-// kademeli (cascade) belirir; bugün hücresi nabız atar.
+// kademeli (cascade) belirir. v2: bugün hücresinin sürekli nabız
+// animasyonu KALDIRILDI → sabit vurgu (scale 1.15).
 // ============================================================
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
@@ -24,7 +25,6 @@ export default function Heatmap({ daily }) {
   const cells = daily.slice(-35);
 
   const reveal = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(0)).current;
 
   // Veri değişince hücreler kademeli belirir.
   useEffect(() => {
@@ -38,18 +38,6 @@ export default function Heatmap({ daily }) {
     a.start();
     return () => a.stop();
   }, [reveal, daily]);
-
-  // Bugün hücresi için sürekli nabız animasyonu.
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 900, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 900, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse]);
 
   const todayIndex = cells.length - 1;
 
@@ -98,11 +86,7 @@ export default function Heatmap({ daily }) {
                     done > 0 ? hexToRgba(C.accent, 0.25 + pct * 0.75) : C.surfaceLight,
                 },
                 isToday && done > 0 && {
-                  transform: [
-                    {
-                      scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.25] }),
-                    },
-                  ],
+                  transform: [{ scale: 1.15 }],
                 },
               ]}
             />

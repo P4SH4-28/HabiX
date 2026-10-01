@@ -8,8 +8,8 @@
 //     küçük gösterimlerde performans için statik kalır).
 // - Çerçeve varsa avatarın arkasına yumuşak bir ışıltı (glow) eklenir.
 // ============================================================
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { getAvatarEmoji, getFrame } from '../data/shop';
 import { useTheme } from '../theme';
@@ -59,24 +59,8 @@ export function LottieFrame({ frame, size, style, children }) {
 }
 
 // Çerçeve halkası: verilen emojiyi avatarın çevresinde 8 noktada gösterir.
-// "animated" ise halka avatarın etrafında yavaşça döner (native driver).
-export function FrameDecor({ ring = '⭐', size = 64, style, children, animated = false }) {
-  const rotate = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!animated) return;
-    const loop = Animated.loop(
-      Animated.timing(rotate, {
-        toValue: 1,
-        duration: 24000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [animated, rotate]);
-
+// v2: 24 sn'lik sonsuz dönüş döngüsü KALDIRILDI → statik halka.
+export function FrameDecor({ ring = '⭐', size = 64, style, children }) {
   const dots = [];
   const radius = size * 0.52;
   const dotSize = size * 0.2;
@@ -97,25 +81,7 @@ export function FrameDecor({ ring = '⭐', size = 64, style, children, animated 
     );
   }
 
-  const ringView = animated ? (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        width: size,
-        height: size,
-        transform: [
-          {
-            rotate: rotate.interpolate({
-              inputRange: [0, 1],
-              outputRange: ['0deg', '360deg'],
-            }),
-          },
-        ],
-      }}
-    >
-      {dots}
-    </Animated.View>
-  ) : (
+  const ringView = (
     <View style={{ position: 'absolute', width: size, height: size }}>{dots}</View>
   );
 
@@ -143,8 +109,6 @@ export default function AvatarCircle({ avatarId, emoji, frameId, photo, size = 4
   const [photoFailed, setPhotoFailed] = useState(false);
   const resolved = emoji || (avatarId ? getAvatarEmoji(avatarId) : '😀');
   const frame = frameId ? getFrame(frameId) : null;
-  // Küçük gösterimlerde dönen halka performans için kapatılır.
-  const ringAnimated = size >= 44;
 
   const circleInner = photo && !photoFailed ? (
     <Image
@@ -212,7 +176,7 @@ export default function AvatarCircle({ avatarId, emoji, frameId, photo, size = 4
     );
   }
   return (
-    <FrameDecor ring={frame.emoji} size={size} style={style} animated={ringAnimated}>
+    <FrameDecor ring={frame.emoji} size={size} style={style}>
       {framed}
     </FrameDecor>
   );

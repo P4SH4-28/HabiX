@@ -8,9 +8,8 @@
 // "today" değeri DataContext'ten gelir; gece yarısı geçince ekran
 // otomatik yeni güne geçer (bayat "bugün" durumu yaşanmaz).
 // ============================================================
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AddHabitModal from '../components/AddHabitModal';
 import AnimatedCounter from '../components/AnimatedCounter';
@@ -256,12 +255,9 @@ export default function HomeScreen() {
         accessibilityRole="button"
         accessibilityLabel="Yeni alışkanlık ekle"
       >
-        <LinearGradient
-          colors={[C.primary, C.primaryDark]}
-          style={styles.fabGradient}
-        >
+        <View style={[styles.fabGradient, { backgroundColor: C.primary }]}>
           <Text style={styles.fabIcon}>+</Text>
-        </LinearGradient>
+        </View>
       </PressableFX>
       <AddHabitModal
         visible={modalVisible}
@@ -299,35 +295,12 @@ export default function HomeScreen() {
   );
 }
 
-// Boş durum: kullanıcıyı tek dokunuşla başlatmak için zıplayan 🌱
-// ve hazır "Hızlı başlangıç" alışkanlık çipleri gösterir.
+// Boş durum: kullanıcıyı tek dokunuşla başlatan 🌱 ve hazır
+// "Hızlı başlangıç" alışkanlık çipleri. v2: sonsuz zıplama döngüsü kaldırıldı.
 function EmptyState({ C, styles, onQuickAdd }) {
-  const bounce = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounce, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(bounce, { toValue: 0, duration: 700, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [bounce]);
-
   return (
     <View style={styles.emptyBox}>
-      <Animated.View
-        style={[
-          {
-            transform: [
-              { translateY: bounce.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, -20, 0] }) },
-            ],
-          },
-        ]}
-      >
-        <IconTile emoji="🌱" variant="accent" size={66} />
-      </Animated.View>
+      <IconTile emoji="🌱" variant="accent" size={66} />
       <Text style={styles.emptyTitle}>İlk alışkanlığını ekle</Text>
       <Text style={styles.emptyText}>
         Hazır bir başlangıç seç veya + butonuna dokun. Her tamamlama XP + altın kazandırır!
