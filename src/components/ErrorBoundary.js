@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     textAlign: 'center',
     marginTop: 12,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   message: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     lineHeight: 21,
   },
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   copyHint: {
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 14,
     lineHeight: 18,
   },

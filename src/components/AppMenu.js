@@ -255,12 +255,12 @@ function makeStyles(C) {
     },
     profileName: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
     },
     profileLevel: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '600',
     },
     profileLevelRow: {
@@ -298,7 +298,7 @@ function makeStyles(C) {
     },
     itemLabel: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     itemDesc: {

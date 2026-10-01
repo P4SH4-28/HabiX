@@ -370,7 +370,7 @@ function makeStyles(C) {
       paddingVertical: 3,
     },
     goldIcon: {
-      fontSize: 12,
+      fontSize: 13,
     },
     goldText: {
       color: C.gold,
@@ -412,7 +412,7 @@ function makeStyles(C) {
     },
     questCardTitle: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     questTitleRow: {
@@ -441,7 +441,7 @@ function makeStyles(C) {
     },
     questCardHint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     todayHeader: {
@@ -461,11 +461,11 @@ function makeStyles(C) {
       gap: 1,
     },
     summaryIcon: {
-      fontSize: 16,
+      fontSize: 15,
     },
     summaryValue: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
     },
     summaryLabel: {
@@ -480,7 +480,7 @@ function makeStyles(C) {
     },
     todayTitle: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     todayValue: {
@@ -543,7 +543,7 @@ function makeStyles(C) {
     },
     emptyTitle: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '700',
       marginBottom: 6,
     },
@@ -555,7 +555,7 @@ function makeStyles(C) {
     },
     confirmText: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       lineHeight: 21,
     },
     confirmRow: {
@@ -601,7 +601,7 @@ function makeStyles(C) {
       transform: [{ scale: 0.97 }],
     },
     starterEmoji: {
-      fontSize: 18,
+      fontSize: 17,
     },
     starterChipText: {
       color: C.text,

@@ -345,7 +345,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenSub: {
@@ -368,7 +368,7 @@ function makeStyles(C) {
     },
     liveLoadingText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
     offlineBox: {
@@ -386,7 +386,7 @@ function makeStyles(C) {
     offlineText: {
       flex: 1,
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     lockBox: {
@@ -401,7 +401,7 @@ function makeStyles(C) {
     },
     lockTitle: {
       color: C.text,
-      fontSize: 19,
+      fontSize: 17,
       fontWeight: '800',
     },
     lockText: {
@@ -418,17 +418,17 @@ function makeStyles(C) {
     },
     lockProgressLabel: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
     lockProgressValue: {
       color: C.primary,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     lockHint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       textAlign: 'center',
     },
     podiumRow: {
@@ -453,7 +453,7 @@ function makeStyles(C) {
       borderColor: C.primary,
     },
     podiumMedal: {
-      fontSize: 24,
+      fontSize: 22,
       position: 'absolute',
       top: 8,
     },
@@ -463,7 +463,7 @@ function makeStyles(C) {
       fontWeight: '700',
     },
     podiumXp: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     podiumCoins: {
@@ -509,7 +509,7 @@ function makeStyles(C) {
       alignItems: 'center',
     },
     rowEmoji: {
-      fontSize: 20,
+      fontSize: 22,
     },
     rowInfo: {
       flex: 1,
@@ -522,7 +522,7 @@ function makeStyles(C) {
     },
     rowName: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     meName: {
@@ -560,11 +560,11 @@ function makeStyles(C) {
     },
     rowStreakText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     rowStreakSep: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       opacity: 0.4,
     },
     rowXp: {
@@ -574,7 +574,7 @@ function makeStyles(C) {
     },
     chevron: {
       color: C.textMuted,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '700',
     },
     noteBox: {
@@ -592,7 +592,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

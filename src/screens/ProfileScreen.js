@@ -279,7 +279,7 @@ function makeStyles(C) {
     },
     levels: {
       color: C.textMuted,
-      fontSize: 14,
+      fontSize: 15,
       textAlign: 'center',
       marginTop: 2,
     },
@@ -312,7 +312,7 @@ function makeStyles(C) {
     },
     bioText: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       lineHeight: 20,
     },
     bioInput: {
@@ -359,11 +359,11 @@ function makeStyles(C) {
     },
     xpSub: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     xpValue: {
       color: C.xp,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '800',
     },
     summaryGrid: {
@@ -381,7 +381,7 @@ function makeStyles(C) {
     },
     summaryCellValue: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
     },
     summaryCellLabel: {
@@ -418,7 +418,7 @@ function makeStyles(C) {
       alignItems: 'center',
     },
     statValue: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '700',
       color: C.text,
     },

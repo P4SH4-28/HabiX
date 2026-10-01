@@ -98,7 +98,7 @@ function makeStyles(C) {
     },
     count: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
   });

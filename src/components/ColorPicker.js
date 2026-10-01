@@ -38,7 +38,7 @@ function makeStyles(C) {
   },
   label: {
     color: C.textMuted,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
   row: {

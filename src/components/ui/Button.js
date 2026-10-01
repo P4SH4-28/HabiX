@@ -24,7 +24,7 @@ import Icon from './icons';
 const SIZES = {
   sm: { pv: 9, ph: 14, font: 13, minH: 36, icon: 13 },
   md: { pv: 14, ph: 20, font: 15, minH: 48, icon: 15 },
-  lg: { pv: 17, ph: 24, font: 16, minH: 54, icon: 17 },
+  lg: { pv: 17, ph: 24, font: 17, minH: 54, icon: 17 },
 };
 
 export default function Button({

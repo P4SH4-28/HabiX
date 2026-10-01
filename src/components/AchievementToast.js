@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#0B0E14',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     flexShrink: 1,
   },

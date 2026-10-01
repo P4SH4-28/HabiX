@@ -108,7 +108,7 @@ function makeStyles(C) {
       gap: 8,
     },
     arrow: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '900',
     },
     trendText: {
@@ -117,7 +117,7 @@ function makeStyles(C) {
     },
     trendHint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       flex: 1,
       textAlign: 'right',
     },

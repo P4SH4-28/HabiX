@@ -316,7 +316,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenTitleRow: {
@@ -362,7 +362,7 @@ function makeStyles(C) {
     },
     progressTitle: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     progressHint: {
@@ -389,7 +389,7 @@ function makeStyles(C) {
     },
     vipActiveText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
     buyVipCard: {
@@ -412,7 +412,7 @@ function makeStyles(C) {
     },
     buyVipText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
     buyVipBottom: {
@@ -427,7 +427,7 @@ function makeStyles(C) {
       gap: 4,
     },
     buyVipPrice: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     buyVipBtn: {
@@ -468,7 +468,7 @@ function makeStyles(C) {
       justifyContent: 'center',
     },
     levelNum: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '900',
       fontVariant: ['tabular-nums'],
     },
@@ -525,16 +525,16 @@ function makeStyles(C) {
       gap: 4,
     },
     previewTheme: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     previewAvatar: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     previewEmpty: {
       color: C.textMuted,
-      fontSize: 14,
+      fontSize: 15,
     },
     boxInfo: {
       gap: 2,
@@ -604,7 +604,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

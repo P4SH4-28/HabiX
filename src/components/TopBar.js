@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
   },
   right: {

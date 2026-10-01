@@ -346,7 +346,7 @@ function makeStyles(C) {
     },
     teamMeta: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     leaveBtn: {
       borderRadius: 12,
@@ -356,7 +356,7 @@ function makeStyles(C) {
     },
     leaveBtnText: {
       color: C.danger,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     goalCard: {
@@ -392,7 +392,7 @@ function makeStyles(C) {
     },
     sectionTitle: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
@@ -413,7 +413,7 @@ function makeStyles(C) {
       paddingHorizontal: 10,
     },
     memberEmoji: {
-      fontSize: 18,
+      fontSize: 17,
     },
     memberName: {
       flex: 1,
@@ -464,7 +464,7 @@ function makeStyles(C) {
       paddingHorizontal: 14,
       paddingVertical: 12,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
     },
     emojiRow: {
       flexDirection: 'row',
@@ -486,7 +486,7 @@ function makeStyles(C) {
       backgroundColor: C.primary + '22',
     },
     emojiPickText: {
-      fontSize: 20,
+      fontSize: 22,
     },
     createBtn: {
       backgroundColor: C.primary,
@@ -496,7 +496,7 @@ function makeStyles(C) {
     },
     createBtnText: {
       color: C.onPrimary,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     btnDisabled: {
@@ -525,7 +525,7 @@ function makeStyles(C) {
     },
     openName: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     openMeta: {
@@ -540,12 +540,12 @@ function makeStyles(C) {
     },
     joinBtnText: {
       color: C.onPrimary,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     emptyText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       padding: 12,
     },
@@ -564,7 +564,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

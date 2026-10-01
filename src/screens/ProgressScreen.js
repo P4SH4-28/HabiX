@@ -122,7 +122,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenSub: {

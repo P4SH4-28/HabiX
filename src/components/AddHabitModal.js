@@ -123,7 +123,7 @@ function makeStyles(C) {
     },
     previewHint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     button: {
       height: 50,
@@ -145,7 +145,7 @@ function makeStyles(C) {
     limitText: {
       flex: 1,
       color: C.danger,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
       fontWeight: '600',
     },

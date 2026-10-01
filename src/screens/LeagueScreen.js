@@ -235,12 +235,12 @@ function makeStyles(C) {
       justifyContent: 'center',
     },
     tierName: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '900',
     },
     tierXp: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       marginTop: 2,
     },
     weekChip: {
@@ -260,7 +260,7 @@ function makeStyles(C) {
     },
     tierProgressText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '600',
     },
     rewardCard: {
@@ -278,7 +278,7 @@ function makeStyles(C) {
     },
     rewardTitle: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     rewardDescRow: {
@@ -288,7 +288,7 @@ function makeStyles(C) {
     },
     rewardDesc: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       flex: 1,
     },
@@ -309,7 +309,7 @@ function makeStyles(C) {
     },
     claimBtnText: {
       color: C.onPrimary,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     claimBtnTextDone: {
@@ -317,7 +317,7 @@ function makeStyles(C) {
     },
     sectionTitle: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
@@ -343,13 +343,13 @@ function makeStyles(C) {
     },
     rankNum: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
       width: 22,
       textAlign: 'center',
     },
     rankEmoji: {
-      fontSize: 16,
+      fontSize: 15,
     },
     rankName: {
       flex: 1,
@@ -362,12 +362,12 @@ function makeStyles(C) {
     },
     rankXp: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
     emptyText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       padding: 12,
     },
@@ -386,7 +386,7 @@ function makeStyles(C) {
       paddingHorizontal: 12,
     },
     leagueEmoji: {
-      fontSize: 18,
+      fontSize: 17,
     },
     leagueName: {
       flex: 1,
@@ -395,7 +395,7 @@ function makeStyles(C) {
     },
     leagueMin: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     leagueRewardRow: {
       flexDirection: 'row',
@@ -404,7 +404,7 @@ function makeStyles(C) {
     },
     leagueReward: {
       color: C.gold,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     noteBox: {
@@ -422,7 +422,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

@@ -187,7 +187,7 @@ function makeStyles(C) {
     },
     summarySub: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     card: {
       backgroundColor: C.surface,
@@ -225,7 +225,7 @@ function makeStyles(C) {
     },
     title: {
       color: C.textMuted,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     titleUnlocked: {
@@ -233,7 +233,7 @@ function makeStyles(C) {
     },
     desc: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 16,
     },
     rewardChip: {
@@ -247,7 +247,7 @@ function makeStyles(C) {
     },
     rewardText: {
       color: C.gold,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     progressRow: {
@@ -257,14 +257,14 @@ function makeStyles(C) {
     },
     progressText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       minWidth: 36,
       textAlign: 'right',
     },
     hintText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     noteBox: {
       flexDirection: 'row',
@@ -282,7 +282,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

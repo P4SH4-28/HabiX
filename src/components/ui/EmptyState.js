@@ -70,7 +70,7 @@ function makeStyles(C) {
     },
     title: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
       textAlign: 'center',
     },
@@ -84,7 +84,7 @@ function makeStyles(C) {
       textAlign: 'center',
     },
     subtitleCompact: {
-      fontSize: 12.5,
+      fontSize: 13,
     },
     action: {
       marginTop: 6,

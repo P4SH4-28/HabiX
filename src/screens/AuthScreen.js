@@ -289,7 +289,7 @@ function makeStyles(C, radius) {
     field: { gap: 6 },
     label: { color: C.textMuted, fontSize: 11, lineHeight: 14, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
     input: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: C.text },
-    hint: { color: C.xp, fontSize: 11.5, lineHeight: 16 },
+    hint: { color: C.xp, fontSize: 11, lineHeight: 16 },
     error: { color: C.danger, fontSize: 13, lineHeight: 18, fontWeight: '600' },
     btn: { backgroundColor: C.primary, borderRadius: radius.control, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 },
     btnPressed: { opacity: 0.85 },
@@ -300,9 +300,9 @@ function makeStyles(C, radius) {
     footHint: { color: C.textMuted, fontSize: 11, lineHeight: 16, textAlign: 'center' },
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     modal: { width: '100%', maxWidth: 380, backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 24, gap: 14, alignItems: 'center' },
-    modalTitle: { color: C.text, fontSize: 20, fontWeight: '800', textAlign: 'center' },
+    modalTitle: { color: C.text, fontSize: 22, fontWeight: '800', textAlign: 'center' },
     keyPill: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 20, paddingVertical: 12, alignSelf: 'stretch', alignItems: 'center' },
-    keyText: { color: C.primary, fontSize: 24, fontWeight: '900', letterSpacing: 3 },
-    modalWarn: { color: C.textMuted, fontSize: 12, lineHeight: 19, textAlign: 'center' },
+    keyText: { color: C.primary, fontSize: 22, fontWeight: '900', letterSpacing: 3 },
+    modalWarn: { color: C.textMuted, fontSize: 13, lineHeight: 19, textAlign: 'center' },
   });
 }

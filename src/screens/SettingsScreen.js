@@ -562,7 +562,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenSub: {
@@ -574,7 +574,7 @@ function makeStyles(C) {
     },
     sectionTitle: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
@@ -596,12 +596,12 @@ function makeStyles(C) {
     },
     profileName: {
       color: C.text,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '800',
     },
     profileSub: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     settingRow: {
@@ -620,12 +620,12 @@ function makeStyles(C) {
     },
     settingLabel: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
     },
     settingDesc: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     stepper: {
@@ -643,13 +643,13 @@ function makeStyles(C) {
     },
     stepperText: {
       color: C.primary,
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: '800',
       lineHeight: 24,
     },
     stepperValue: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
       minWidth: 30,
       textAlign: 'center',

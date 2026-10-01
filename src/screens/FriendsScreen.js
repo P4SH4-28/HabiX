@@ -199,7 +199,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenSub: {
@@ -216,7 +216,7 @@ function makeStyles(C) {
     },
     addButtonText: {
       color: C.onPrimary,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     noteBox: {
@@ -234,7 +234,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
     content: {
@@ -254,7 +254,7 @@ function makeStyles(C) {
     },
     profileChevron: {
       color: C.textMuted,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '700',
     },
     duelBtn: {
@@ -286,7 +286,7 @@ function makeStyles(C) {
     },
     metaText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     statusDot: {
       width: 10,

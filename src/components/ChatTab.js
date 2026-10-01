@@ -237,7 +237,7 @@ function makeStyles(C) {
     },
     msgText: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       lineHeight: 20,
     },
     msgTime: {
@@ -257,7 +257,7 @@ function makeStyles(C) {
       gap: 10,
     },
     error: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       paddingHorizontal: 16,
       paddingBottom: 6,

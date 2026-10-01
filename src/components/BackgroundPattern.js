@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   cell: {
     width: '12.5%',
-    fontSize: 18,
+    fontSize: 17,
     textAlign: 'center',
   },
 });

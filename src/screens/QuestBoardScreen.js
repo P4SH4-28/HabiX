@@ -275,7 +275,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenTitleRow: {
@@ -445,7 +445,7 @@ function makeStyles(C) {
     },
     vipBannerText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
     vipActiveBox: {
@@ -461,7 +461,7 @@ function makeStyles(C) {
     },
     vipActiveText: {
       flex: 1,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       lineHeight: 18,
     },
@@ -473,7 +473,7 @@ function makeStyles(C) {
     offlineText: {
       flex: 1,
       color: C.text,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       fontWeight: '600',
     },
@@ -499,7 +499,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
     },
   });

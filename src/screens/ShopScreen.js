@@ -608,7 +608,7 @@ function makeStyles(C) {
     },
     screenTitle: {
       color: C.text,
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
     },
     screenSub: {
@@ -629,7 +629,7 @@ function makeStyles(C) {
     },
     balanceText: {
       color: C.gold,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '800',
     },
     tabBar: {
@@ -680,12 +680,12 @@ function makeStyles(C) {
     },
     currentName: {
       color: C.text,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '800',
     },
     currentHint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     photoRow: {
@@ -751,7 +751,7 @@ function makeStyles(C) {
     },
     sectionTitle: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
@@ -793,7 +793,7 @@ function makeStyles(C) {
       borderRadius: 8,
     },
     themePattern: {
-      fontSize: 16,
+      fontSize: 15,
       marginTop: 4,
     },
     previewHint: {
@@ -865,7 +865,7 @@ function makeStyles(C) {
     },
     btnSelectedText: {
       color: C.gold,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     btnOwned: {
@@ -873,7 +873,7 @@ function makeStyles(C) {
     },
     btnOwnedText: {
       color: C.primary,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     btnBuy: {
@@ -881,7 +881,7 @@ function makeStyles(C) {
     },
     btnBuyText: {
       color: C.gold,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     btnDisabled: {
@@ -907,7 +907,7 @@ function makeStyles(C) {
       gap: 2,
     },
     previewTitle: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     previewSub: {
@@ -922,7 +922,7 @@ function makeStyles(C) {
       justifyContent: 'center',
     },
     previewAvatarEmoji: {
-      fontSize: 20,
+      fontSize: 22,
     },
     previewRow: {
       flexDirection: 'row',
@@ -987,7 +987,7 @@ function makeStyles(C) {
     },
     noteText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       flex: 1,
     },
@@ -1005,7 +1005,7 @@ function makeStyles(C) {
     },
     vipHintText: {
       color: C.text,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       flex: 1,
     },
@@ -1026,7 +1026,7 @@ const stylesConf = StyleSheet.create({
   },
   ownedBadgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
   },
 });

@@ -132,12 +132,12 @@ function makeStyles(C) {
     },
     title: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
     },
     desc: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 17,
     },
     actions: {

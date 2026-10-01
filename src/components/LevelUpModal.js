@@ -111,7 +111,7 @@ function makeStyles(C) {
     },
     label: {
       color: C.gold,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '700',
       letterSpacing: 2,
     },

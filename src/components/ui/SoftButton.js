@@ -16,9 +16,9 @@ import PressableFX from '../PressableFX';
 import Icon from './icons';
 
 const SIZES = {
-  md: { paddingV: 12, paddingH: 18, fontSize: 14, icon: 16, minH: 44 },
+  md: { paddingV: 12, paddingH: 18, fontSize: 15, icon: 16, minH: 44 },
   sm: { paddingV: 8, paddingH: 13, fontSize: 13, icon: 14.5, minH: 36 },
-  xs: { paddingV: 5, paddingH: 11, fontSize: 12, icon: 13, minH: 30 },
+  xs: { paddingV: 5, paddingH: 11, fontSize: 13, icon: 13, minH: 30 },
 };
 // Dar boyutlarda görsel küçük kalır; dokunma alanı hitSlop ile tamamlanır.
 const SLOP = { md: 4, sm: 6, xs: 10 };

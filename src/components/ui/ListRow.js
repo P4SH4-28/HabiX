@@ -51,11 +51,11 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '700',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
   },
   rightSlot: {
     marginLeft: 'auto',

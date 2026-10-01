@@ -160,7 +160,7 @@ function makeStyles(C, radius) {
     },
     subtitle: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     timer: {
       color: C.text,

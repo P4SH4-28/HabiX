@@ -195,7 +195,7 @@ function makeStyles(C) {
     },
     hint: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
       marginTop: 8,
       marginBottom: 4,
@@ -223,7 +223,7 @@ function makeStyles(C) {
     },
     rowMeta: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     sendButton: {
       backgroundColor: C.primary,
@@ -267,7 +267,7 @@ function makeStyles(C) {
     },
     centerSub: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       textAlign: 'center',
       lineHeight: 18,
       paddingHorizontal: 16,

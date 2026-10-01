@@ -114,7 +114,7 @@ function makeStyles(C) {
       marginRight: 10,
     },
     bell: {
-      fontSize: 18,
+      fontSize: 17,
     },
     badge: {
       position: 'absolute',
@@ -148,7 +148,7 @@ function makeStyles(C) {
     },
     emptySub: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     row: {
       flexDirection: 'row',
@@ -171,11 +171,11 @@ function makeStyles(C) {
     },
     rowMetaText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     rowMetaDot: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       opacity: 0.5,
       marginHorizontal: 2,
     },
@@ -191,7 +191,7 @@ function makeStyles(C) {
     },
     acceptText: {
       color: C.onPrimary,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     declineButton: {
@@ -204,7 +204,7 @@ function makeStyles(C) {
     },
     declineText: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     disabled: {

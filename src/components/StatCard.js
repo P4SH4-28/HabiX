@@ -47,7 +47,7 @@ function makeStyles(C) {
     },
     value: {
       color: C.text,
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: '800',
     },
     label: {

@@ -261,7 +261,7 @@ function makeStyles(C) {
     },
     friendBadgeText: {
       color: C.accent,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '800',
     },
     headerStats: {

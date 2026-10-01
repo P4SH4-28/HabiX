@@ -289,13 +289,13 @@ function makeStyles(C) {
       opacity: 0.5,
     },
     error: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       paddingHorizontal: 16,
       paddingTop: 8,
     },
     offline: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '600',
       paddingHorizontal: 16,
       paddingTop: 8,
@@ -345,7 +345,7 @@ function makeStyles(C) {
       justifyContent: 'center',
     },
     roomEmoji: {
-      fontSize: 20,
+      fontSize: 22,
     },
     roomInfo: {
       flex: 1,
@@ -358,7 +358,7 @@ function makeStyles(C) {
     },
     roomName: {
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
       flexShrink: 1,
     },
@@ -424,7 +424,7 @@ function makeStyles(C) {
     },
     emptyTitle: {
       color: C.text,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '700',
       marginBottom: 6,
     },

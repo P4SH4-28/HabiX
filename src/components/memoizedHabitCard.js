@@ -152,7 +152,7 @@ function makeStyles(C, radius) {
       justifyContent: 'center',
     },
     emoji: {
-      fontSize: 20,
+      fontSize: 22,
     },
     checkbox: {
       width: 34,
@@ -182,7 +182,7 @@ function makeStyles(C, radius) {
     },
     checkmark: {
       color: '#FFFFFF',
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '900',
     },
     info: {
@@ -200,7 +200,7 @@ function makeStyles(C, radius) {
     },
     meta: {
       color: C.textMuted,
-      fontSize: 12,
+      fontSize: 13,
     },
     streakBadge: {
       flexDirection: 'row',
