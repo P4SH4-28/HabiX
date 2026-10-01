@@ -9,7 +9,7 @@ import { useTheme } from '../../theme';
 import Icon from './icons';
 
 export default function BrandMark({
-  name = 'Habit Tracker',
+  name = 'HabiX',
   emblem = '🎯',
   subtitle,
   size = 88,

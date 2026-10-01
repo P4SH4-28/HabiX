@@ -520,7 +520,7 @@ export default function SettingsScreen() {
 
       {/* Hakkında */}
       <Section title="Hakkında">
-        <SettingRow label="Uygulama" description="Habit Tracker — Oyunlaştırılmış Alışkanlık Takibi" />
+        <SettingRow label="Uygulama" description="HabiX — Oyunlaştırılmış Alışkanlık Takibi" />
         <SettingRow label="Sürüm" description="1.1.0" />
         <SettingRow
           label="Teknoloji"

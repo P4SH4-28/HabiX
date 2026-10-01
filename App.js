@@ -198,8 +198,8 @@ function RootNavigator() {
 }
 
 // Widget tıklamalarından gelen derin bağlantıları işler:
-//   myapp://pomodoro/start → pomodoro'yu anında başlat
-//   myapp://duel/create    → düello kurma ekranına git
+//   habix://pomodoro/start → pomodoro'yu anında başlat
+//   habix://duel/create    → düello kurma ekranına git
 function useDeepLink(onPomodoroStart, onDuelCreate) {
   useEffect(() => {
     const handle = (url) => {

@@ -20,7 +20,7 @@ import * as Notifications from 'expo-notifications';
 const REMINDER_CHANNEL_ID = 'daily-reminder';
 const MOTIVATION_CHANNEL_ID = 'hourly-motivation';
 const IDS_STORAGE_KEY = '@habit_notif_ids';
-const REMINDER_TITLE = '⏰ Habit Tracker';
+const REMINDER_TITLE = '⏰ HabiX';
 
 // Günlük hatırlatmanın gövde metnini, planlama anındaki bekleyen görev
 // sayısına göre üretir. pendingCount null ise (dışarıdan bilgi yoksa)
