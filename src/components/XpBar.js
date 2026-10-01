@@ -8,7 +8,7 @@ import Progress from './ui/Progress';
 // günlük tavanla birlikte gösterilir. Tavan dolduysa kırmızı uyarı rengi.
 // Premium: gradient seviye rozeti + animasyonlu dolu çubuk + soft glow.
 export default function XpBar({ level, curXp, nextThreshold, todayXp = null, todayCap = null }) {
-  const { colors: C, glow } = useTheme();
+  const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
   const percent = Math.min(100, (curXp / nextThreshold) * 100);
   const capReached = todayCap != null && todayXp != null && todayXp >= todayCap;
@@ -16,7 +16,7 @@ export default function XpBar({ level, curXp, nextThreshold, todayXp = null, tod
     <View style={styles.row}>
       <LinearGradient
         colors={[C.primary, C.primaryDark]}
-        style={[styles.badge, glow(C.primary, { opacity: 0.5, radius: 18, offset: 5, elevation: 10 })]}
+        style={styles.badge}
       >
         <Text style={styles.levelNumber}>{level}</Text>
         <Text style={styles.levelLabel}>SEVİYE</Text>

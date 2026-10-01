@@ -24,11 +24,10 @@ export default function Progress({
   height = 10,
   colors,
   trackColor,
-  glowColor,
   style,
   accessibilityLabel,
 }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const reduced = useReducedMotion();
   const target = clamp01(value);
   const p = useSharedValue(target);
@@ -63,7 +62,6 @@ export default function Progress({
           borderRadius: Math.max(height / 2, 3),
           backgroundColor: trackColor || C.surfaceLight,
         },
-        glowColor ? glow(glowColor, { opacity: 0.16, radius: 10, offset: 3, elevation: 3 }) : null,
         style,
       ]}
     >

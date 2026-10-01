@@ -4,7 +4,6 @@
 // Orta: başlık. Sağ: senkron durum rozeti + isteğe bağlı içerik.
 // ============================================================
 import { StyleSheet, Text, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,15 +12,16 @@ import SyncStatusChip from './SyncStatusChip';
 import { useTheme } from '../theme';
 
 export default function TopBar({ title, onBack, right }) {
-  const { colors: C, radius } = useTheme();
+  const { colors: C } = useTheme();
   const { openMenu } = useMenu();
   const insets = useSafeAreaInsets();
 
   return (
-    <BlurView
-      intensity={55}
-      tint="dark"
-      style={[styles.bar, { paddingTop: insets.top + 6 }]}
+    <View
+      style={[
+        styles.bar,
+        { backgroundColor: C.surface, paddingTop: insets.top + 6 },
+      ]}
     >
       <View style={styles.inner}>
         <Pressable
@@ -48,7 +48,7 @@ export default function TopBar({ title, onBack, right }) {
           {right || <SyncStatusChip />}
         </View>
       </View>
-    </BlurView>
+    </View>
   );
 }
 

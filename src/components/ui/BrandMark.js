@@ -14,11 +14,11 @@ export default function BrandMark({
   subtitle,
   size = 88,
 }) {
-  const { colors: C, glow } = useTheme();
+  const { colors: C } = useTheme();
 
   return (
     <View style={styles.wrap}>
-      <View style={[styles.amblemWrap, glow(C.primary, { opacity: 0.32, radius: 30, offset: 8 })]}>
+      <View style={styles.amblemWrap}>
         <LinearGradient
           colors={[C.primary, C.primaryDark]}
           start={{ x: 0, y: 0 }}

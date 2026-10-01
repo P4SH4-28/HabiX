@@ -29,7 +29,7 @@ export default function PomodoroTimer() {
     resetPomodoro,
     completePomodoro,
   } = useData();
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
   const pomodoro = data.pomodoro;
   const xpReward = data.settings.pomodoroXp || 50;
@@ -64,7 +64,7 @@ export default function PomodoroTimer() {
   const running = pomodoro.state === 'running';
 
   return (
-    <View style={[styles.card, glow(C.primary, { opacity: 0.14, radius: 24, offset: 5 })]}>
+    <View style={styles.card}>
       <View style={styles.header}>
         <IconTile icon="timer" emoji="🍅" variant="accent" size={46} />
         <View style={styles.headerInfo}>
@@ -100,7 +100,6 @@ export default function PomodoroTimer() {
             icon="▶"
             onPress={startPomodoro}
             style={styles.btnFlex}
-            glowColor={C.accent}
           />
         )}
         {pomodoro.state === 'running' && (
@@ -121,7 +120,6 @@ export default function PomodoroTimer() {
               icon="▶"
               onPress={resumePomodoro}
               style={styles.btnFlex}
-              glowColor={C.accent}
             />
             <SoftButton icon="↺" variant="ghost" onPress={resetPomodoro} style={styles.btnGhost} />
           </>

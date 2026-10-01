@@ -1,9 +1,9 @@
 // ============================================================
-// IconTile.js — Gradient/glass ikon kutusu (premium geometri).
-// - Renkli varyantlar: tema single-color textrans degrade (primary),
+// IconTile.js — Gradient ikon kutusu (premium geometri).
+// - Renkli varyantlar: tema single-color geçişleri (primary),
 //   marka gradientleri (violet/accent/danger/xp/gold/silver/bronze),
 //   glass (surface + border) — hepsi "yumuşatılmış keskin" köşelerde.
-// - İsteğe bağlı yumuşak dış ışıma (glow).
+// v2'de KALDIRILDI: dış ışıma (glow).
 // ============================================================
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -30,10 +30,9 @@ export default function IconTile({
   size = 40,
   iconSize,
   iconColor,
-  glow3x = true,
   style,
 }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
 
   const borderRadius = Math.round(size * 0.34);
@@ -47,12 +46,6 @@ export default function IconTile({
     return MARK_GRADIENTS[variant] || [C.primary, C.primaryDark];
   }, [tint, variant, isGlass, C.primary, C.primaryDark]);
 
-  const gradPair = MARK_GRADIENTS[variant];
-  const glowColor = tint || (variant === 'primary' ? C.primary : gradPair ? gradPair[1] : C.primary);
-  const glowStyle = glow3x
-    ? glow(glowColor, { opacity: 0.22, radius: 16, offset: 5, elevation: 5 })
-    : null;
-
   return (
     <View
       style={[
@@ -62,7 +55,6 @@ export default function IconTile({
           height: size,
           borderRadius,
         },
-        glowStyle,
         style,
       ]}
     >

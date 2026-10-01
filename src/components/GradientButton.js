@@ -1,6 +1,6 @@
 // ============================================================
 // GradientButton.js — Geriye dönük uyumlu sarmalayıcı.
-// Tüm eski API (label/icon/colors/start/end/glowColor/compact/haptic/
+// Tüm eski API (label/icon/colors/start/end/compact/haptic/
 // loading/disabled/textStyle) korunur; görsel artık ui/Button'dan gelir.
 // Yeni kod doğrudan `import Button from './ui/Button'` kullanmalı.
 // ============================================================

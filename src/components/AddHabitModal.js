@@ -80,7 +80,6 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
               : 'Alışkanlığı Ekle'
           }
           colors={[color, color]}
-          glowColor={color}
           onPress={submit}
           disabled={!trimmed || tooShort || limitReached}
           style={styles.button}

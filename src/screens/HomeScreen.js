@@ -38,7 +38,7 @@ import {
 import { useTheme } from '../theme';
 
 export default function HomeScreen() {
-  const { colors: C, glow } = useTheme();
+  const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
   const { data, today, toggleHabit, deleteHabit, addHabit, refreshServer, refreshing, pushToast } =
     useData();
@@ -134,7 +134,7 @@ export default function HomeScreen() {
       </View>
 
       {/* HERO: "Bugün ne durumdayım?" — en üstte, en güçlü vurgu. */}
-      <Card style={styles.todayCard} glowColor={C.accent}>
+      <Card style={styles.todayCard}>
         <View style={styles.todayHeader}>
           <Text style={styles.todayTitle}>Bugünkü İlerleme</Text>
           <View style={styles.todayValueRow}>
@@ -146,7 +146,6 @@ export default function HomeScreen() {
           value={pct}
           height={12}
           colors={[C.accent, C.primary]}
-          glowColor={C.accent}
           accessibilityLabel={`Bugünkü ilerleme yüzde ${Math.round(pct * 100)}`}
         />
         {/* Özet bloğu: en uzun seri · bugün XP · tamamlanan */}
@@ -187,7 +186,6 @@ export default function HomeScreen() {
       </Card>
       <Card
         style={styles.questCard}
-        glowColor={C.primary}
         onPress={() => navigation.navigate('QuestBoard')}
       >
         <View style={styles.questCardTop}>
@@ -247,10 +245,10 @@ export default function HomeScreen() {
           />
         }
         ListEmptyComponent={
-          <EmptyState C={C} styles={styles} glow={glow} onQuickAdd={quickAdd} />
+          <EmptyState C={C} styles={styles} onQuickAdd={quickAdd} />
         }
       />
-      {/* Yeni alışkanlık ekleme butonu (FAB) — spring basınç FX + haptik + glow */}
+      {/* Yeni alışkanlık ekleme butonu (FAB) — spring basınç FX + haptik */}
       <PressableFX
         style={styles.fab}
         hitSlop={10}
@@ -303,7 +301,7 @@ export default function HomeScreen() {
 
 // Boş durum: kullanıcıyı tek dokunuşla başlatmak için zıplayan 🌱
 // ve hazır "Hızlı başlangıç" alışkanlık çipleri gösterir.
-function EmptyState({ C, styles, glow, onQuickAdd }) {
+function EmptyState({ C, styles, onQuickAdd }) {
   const bounce = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -341,7 +339,6 @@ function EmptyState({ C, styles, glow, onQuickAdd }) {
             style={[
               styles.starterChip,
               { borderColor: h.color + '55' },
-              glow(h.color, { opacity: 0.22, radius: 12, offset: 4, elevation: 5 }),
             ]}
             onPress={() => onQuickAdd(h)}
           >

@@ -41,7 +41,7 @@ export default function AppTextField({
   secureTextEntry,
   ...rest
 }) {
-  const { colors: C, radius, type, space, glow } = useTheme();
+  const { colors: C, radius, type, space } = useTheme();
   const [innerFocus, setInnerFocus] = useState(false);
   const [hidden, setHidden] = useState(true);
   const controlled = focusedProp !== undefined;
@@ -96,7 +96,6 @@ export default function AppTextField({
         style={[
           styles.box,
           { backgroundColor: C.surfaceLight, borderColor: hasError ? C.danger : C.border },
-          ringOn ? glow(C.primary, { opacity: 0.16, radius: 14, offset: 0, elevation: 0 }) : null,
           !editable && styles.boxDisabled,
         ]}
       >

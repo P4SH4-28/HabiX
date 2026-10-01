@@ -100,7 +100,6 @@ export default function LevelUpModal() {
           <GradientButton
             label="Devam Et"
             onPress={dismissLevelUp}
-            glowColor={C.gold}
             style={styles.button}
           />
         </Animated.View>

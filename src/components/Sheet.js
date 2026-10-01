@@ -12,7 +12,7 @@ export default function Sheet({ visible, onClose, title, children }) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <BlurView intensity={26} tint="dark" style={styles.frost} pointerEvents="none" />
+        <BlurView intensity={35} tint="dark" style={styles.frost} pointerEvents="none" />
         <Pressable
           style={styles.backdrop}
           onPress={onClose}

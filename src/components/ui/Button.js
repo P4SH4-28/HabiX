@@ -40,13 +40,12 @@ export default function Button({
   colors,
   start = { x: 0, y: 0 },
   end = { x: 1, y: 1 },
-  glowColor,
   compact = false,
   style,
   textStyle,
   accessibilityLabel,
 }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const reduced = useReducedMotion();
   const s = SIZES[compact ? 'sm' : size] || SIZES.md;
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
@@ -81,9 +80,6 @@ export default function Button({
   const gradient = colors || (variant === 'danger' ? [C.danger, C.danger] : [C.primary, C.primaryDark]);
   const fg =
     variant === 'secondary' || variant === 'ghost' ? C.primary : C.onPrimary;
-  const glowStyle = glowColor
-    ? glow(glowColor, { opacity: off ? 0 : 0.4, radius: 18, offset: 6 })
-    : null;
 
   const content = (
     <>
@@ -105,7 +101,7 @@ export default function Button({
   );
 
   return (
-    <Animated.View style={[styles.wrap, glowStyle, aStyle, style]}>
+    <Animated.View style={[styles.wrap, aStyle, style]}>
       <Pressable
         onPress={off ? undefined : onPress}
         onPressIn={pressIn}

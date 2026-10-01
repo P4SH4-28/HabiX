@@ -15,7 +15,7 @@ import { useTheme } from '../../theme';
 import PressableFX from '../PressableFX';
 
 export default function PillTabBar({ state, descriptors, navigation }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -29,7 +29,7 @@ export default function PillTabBar({ state, descriptors, navigation }) {
         },
       ]}
     >
-      <BlurView intensity={70} tint="dark" style={styles.bar}>
+      <BlurView intensity={35} tint="dark" style={styles.bar}>
         <View style={styles.barInner}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
@@ -74,7 +74,7 @@ export default function PillTabBar({ state, descriptors, navigation }) {
                     colors={[C.primary, C.primaryDark]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.item, glow(C.primary, { opacity: 0.4, radius: 14, offset: 3 })]}
+                    style={styles.item}
                   >
                     <View style={styles.itemInner}>{glyph}</View>
                     <Text style={[styles.label, { color: '#FFFFFF' }]} numberOfLines={1}>

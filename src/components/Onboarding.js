@@ -7,7 +7,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import BackgroundPattern from './BackgroundPattern';
 import GradientButton from './GradientButton';
 import SoftButton from './ui/SoftButton';
@@ -44,7 +43,7 @@ const PAGES = [
 ];
 
 export default function Onboarding({ onComplete }) {
-  const { colors: C, radius, glow } = useTheme();
+  const { colors: C, radius } = useTheme();
   const [page, setPage] = useState(0);
   const [visible, setVisible] = useState(false);
 
@@ -77,7 +76,6 @@ export default function Onboarding({ onComplete }) {
   return (
     <View style={[styles.container, { backgroundColor: C.background }]}>
       <BackgroundPattern />
-      <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
       <View
         style={[
           styles.card,
@@ -86,7 +84,6 @@ export default function Onboarding({ onComplete }) {
             borderColor: C.border,
             borderRadius: radius.card,
           },
-          glow(C.primary, { opacity: 0.16, radius: 34, offset: 0, elevation: 0 }),
         ]}
       >
         <IconTile name={p.name} variant={p.variant} size={96} />
@@ -110,7 +107,6 @@ export default function Onboarding({ onComplete }) {
           label={last ? 'Başla' : 'Devam et'}
           onPress={() => (last ? finish() : setPage((x) => x + 1))}
           style={styles.nextButton}
-          glowColor={C.primary}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
