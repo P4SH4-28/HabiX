@@ -91,7 +91,7 @@ function makeStyles(C) {
     columnValue: {
       color: C.text,
       fontSize: 26,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     valueHighlight: {
       color: C.primary,
@@ -107,11 +107,11 @@ function makeStyles(C) {
     },
     arrow: {
       fontSize: 15,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     trendText: {
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     trendHint: {
       color: C.textMuted,

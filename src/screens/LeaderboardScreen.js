@@ -346,7 +346,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenSub: {
       color: C.textMuted,
@@ -396,7 +396,7 @@ function makeStyles(C) {
     lockTitle: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     lockText: {
       color: C.textMuted,
@@ -418,7 +418,7 @@ function makeStyles(C) {
     lockProgressValue: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     lockHint: {
       color: C.textMuted,
@@ -457,7 +457,7 @@ function makeStyles(C) {
     },
     podiumXp: {
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     podiumCoins: {
       color: C.textMuted,
@@ -472,7 +472,7 @@ function makeStyles(C) {
     meLabel: {
       color: C.primary,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 1,
     },
     list: {
@@ -525,7 +525,7 @@ function makeStyles(C) {
     friendChip: {
       color: C.accent,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       backgroundColor: C.accent + '22',
       paddingHorizontal: 6,
       paddingVertical: 2,
@@ -544,7 +544,7 @@ function makeStyles(C) {
     flagChipText: {
       color: C.danger,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     rowStreak: {
       flexDirection: 'row',
@@ -563,7 +563,7 @@ function makeStyles(C) {
     rowXp: {
       color: C.xp,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     chevron: {
       color: C.textMuted,

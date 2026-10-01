@@ -557,7 +557,7 @@ export default function AdminScreen() {
 const makeStyles = (C) =>
   StyleSheet.create({
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-    title: { fontSize: 22, fontWeight: '800', color: C.text },
+    title: { fontSize: 22, fontWeight: '700', color: C.text },
     subtitle: { fontSize: 13, color: C.textMuted, marginBottom: 16 },
     btnContent: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
     cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
@@ -626,7 +626,7 @@ const makeStyles = (C) =>
     logAction: { fontWeight: '700', color: C.text },
     logDetail: { fontSize: 13, color: C.textMuted, marginTop: 2 },
     userHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    userName: { fontSize: 17, fontWeight: '800', color: C.text },
+    userName: { fontSize: 17, fontWeight: '700', color: C.text },
     userMeta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
     userMetaText: { fontSize: 13, color: C.textMuted },
     userChips: { flexDirection: 'row', gap: 6 },

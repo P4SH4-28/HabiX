@@ -235,7 +235,7 @@ function makeStyles(C) {
     },
     tierName: {
       fontSize: 17,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     tierXp: {
       color: C.textMuted,
@@ -252,7 +252,7 @@ function makeStyles(C) {
     weekChipCount: {
       color: C.text,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     tierProgress: {
       gap: 6,
@@ -276,7 +276,7 @@ function makeStyles(C) {
     rewardTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     rewardDescRow: {
       flexDirection: 'row',
@@ -307,7 +307,7 @@ function makeStyles(C) {
     claimBtnText: {
       color: C.onPrimary,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     claimBtnTextDone: {
       color: C.primary,
@@ -339,7 +339,7 @@ function makeStyles(C) {
     rankNum: {
       color: C.textMuted,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
       width: 22,
       textAlign: 'center',
     },
@@ -353,7 +353,7 @@ function makeStyles(C) {
       fontWeight: '600',
     },
     rankNameMe: {
-      fontWeight: '800',
+      fontWeight: '700',
     },
     rankXp: {
       color: C.textMuted,
@@ -384,7 +384,7 @@ function makeStyles(C) {
     leagueName: {
       flex: 1,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     leagueMin: {
       color: C.textMuted,
@@ -398,7 +398,7 @@ function makeStyles(C) {
     leagueReward: {
       color: C.gold,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     noteBox: {
       flexDirection: 'row',

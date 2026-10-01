@@ -125,7 +125,7 @@ function makeStyles(C) {
     badgeReward: {
       color: C.gold,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       marginTop: 3,
     },
   });

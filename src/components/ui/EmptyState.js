@@ -69,7 +69,7 @@ function makeStyles(C) {
     title: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
       textAlign: 'center',
     },
     titleCompact: {

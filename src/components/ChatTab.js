@@ -233,7 +233,7 @@ function makeStyles(C) {
     },
     msgName: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     msgText: {
       color: C.text,

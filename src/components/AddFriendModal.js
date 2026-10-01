@@ -239,7 +239,7 @@ function makeStyles(C) {
     sendButtonText: {
       color: C.onPrimary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     tag: {
       borderRadius: 12,
@@ -252,7 +252,7 @@ function makeStyles(C) {
     tagDoneText: {
       color: C.accent,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     centerBox: {
       alignItems: 'center',

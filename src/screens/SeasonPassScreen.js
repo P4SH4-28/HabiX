@@ -317,7 +317,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenTitleRow: {
       flexDirection: 'row',
@@ -352,7 +352,7 @@ function makeStyles(C) {
     levelText: {
       color: C.primary,
       fontSize: 22,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     progressInfo: {
       flex: 1,
@@ -361,7 +361,7 @@ function makeStyles(C) {
     progressTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     progressHint: {
       color: C.textMuted,
@@ -382,7 +382,7 @@ function makeStyles(C) {
     },
     vipActiveTitle: {
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     vipActiveText: {
       color: C.textMuted,
@@ -404,7 +404,7 @@ function makeStyles(C) {
     buyVipTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     buyVipText: {
       color: C.textMuted,
@@ -424,7 +424,7 @@ function makeStyles(C) {
     },
     buyVipPrice: {
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     buyVipBtn: {
       borderRadius: 12,
@@ -434,7 +434,7 @@ function makeStyles(C) {
     buyVipBtnText: {
       color: C.background,
       fontSize: 13,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     buyVipWarnRow: {
       flexDirection: 'row',
@@ -465,7 +465,7 @@ function makeStyles(C) {
     },
     levelNum: {
       fontSize: 15,
-      fontWeight: '900',
+      fontWeight: '700',
       fontVariant: ['tabular-nums'],
     },
     currentDot: {
@@ -504,7 +504,7 @@ function makeStyles(C) {
     },
     previewGold: {
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     previewCoinRow: {
       flexDirection: 'row',
@@ -536,7 +536,7 @@ function makeStyles(C) {
     },
     boxTrack: {
       fontSize: 11,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.5,
     },
     boxReward: {
@@ -554,7 +554,7 @@ function makeStyles(C) {
     },
     claimBtnText: {
       fontSize: 11,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     claimedChip: {
       borderRadius: 8,
@@ -565,7 +565,7 @@ function makeStyles(C) {
     claimedChipText: {
       color: C.accent,
       fontSize: 11,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     lockChip: {
       flexDirection: 'row',

@@ -276,7 +276,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenTitleRow: {
       flexDirection: 'row',
@@ -317,7 +317,7 @@ function makeStyles(C) {
     },
     sectionTitle: {
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     sectionDesc: {
       color: C.textMuted,
@@ -361,7 +361,7 @@ function makeStyles(C) {
     },
     vipChipText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     questDesc: {
       color: C.textMuted,
@@ -382,7 +382,7 @@ function makeStyles(C) {
     },
     rewardText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     multiplierNote: {
       fontSize: 11,
@@ -409,7 +409,7 @@ function makeStyles(C) {
     },
     claimBtnText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     doneChip: {
       flexDirection: 'row',
@@ -421,7 +421,7 @@ function makeStyles(C) {
     },
     doneChipText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     vipBanner: {
       backgroundColor: C.gold + '18',
@@ -437,7 +437,7 @@ function makeStyles(C) {
     vipBannerTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     vipBannerText: {
       color: C.textMuted,

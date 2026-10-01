@@ -563,7 +563,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenSub: {
       color: C.textMuted,
@@ -595,7 +595,7 @@ function makeStyles(C) {
     profileName: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     profileSub: {
       color: C.textMuted,
@@ -642,13 +642,13 @@ function makeStyles(C) {
     stepperText: {
       color: C.primary,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 24,
     },
     stepperValue: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
       minWidth: 30,
       textAlign: 'center',
     },
@@ -665,7 +665,7 @@ function makeStyles(C) {
     primaryChipText: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     dangerButton: {
       backgroundColor: C.danger + '22',
@@ -687,7 +687,7 @@ function makeStyles(C) {
     dangerText: {
       color: C.danger,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     themeEmoji: {
       fontSize: 22,
@@ -717,7 +717,7 @@ function makeStyles(C) {
     primaryButtonText: {
       color: C.onPrimary,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
   });
 }

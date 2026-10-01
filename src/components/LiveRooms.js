@@ -283,7 +283,7 @@ function makeStyles(C) {
     },
     createBtnText: {
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     disabled: {
       opacity: 0.5,
@@ -358,7 +358,7 @@ function makeStyles(C) {
     roomName: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
       flexShrink: 1,
     },
     mineChip: {
@@ -368,7 +368,7 @@ function makeStyles(C) {
     },
     mineChipText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     roomMeta: {
       color: C.textMuted,
@@ -387,7 +387,7 @@ function makeStyles(C) {
     participants: {
       color: C.text,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     joinBtn: {
       borderRadius: 8,
@@ -396,7 +396,7 @@ function makeStyles(C) {
     },
     joinBtnText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     leaveBtn: {
       borderRadius: 8,
@@ -407,7 +407,7 @@ function makeStyles(C) {
     leaveBtnText: {
       color: C.textMuted,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     emptyLoad: {
       marginTop: 40,

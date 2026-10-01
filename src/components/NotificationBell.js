@@ -129,7 +129,7 @@ function makeStyles(C) {
     badgeText: {
       color: '#FFFFFF',
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     emptyBox: {
       alignItems: 'center',
@@ -190,7 +190,7 @@ function makeStyles(C) {
     acceptText: {
       color: C.onPrimary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     declineButton: {
       backgroundColor: C.surfaceLight,
@@ -201,7 +201,7 @@ function makeStyles(C) {
     declineText: {
       color: C.textMuted,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     disabled: {
       opacity: 0.5,

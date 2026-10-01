@@ -180,7 +180,7 @@ function makeStyles(C, radius) {
     checkmark: {
       color: '#FFFFFF',
       fontSize: 15,
-      fontWeight: '900',
+      fontWeight: '700',
     },
     info: {
       flex: 1,
@@ -214,7 +214,7 @@ function makeStyles(C, radius) {
     streakText: {
       color: C.text,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
   });
 }

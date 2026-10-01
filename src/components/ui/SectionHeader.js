@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   action: {
     fontSize: 13,

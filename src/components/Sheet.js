@@ -83,7 +83,7 @@ function makeStyles(C, radius) {
     title: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     closeBtn: {
       width: 30,

@@ -144,7 +144,7 @@ function makeStyles(C) {
     },
     dayLabelToday: {
       color: C.primary,
-      fontWeight: '800',
+      fontWeight: '700',
     },
   });
 }

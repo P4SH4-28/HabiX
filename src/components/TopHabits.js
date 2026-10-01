@@ -65,7 +65,7 @@ function makeStyles(C) {
     rank: {
       color: C.textMuted,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
       width: 18,
     },
     emojiBox: {

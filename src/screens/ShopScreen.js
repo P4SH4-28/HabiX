@@ -609,7 +609,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenSub: {
       color: C.textMuted,
@@ -628,7 +628,7 @@ function makeStyles(C) {
     balanceText: {
       color: C.gold,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     tabBar: {
       flexDirection: 'row',
@@ -669,13 +669,13 @@ function makeStyles(C) {
     currentLabel: {
       color: C.gold,
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 1,
     },
     currentName: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     currentHint: {
       color: C.textMuted,
@@ -850,7 +850,7 @@ function makeStyles(C) {
     btnSelectedText: {
       color: C.gold,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnOwned: {
       backgroundColor: C.primary + '22',
@@ -858,7 +858,7 @@ function makeStyles(C) {
     btnOwnedText: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnBuy: {
       backgroundColor: C.surfaceLight,
@@ -866,7 +866,7 @@ function makeStyles(C) {
     btnBuyText: {
       color: C.gold,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnDisabled: {
       opacity: 0.4,
@@ -891,7 +891,7 @@ function makeStyles(C) {
     },
     previewTitle: {
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     previewSub: {
       fontSize: 11,
@@ -935,7 +935,7 @@ function makeStyles(C) {
     previewCheckText: {
       color: '#fff',
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     previewBtn: {
       borderRadius: 12,
@@ -944,7 +944,7 @@ function makeStyles(C) {
     },
     previewBtnText: {
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     previewActions: {
       marginTop: 2,
@@ -1006,6 +1006,6 @@ const stylesConf = StyleSheet.create({
   ownedBadgeText: {
     color: '#fff',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });

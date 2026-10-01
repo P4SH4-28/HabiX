@@ -247,7 +247,7 @@ function makeStyles(C) {
     name: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     friendBadge: {
       flexDirection: 'row',
@@ -262,7 +262,7 @@ function makeStyles(C) {
     friendBadgeText: {
       color: C.accent,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     headerStats: {
       flexDirection: 'row',
@@ -305,7 +305,7 @@ function makeStyles(C) {
     actionText: {
       color: C.onPrimary,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     actionDone: {
       backgroundColor: C.surface,
@@ -313,7 +313,7 @@ function makeStyles(C) {
     actionDoneText: {
       color: C.accent,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
   });
 }

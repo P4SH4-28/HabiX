@@ -364,7 +364,7 @@ function makeStyles(C) {
     xpValue: {
       color: C.xp,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     summaryGrid: {
       flexDirection: 'row',
@@ -382,7 +382,7 @@ function makeStyles(C) {
     summaryCellValue: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     summaryCellLabel: {
       color: C.textMuted,

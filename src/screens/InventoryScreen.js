@@ -163,7 +163,7 @@ function makeStyles(C) {
     screenTitle: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     screenSub: {
       color: C.textMuted,
@@ -182,7 +182,7 @@ function makeStyles(C) {
     balanceText: {
       color: C.gold,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     activeCard: {
       backgroundColor: C.surface,
@@ -193,7 +193,7 @@ function makeStyles(C) {
     activeTitle: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
     },
@@ -236,7 +236,7 @@ function makeStyles(C) {
     itemName: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     itemCount: {
       color: C.textMuted,
@@ -259,7 +259,7 @@ function makeStyles(C) {
     btnActiveText: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnDisabled: {
       opacity: 0.4,
@@ -267,7 +267,7 @@ function makeStyles(C) {
     btnUseText: {
       color: C.onPrimary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnDisabledText: {
       color: C.textMuted,

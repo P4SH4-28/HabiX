@@ -115,7 +115,7 @@ function makeStyles(C) {
     previewName: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     previewNameEmpty: {
       color: C.textMuted,

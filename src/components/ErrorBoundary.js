@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '700',
     textAlign: 'center',
     marginTop: 12,
   },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   source: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '700',
     marginBottom: 6,
   },
   message: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 14,
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '700',
     textAlign: 'center',
     overflow: 'hidden',
   },

@@ -65,7 +65,7 @@ function makeStyles(C) {
     levelNumber: {
       color: C.onPrimary,
       fontSize: 28,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     levelLabel: {
       color: C.onPrimary + 'CC',

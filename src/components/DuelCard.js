@@ -132,7 +132,7 @@ function makeStyles(C) {
     title: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     desc: {
       color: C.textMuted,
@@ -154,7 +154,7 @@ function makeStyles(C) {
     acceptText: {
       color: C.onPrimary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     finishBtnContent: {
       flexDirection: 'row',

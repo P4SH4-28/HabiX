@@ -67,7 +67,7 @@ function makeStyles(C) {
   check: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowRadius: 2,
   },

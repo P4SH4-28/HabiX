@@ -149,7 +149,7 @@ function makeStyles(C, radius) {
     title: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     metaRow: {
       flexDirection: 'row',
@@ -163,7 +163,7 @@ function makeStyles(C, radius) {
     timer: {
       color: C.text,
       fontSize: 46,
-      fontWeight: '800',
+      fontWeight: '700',
       textAlign: 'center',
       marginVertical: 8,
       fontVariant: ['tabular-nums'],

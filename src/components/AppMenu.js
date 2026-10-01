@@ -256,7 +256,7 @@ function makeStyles(C) {
     profileName: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     profileLevel: {
       color: C.textMuted,

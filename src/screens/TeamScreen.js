@@ -340,7 +340,7 @@ function makeStyles(C) {
     teamName: {
       color: C.text,
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     teamMeta: {
       color: C.textMuted,
@@ -355,7 +355,7 @@ function makeStyles(C) {
     leaveBtnText: {
       color: C.danger,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     goalCard: {
       backgroundColor: C.surfaceLight,
@@ -376,12 +376,12 @@ function makeStyles(C) {
     goalTitle: {
       color: C.text,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     goalXp: {
       color: C.primary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     goalHint: {
       color: C.textMuted,
@@ -418,7 +418,7 @@ function makeStyles(C) {
       fontWeight: '600',
     },
     memberLeader: {
-      fontWeight: '800',
+      fontWeight: '700',
       color: C.gold,
     },
     memberStats: {
@@ -448,7 +448,7 @@ function makeStyles(C) {
     createTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     input: {
       backgroundColor: C.surfaceLight,
@@ -490,7 +490,7 @@ function makeStyles(C) {
     createBtnText: {
       color: C.onPrimary,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     btnDisabled: {
       opacity: 0.4,
@@ -532,7 +532,7 @@ function makeStyles(C) {
     joinBtnText: {
       color: C.onPrimary,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     emptyText: {
       color: C.textMuted,

@@ -181,7 +181,7 @@ function makeStyles(C) {
     summaryTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     summarySub: {
       color: C.textMuted,
@@ -245,7 +245,7 @@ function makeStyles(C) {
     rewardText: {
       color: C.gold,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     progressRow: {
       flexDirection: 'row',

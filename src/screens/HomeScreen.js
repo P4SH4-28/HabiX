@@ -338,7 +338,7 @@ function makeStyles(C) {
     greeting: {
       color: C.text,
       fontSize: 22,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     greetingRow: {
       flexDirection: 'row',
@@ -373,7 +373,7 @@ function makeStyles(C) {
     goldText: {
       color: C.gold,
       fontSize: 13,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     subGreeting: {
       color: C.textMuted,
@@ -405,7 +405,7 @@ function makeStyles(C) {
     questCardTitle: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     questTitleRow: {
       flexDirection: 'row',
@@ -419,7 +419,7 @@ function makeStyles(C) {
     },
     questReadyText: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     questWaitText: {
       color: C.textMuted,
@@ -458,7 +458,7 @@ function makeStyles(C) {
     summaryValue: {
       color: C.text,
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     summaryLabel: {
       color: C.textMuted,
@@ -478,7 +478,7 @@ function makeStyles(C) {
     todayValue: {
       color: C.accent,
       fontSize: 26,
-      fontWeight: '800',
+      fontWeight: '700',
       fontVariant: ['tabular-nums'],
     },
     todayValueRow: {
@@ -518,7 +518,7 @@ function makeStyles(C) {
     fabIcon: {
       color: C.onPrimary,
       fontSize: 32,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 36,
     },
     emptyBox: {
@@ -564,7 +564,7 @@ function makeStyles(C) {
     },
     confirmBtnDanger: {
       color: '#fff',
-      fontWeight: '800',
+      fontWeight: '700',
     },
     starterWrap: {
       flexDirection: 'row',

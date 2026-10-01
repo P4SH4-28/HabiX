@@ -116,7 +116,7 @@ function makeStyles(C) {
     bigLevel: {
       color: C.text,
       fontSize: 96,
-      fontWeight: '900',
+      fontWeight: '700',
       marginVertical: 4,
     },
     subtitle: {
