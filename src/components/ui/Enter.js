@@ -20,7 +20,7 @@ const EASE = Easing.bezier(0.22, 1, 0.36, 1);
 export default function Enter({
   children,
   delay = 0,
-  duration = 340,
+  duration = 300,
   y = 14,
   scale = 0,
   style,

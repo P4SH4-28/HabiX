@@ -31,7 +31,7 @@ export default function Heatmap({ daily }) {
     reveal.setValue(0);
     const a = Animated.timing(reveal, {
       toValue: 1,
-      duration: 650,
+      duration: 300,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     });

@@ -36,7 +36,7 @@ export default function Progress({
     if (reduced) {
       p.value = target;
     } else {
-      p.value = withTiming(target, { duration: 320 });
+      p.value = withTiming(target, { duration: 300 });
     }
   }, [target, reduced, p]);
 

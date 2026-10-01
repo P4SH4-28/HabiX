@@ -47,7 +47,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
       checkScale.value = 0.4;
       glowP.value = 0;
       checkScale.value = withSpring(1, SPRING);
-      glowP.value = withTiming(1, { duration: 520 });
+      glowP.value = withTiming(1, { duration: 300 });
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }
