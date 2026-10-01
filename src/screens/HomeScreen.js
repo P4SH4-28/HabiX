@@ -217,9 +217,10 @@ export default function HomeScreen() {
     </View>
   );
 
-  // Kart yüksekliği: border(2) + padding(32) + emoji kutusu(42) = 76;
-  // + marginBottom(10) = 86 toplam pitch (getItemLayout offset hesabı için).
-  const itemHeight = 86;
+  // Kart yüksekliği: padding(32) + emoji kutusu(42) = 74;
+  // + marginBottom(10) = 84 toplam pitch (getItemLayout offset hesabı için).
+  // Not: 2f ile kartın border'ı kalktığı için pitch 86 -> 84.
+  const itemHeight = 84;
 
   return (
     <View style={styles.container}>
@@ -255,7 +256,7 @@ export default function HomeScreen() {
         accessibilityRole="button"
         accessibilityLabel="Yeni alışkanlık ekle"
       >
-        <View style={[styles.fabGradient, { backgroundColor: C.primary }]}>
+        <View style={[styles.fabCircle, { backgroundColor: C.primary }]}>
           <Text style={styles.fabIcon}>+</Text>
         </View>
       </PressableFX>
@@ -364,9 +365,6 @@ function makeStyles(C) {
       paddingHorizontal: 10,
       paddingVertical: 3,
     },
-    goldIcon: {
-      fontSize: 13,
-    },
     goldText: {
       color: C.gold,
       fontSize: 13,
@@ -376,11 +374,6 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       marginTop: 2,
-    },
-    card: {
-      backgroundColor: C.surface,
-      borderRadius: 20,
-      padding: 16,
     },
     todayCard: {
       backgroundColor: C.surface,
@@ -449,9 +442,6 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 1,
     },
-    summaryIcon: {
-      fontSize: 15,
-    },
     summaryValue: {
       color: C.text,
       fontSize: 15,
@@ -499,13 +489,13 @@ function makeStyles(C) {
       bottom: 24,
       width: 64,
       height: 64,
-      shadowColor: C.primary,
-      shadowOpacity: 0.55,
-      shadowRadius: 16,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 12,
+      shadowColor: '#000000',
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 8,
     },
-    fabGradient: {
+    fabCircle: {
       width: 64,
       height: 64,
       borderRadius: 999,
@@ -523,10 +513,6 @@ function makeStyles(C) {
       paddingVertical: 40,
       paddingHorizontal: 24,
       marginTop: 20,
-    },
-    emptyEmoji: {
-      fontSize: 44,
-      marginBottom: 12,
     },
     emptyTitle: {
       color: C.text,
@@ -560,7 +546,7 @@ function makeStyles(C) {
       fontWeight: '700',
     },
     confirmBtnDanger: {
-      color: '#fff',
+      color: C.onPrimary,
       fontWeight: '700',
     },
     starterWrap: {
@@ -579,10 +565,6 @@ function makeStyles(C) {
       borderRadius: 16,
       paddingHorizontal: 14,
       paddingVertical: 9,
-    },
-    starterChipPressed: {
-      opacity: 0.7,
-      transform: [{ scale: 0.97 }],
     },
     starterEmoji: {
       fontSize: 17,
