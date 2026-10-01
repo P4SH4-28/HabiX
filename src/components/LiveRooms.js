@@ -147,7 +147,7 @@ export default function LiveRooms() {
   const renderRoom = ({ item }) => {
     const isMine = myRoom === item.id;
     return (
-      <View style={[styles.room, { borderColor: isMine ? C.primary + '66' : C.border }]}>
+      <View style={[styles.room, { borderWidth: 1, borderColor: isMine ? C.primary + '66' : C.border }]}>
         <View style={styles.roomEmojiWrap}>
           <Text style={styles.roomEmoji}>🍅</Text>
         </View>

@@ -34,7 +34,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
     <Sheet visible={visible} onClose={onClose} title="Yeni Alışkanlık">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ gap: 14 }}>
         {/* Canlı önizleme: isim + sembol + renk anında burada görünür */}
-        <View style={[styles.preview, { backgroundColor: color + '22', borderColor: color + '66' }]}>
+        <View style={[styles.preview, { backgroundColor: color + '22', borderWidth: 1, borderColor: color + '66' }]}>
           <View style={[styles.previewCircle, { backgroundColor: color, shadowColor: color }]}>
             <Text style={styles.previewEmoji}>{emoji}</Text>
           </View>

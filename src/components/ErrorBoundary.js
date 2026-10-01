@@ -46,7 +46,7 @@ export function FatalErrorView({ error, onRetry }) {
           Uygulama kapandı ama bu ekran hatayı yakaladı. Aşağıdaki mesajı
           geliştiriciye ilet; sorun buradan görülebilir.
         </Text>
-        <View style={[styles.msgBox, { backgroundColor: C.surface, borderColor: C.danger }]}>
+        <View style={[styles.msgBox, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.danger }]}>
           <Text style={[styles.source, { color: C.danger }]}>
             Kaynak: {info.source || 'bilinmiyor'}
           </Text>
@@ -55,7 +55,7 @@ export function FatalErrorView({ error, onRetry }) {
           </Text>
         </View>
         {info.stack ? (
-          <View style={[styles.stackBox, { backgroundColor: C.surfaceLight, borderColor: C.border }]}>
+          <View style={[styles.stackBox, { backgroundColor: C.surfaceLight}]}>
             <Text selectable style={[styles.stack, { color: C.textMuted }]}>
               {info.stack}
             </Text>

@@ -535,7 +535,7 @@ function ThemePreview({ C, styles, theme, isSelected, isOwned, affordable, onSel
     <View
       style={[
         styles.previewPanel,
-        { backgroundColor: t.background, borderColor: t.primary + '55' },
+        { backgroundColor: t.background, borderWidth: 1, borderColor: t.primary + '55' },
       ]}
     >
       <View style={[styles.previewTop, { backgroundColor: t.surface }]}>

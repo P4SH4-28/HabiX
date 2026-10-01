@@ -209,7 +209,7 @@ export default function ProfileScreen() {
         </View>
 
         <PressableFX
-          style={[styles.achBtn, { borderColor: C.primary + '55' }]}
+          style={styles.achBtn}
           onPress={() => navigation.navigate('Achievements')}
         >
           <View style={styles.achBtnTextRow}>

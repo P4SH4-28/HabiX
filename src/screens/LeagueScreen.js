@@ -76,7 +76,7 @@ export default function LeagueScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Kendi lig kartı */}
-      <View style={[styles.tierCard, { borderColor: myLeague.color + '88' }]}>
+      <View style={[styles.tierCard, { borderWidth: 1, borderColor: myLeague.color + '88' }]}>
         <View style={styles.tierTop}>
           <View style={styles.tierLeft}>
             <View style={[styles.tierEmojiWrap, { backgroundColor: myLeague.color + '22' }]}>

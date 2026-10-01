@@ -158,7 +158,7 @@ export default function AddFriendModal({ visible, onClose }) {
         </ScrollView>
 
         {feedback && (
-          <View style={[styles.feedbackBox, !feedback.ok && { borderColor: C.danger }]}>
+          <View style={[styles.feedbackBox, !feedback.ok && { borderWidth: 1, borderColor: C.danger }]}>
             {feedback.icon ? (
               <Icon
                 emoji={feedback.icon}

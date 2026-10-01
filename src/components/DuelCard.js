@@ -35,7 +35,7 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
   if (duel.status === 'pending' && !duel.isChallenger) {
     // Gelen davet: kabul / red.
     return (
-      <View style={[styles.card, { borderColor: C.accent }]}>
+      <View style={[styles.card, { borderWidth: 1, borderColor: C.accent }]}>
         <IconTile icon="swords" emoji="⚔️" variant="danger" size={54} iconSize={24} />
         <View style={styles.body}>
           <Text style={styles.title}>{duel.opponent} seni düelloya davet etti!</Text>
@@ -72,7 +72,7 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
   const myPct = total > 0 ? (myGain / total) * 100 : 50;
 
   return (
-    <View style={[styles.card, { borderColor: C.border }]}>
+    <View style={[styles.card]}>
       <IconTile icon="swords" emoji="⚔️" variant="glass" size={54} iconSize={24} />
       <View style={styles.body}>
         <Text style={styles.title}>

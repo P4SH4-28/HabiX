@@ -77,7 +77,7 @@ export default function QuestBoardScreen() {
     const pct = Math.min(100, (progress / quest.target) * 100);
     const reward = questReward(quest, vipActive);
     return (
-      <View key={quest.id} style={[styles.quest, { borderColor: accent + '44' }]}>
+      <View key={quest.id} style={[styles.quest, { borderWidth: 1, borderColor: accent + '44' }]}>
         <View style={styles.questTop}>
           <Icon emoji={quest.emoji} size={26} color={accent} />
           <View style={styles.questInfo}>
@@ -203,7 +203,7 @@ export default function QuestBoardScreen() {
           </Text>
         </Pressable>
       ) : (
-        <View style={[styles.vipActiveBox, { borderColor: C.gold + '55' }]}>
+        <View style={[styles.vipActiveBox, { borderWidth: 1, borderColor: C.gold + '55' }]}>
           <View style={styles.vipActiveRow}>
             <Icon emoji="👑" size={15} color={C.gold} />
             <Text style={[styles.vipActiveText, { color: C.gold }]}>

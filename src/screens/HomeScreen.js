@@ -309,10 +309,7 @@ function EmptyState({ C, styles, onQuickAdd }) {
         {STARTER_HABITS.map((h) => (
           <PressableFX
             key={h.name}
-            style={[
-              styles.starterChip,
-              { borderColor: h.color + '55' },
-            ]}
+            style={styles.starterChip}
             onPress={() => onQuickAdd(h)}
           >
             <Text style={styles.starterEmoji}>{h.emoji}</Text>

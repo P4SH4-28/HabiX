@@ -65,7 +65,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
     <Pressable
       style={({ pressed }) => [
         styles.card,
-        completedToday && { borderColor: habit.color + '55' },
+        completedToday && { borderWidth: 1, borderColor: habit.color + '55' },
         pressed && { transform: [{ scale: 0.985 }] },
       ]}
       onLongPress={() =>
@@ -78,7 +78,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
       accessibilityHint="Uzun bas: alışkanlığı sil"
     >
       {/* Alışkanlığın rengiyle boyanmış emoji rozeti */}
-      <View style={[styles.emojiBox, { backgroundColor: habit.color + '1F', borderColor: habit.color + '33' }]}>
+      <View style={[styles.emojiBox, { backgroundColor: habit.color + '1F' }]}>
         <Text style={styles.emoji}>{habit.emoji || '✅'}</Text>
       </View>
 
@@ -122,7 +122,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
       </View>
 
       {/* 🔥/❄️ Seri sayacı pill'i */}
-      <View style={[styles.streakBadge, { borderColor: habit.color + '4D' }]}>
+      <View style={[styles.streakBadge]}>
         <Text style={styles.streakIcon}>{frozen ? '❄️' : '🔥'}</Text>
         <Text style={styles.streakText}>{streak}</Text>
       </View>

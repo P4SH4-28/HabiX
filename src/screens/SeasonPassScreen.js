@@ -220,7 +220,7 @@ export default function SeasonPassScreen() {
 
       {/* VIP durum / satın alma kartı */}
       {vipActive ? (
-        <View style={[styles.vipActiveCard, { borderColor: C.gold + '55' }]}>
+        <View style={[styles.vipActiveCard, { borderWidth: 1, borderColor: C.gold + '55' }]}>
           <Icon emoji="👑" size={30} color={C.gold} />
           <View style={styles.vipActiveInfo}>
             <Text style={[styles.vipActiveTitle, { color: C.gold }]}>VIP aktif</Text>
@@ -231,7 +231,7 @@ export default function SeasonPassScreen() {
         </View>
       ) : (
         <Pressable
-          style={[styles.buyVipCard, { borderColor: C.gold + '55' }]}
+          style={[styles.buyVipCard, { borderWidth: 1, borderColor: C.gold + '55' }]}
           onPress={handleBuyVip}
           disabled={buying}
         >

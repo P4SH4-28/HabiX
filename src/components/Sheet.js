@@ -30,7 +30,7 @@ export default function Sheet({ visible, onClose, title, children }) {
               accessibilityLabel="Kapat"
               style={({ pressed }) => [
                 styles.closeBtn,
-                { backgroundColor: C.surfaceLight, borderColor: C.border },
+                { backgroundColor: C.surfaceLight },
                 pressed && { transform: [{ scale: 0.92 }], opacity: 0.8 },
               ]}
             >
