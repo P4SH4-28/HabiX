@@ -64,8 +64,6 @@ function makeStyles(C) {
       gap: 9,
     },
     ring: {
-      borderWidth: 1,
-      borderColor: C.danger + '33',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 2,

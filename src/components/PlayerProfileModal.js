@@ -281,8 +281,6 @@ function makeStyles(C) {
     card: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
     },
     statsRow: {
@@ -311,8 +309,6 @@ function makeStyles(C) {
     },
     actionDone: {
       backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.accent,
     },
     actionDoneText: {
       color: C.accent,

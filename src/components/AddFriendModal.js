@@ -248,8 +248,6 @@ function makeStyles(C) {
     },
     tagDone: {
       backgroundColor: C.surfaceLight,
-      borderWidth: 1,
-      borderColor: C.border,
     },
     tagDoneText: {
       color: C.accent,
@@ -275,8 +273,6 @@ function makeStyles(C) {
     feedbackBox: {
       marginTop: 10,
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: C.accent,
       backgroundColor: C.surfaceLight,
       padding: 10,
       flexDirection: 'row',

@@ -166,8 +166,6 @@ function makeStyles(C) {
       gap: 12,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.gold + '55',
       padding: 14,
       marginBottom: 6,
     },
@@ -192,15 +190,14 @@ function makeStyles(C) {
     card: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 14,
       gap: 10,
     },
     cardUnlocked: {
+      borderWidth: 1,
       borderColor: C.gold + '66',
     },
     cardLocked: {
-      borderColor: C.border,
       opacity: 0.85,
     },
     cardHeader: {
@@ -272,8 +269,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
       marginTop: 6,
     },

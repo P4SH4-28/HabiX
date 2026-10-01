@@ -47,12 +47,11 @@ function makeStyles(C) {
     height: 44,
     borderRadius: 12,
     backgroundColor: C.surfaceLight,
-    borderWidth: 1,
-    borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   itemSelected: {
+    borderWidth: 1,
     borderColor: C.primary,
     backgroundColor: C.primary + '26',
     transform: [{ scale: 1.08 }],

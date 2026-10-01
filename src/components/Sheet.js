@@ -89,7 +89,6 @@ function makeStyles(C, radius) {
       width: 30,
       height: 30,
       borderRadius: radius.chip,
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
     },

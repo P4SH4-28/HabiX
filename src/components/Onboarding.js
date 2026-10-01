@@ -81,7 +81,6 @@ export default function Onboarding({ onComplete }) {
           styles.card,
           {
             backgroundColor: C.surface,
-            borderColor: C.border,
             borderRadius: radius.card,
           },
         ]}
@@ -129,7 +128,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
-    borderWidth: 1,
     padding: 32,
     gap: 14,
   },

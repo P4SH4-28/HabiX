@@ -64,7 +64,6 @@ function SkeletonCard({ h = 74, style }) {
         {
           height: h,
           backgroundColor: C.surface,
-          borderColor: C.border,
           borderRadius: radius.card,
           opacity: SKELETON_OPACITY,
         },
@@ -82,7 +81,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   card: {
-    borderWidth: 1,
     marginBottom: 10,
   },
 });

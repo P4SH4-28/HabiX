@@ -41,8 +41,6 @@ export default function SegmentedTabs({ options, value, onChange, style }) {
               { borderRadius: radius.control - 2 },
               active && {
                 backgroundColor: C.surfaceLight,
-                borderWidth: 1,
-                borderColor: C.border,
               },
             ]}
           >

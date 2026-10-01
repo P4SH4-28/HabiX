@@ -14,7 +14,6 @@ export default function StatCard({ label, value, icon, color }) {
           styles.iconBox,
           {
             backgroundColor: (color || C.primary) + '22',
-            borderColor: (color || C.primary) + '33',
           },
         ]}
       >
@@ -32,8 +31,6 @@ function makeStyles(C) {
       flex: 1,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
       gap: 6,
     },
@@ -41,7 +38,6 @@ function makeStyles(C) {
       width: 32,
       height: 32,
       borderRadius: 12,
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
     },

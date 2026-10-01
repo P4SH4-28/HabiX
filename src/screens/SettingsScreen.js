@@ -586,8 +586,6 @@ function makeStyles(C) {
       gap: 14,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.gold + '44',
       padding: 16,
     },
     profileInfo: {

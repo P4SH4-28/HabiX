@@ -359,8 +359,6 @@ function makeStyles(C) {
       gap: 8,
       alignSelf: 'flex-start',
       backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.border,
       borderRadius: 999,
       paddingHorizontal: 12,
       paddingVertical: 6,
@@ -374,8 +372,6 @@ function makeStyles(C) {
     offlineBox: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.danger,
       padding: 12,
     },
     offlineRow: {
@@ -392,8 +388,6 @@ function makeStyles(C) {
     lockBox: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 24,
       alignItems: 'center',
       gap: 12,
@@ -442,14 +436,13 @@ function makeStyles(C) {
       flex: 1,
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.border,
       alignItems: 'center',
       justifyContent: 'flex-end',
       padding: 12,
       gap: 4,
     },
     meCard: {
+      borderWidth: 1,
       borderColor: C.primary,
     },
     podiumMedal: {
@@ -583,8 +576,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

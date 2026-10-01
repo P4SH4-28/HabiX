@@ -393,7 +393,6 @@ function makeStyles(C) {
     achBtn: {
       marginTop: 14,
       borderRadius: 12,
-      borderWidth: 1,
       alignItems: 'center',
       paddingVertical: 10,
     },

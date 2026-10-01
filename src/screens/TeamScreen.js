@@ -322,8 +322,6 @@ function makeStyles(C) {
     teamCard: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.primary + '66',
       padding: 16,
       gap: 14,
     },
@@ -401,8 +399,6 @@ function makeStyles(C) {
     membersCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 6,
     },
     memberRow: {
@@ -446,8 +442,6 @@ function makeStyles(C) {
     createCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
       gap: 12,
     },
@@ -478,10 +472,9 @@ function makeStyles(C) {
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: C.border,
     },
     emojiPickActive: {
+      borderWidth: 1,
       borderColor: C.primary,
       backgroundColor: C.primary + '22',
     },
@@ -505,8 +498,6 @@ function makeStyles(C) {
     openCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 6,
     },
     openRow: {
@@ -555,8 +546,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

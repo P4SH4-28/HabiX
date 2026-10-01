@@ -175,8 +175,6 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 6,
       backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.gold + '66',
       borderRadius: 16,
       paddingHorizontal: 14,
       paddingVertical: 8,
@@ -189,8 +187,6 @@ function makeStyles(C) {
     activeCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.primary + '55',
       padding: 14,
       gap: 8,
     },
@@ -222,8 +218,6 @@ function makeStyles(C) {
     itemCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
       gap: 10,
     },
@@ -284,8 +278,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

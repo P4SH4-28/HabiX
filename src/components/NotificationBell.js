@@ -107,8 +107,6 @@ function makeStyles(C) {
       height: 44,
       borderRadius: 999,
       backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.border,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 10,
@@ -196,8 +194,6 @@ function makeStyles(C) {
     },
     declineButton: {
       backgroundColor: C.surfaceLight,
-      borderWidth: 1,
-      borderColor: C.border,
       borderRadius: 12,
       paddingHorizontal: 10,
       paddingVertical: 8,

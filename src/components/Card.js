@@ -59,10 +59,9 @@ function makeStyles(C, radius) {
   return StyleSheet.create({
     card: {
       borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: C.border,
     },
     selected: {
+      borderWidth: 1,
       borderColor: C.primary + '66',
     },
   });

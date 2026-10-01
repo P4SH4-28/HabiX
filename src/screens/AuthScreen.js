@@ -283,7 +283,6 @@ function makeStyles(C, radius) {
     container: { flex: 1, backgroundColor: C.background },
     flex: { flex: 1 },
     content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
-    card: { backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 20, gap: 12 },
     title: { color: C.text, fontSize: 22, lineHeight: 28, fontWeight: '800', letterSpacing: -0.4, textAlign: 'center' },
     desc: { color: C.textMuted, fontSize: 13, lineHeight: 19, textAlign: 'center', marginBottom: 4 },
     field: { gap: 6 },
@@ -301,7 +300,6 @@ function makeStyles(C, radius) {
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', padding: 24 },
     modal: { width: '100%', maxWidth: 380, backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 24, gap: 14, alignItems: 'center' },
     modalTitle: { color: C.text, fontSize: 22, fontWeight: '800', textAlign: 'center' },
-    keyPill: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 20, paddingVertical: 12, alignSelf: 'stretch', alignItems: 'center' },
     keyText: { color: C.primary, fontSize: 22, fontWeight: '900', letterSpacing: 3 },
     modalWarn: { color: C.textMuted, fontSize: 13, lineHeight: 19, textAlign: 'center' },
   });

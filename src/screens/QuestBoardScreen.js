@@ -292,12 +292,11 @@ function makeStyles(C) {
     section: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
       gap: 12,
     },
     vipSection: {
+      borderWidth: 1,
       borderColor: C.gold + '44',
     },
     sectionHeader: {
@@ -328,7 +327,6 @@ function makeStyles(C) {
     quest: {
       backgroundColor: C.surfaceLight,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 14,
       gap: 10,
     },
@@ -428,8 +426,6 @@ function makeStyles(C) {
     vipBanner: {
       backgroundColor: C.gold + '18',
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.gold + '55',
       padding: 16,
       gap: 6,
     },
@@ -451,7 +447,6 @@ function makeStyles(C) {
     vipActiveBox: {
       backgroundColor: C.gold + '12',
       borderRadius: 16,
-      borderWidth: 1,
       padding: 12,
     },
     vipActiveRow: {
@@ -480,8 +475,6 @@ function makeStyles(C) {
     offlineBox: {
       backgroundColor: C.danger + '18',
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.danger + '66',
       padding: 12,
     },
     noteBox: {
@@ -490,8 +483,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

@@ -621,8 +621,6 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 6,
       backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.gold + '66',
       borderRadius: 16,
       paddingHorizontal: 14,
       paddingVertical: 8,
@@ -642,8 +640,6 @@ function makeStyles(C) {
       backgroundColor: C.surface,
       paddingHorizontal: 14,
       paddingVertical: 9,
-      borderWidth: 1,
-      borderColor: C.border,
     },
     tabChipContent: {
       flexDirection: 'row',
@@ -664,8 +660,6 @@ function makeStyles(C) {
       gap: 14,
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.gold + '55',
       padding: 16,
     },
     currentInfo: {
@@ -716,8 +710,6 @@ function makeStyles(C) {
     howCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
       gap: 10,
     },
@@ -766,8 +758,6 @@ function makeStyles(C) {
       width: '48%',
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       alignItems: 'center',
       padding: 14,
       gap: 8,
@@ -776,8 +766,6 @@ function makeStyles(C) {
       width: 72,
       height: 72,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -813,8 +801,6 @@ function makeStyles(C) {
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: C.border,
     },
     frameAvatarEmoji: {
       fontSize: 30,
@@ -860,8 +846,6 @@ function makeStyles(C) {
     },
     btnSelected: {
       backgroundColor: C.gold + '22',
-      borderWidth: 1,
-      borderColor: C.gold,
     },
     btnSelectedText: {
       color: C.gold,
@@ -892,7 +876,6 @@ function makeStyles(C) {
     },
     previewPanel: {
       borderRadius: 20,
-      borderWidth: 1,
       padding: 14,
       gap: 10,
     },
@@ -978,8 +961,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {
@@ -994,8 +975,6 @@ function makeStyles(C) {
     vipHint: {
       backgroundColor: C.gold + '1a',
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.gold + '55',
       padding: 14,
     },
     vipHintRow: {

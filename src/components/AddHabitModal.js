@@ -95,7 +95,6 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 6,
       borderRadius: 16,
-      borderWidth: 1,
       borderStyle: 'dashed',
       padding: 16,
     },
@@ -132,8 +131,6 @@ function makeStyles(C) {
     },
     limitBox: {
       backgroundColor: C.danger + '1A',
-      borderWidth: 1,
-      borderColor: C.danger + '55',
       borderRadius: 12,
       padding: 12,
     },

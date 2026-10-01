@@ -121,7 +121,6 @@ function makeStyles(C) {
       flexDirection: 'row',
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 14,
       gap: 12,
       alignItems: 'center',

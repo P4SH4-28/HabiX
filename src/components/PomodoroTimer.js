@@ -134,8 +134,6 @@ function makeStyles(C, radius) {
     card: {
       backgroundColor: C.surface,
       borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
       marginBottom: 14,
     },

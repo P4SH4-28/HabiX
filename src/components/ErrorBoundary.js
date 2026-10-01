@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
   },
   msgBox: {
     borderRadius: 16,
-    borderWidth: 1.5,
     padding: 14,
     marginTop: 20,
   },
@@ -161,7 +160,6 @@ const styles = StyleSheet.create({
   },
   stackBox: {
     borderRadius: 12,
-    borderWidth: 1,
     padding: 12,
     marginTop: 12,
   },

@@ -55,8 +55,6 @@ function makeStyles(C) {
     card: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
       gap: 14,
     },

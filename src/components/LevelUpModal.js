@@ -97,8 +97,6 @@ function makeStyles(C) {
       alignItems: 'center',
       width: '100%',
       maxWidth: 360,
-      borderWidth: 1,
-      borderColor: C.gold,
       overflow: 'hidden',
     },
     glowRing: {

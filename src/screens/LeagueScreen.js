@@ -212,7 +212,6 @@ function makeStyles(C) {
     tierCard: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
       padding: 16,
       gap: 14,
     },
@@ -266,8 +265,6 @@ function makeStyles(C) {
     rewardCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.gold + '55',
       padding: 14,
       gap: 8,
     },
@@ -326,8 +323,6 @@ function makeStyles(C) {
     rankCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 6,
     },
     rankRow: {
@@ -374,8 +369,6 @@ function makeStyles(C) {
     leaguesCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 6,
     },
     leagueRow: {
@@ -413,8 +406,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

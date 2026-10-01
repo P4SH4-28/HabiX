@@ -333,7 +333,6 @@ function makeStyles(C) {
       gap: 12,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 12,
     },
     roomEmojiWrap: {

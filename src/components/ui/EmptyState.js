@@ -33,7 +33,6 @@ export default function EmptyState({
             width: ringSize,
             height: ringSize,
             borderRadius: ringSize / 2,
-            borderColor: C.border,
           },
         ]}
       >
@@ -63,7 +62,6 @@ function makeStyles(C) {
       gap: 10,
     },
     ring: {
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 2,

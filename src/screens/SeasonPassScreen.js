@@ -332,8 +332,6 @@ function makeStyles(C) {
     progressCard: {
       backgroundColor: C.surface,
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 16,
     },
     progressTop: {
@@ -376,7 +374,6 @@ function makeStyles(C) {
       gap: 12,
       backgroundColor: C.gold + '12',
       borderRadius: 20,
-      borderWidth: 1,
       padding: 16,
     },
     vipActiveInfo: {
@@ -398,7 +395,6 @@ function makeStyles(C) {
       gap: 12,
       backgroundColor: C.gold + '12',
       borderRadius: 20,
-      borderWidth: 1,
       padding: 16,
     },
     buyVipInfo: {
@@ -486,17 +482,16 @@ function makeStyles(C) {
     box: {
       flex: 1,
       borderRadius: 16,
-      borderWidth: 1,
       padding: 10,
       gap: 6,
       minHeight: 96,
     },
     freeBox: {
       backgroundColor: C.surface,
-      borderColor: C.border,
     },
     vipBox: {
       backgroundColor: C.gold + '0F',
+      borderWidth: 1,
       borderColor: C.gold + '44',
     },
     boxClaimed: {
@@ -595,8 +590,6 @@ function makeStyles(C) {
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
       padding: 14,
     },
     noteIcon: {

@@ -603,8 +603,6 @@ const makeStyles = (C) =>
       borderRadius: 16,
       padding: 14,
       marginBottom: 14,
-      borderWidth: 1,
-      borderColor: C.border,
     },
     cardTitle: { fontSize: 15, fontWeight: '700', color: C.text, marginBottom: 10 },
     muted: { fontSize: 13, color: C.textMuted, marginBottom: 8 },
