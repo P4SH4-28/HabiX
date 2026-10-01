@@ -102,7 +102,7 @@ function makeStyles(C) {
     previewCircle: {
       width: 64,
       height: 64,
-      borderRadius: 32,
+      borderRadius: 999,
       alignItems: 'center',
       justifyContent: 'center',
       shadowOpacity: 0.4,

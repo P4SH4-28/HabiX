@@ -155,9 +155,9 @@ const styles = StyleSheet.create({
     zIndex: 2000,
   },
   square: {
-    borderRadius: 2,
+    borderRadius: 8,
   },
   circle: {
-    borderRadius: 99,
+    borderRadius: 999,
   },
 });

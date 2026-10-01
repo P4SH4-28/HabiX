@@ -623,7 +623,7 @@ function makeStyles(C) {
       backgroundColor: C.surface,
       borderWidth: 1,
       borderColor: C.gold + '66',
-      borderRadius: 14,
+      borderRadius: 16,
       paddingHorizontal: 14,
       paddingVertical: 8,
     },
@@ -638,7 +638,7 @@ function makeStyles(C) {
       paddingVertical: 2,
     },
     tabChip: {
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.surface,
       paddingHorizontal: 14,
       paddingVertical: 9,
@@ -663,7 +663,7 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 14,
       backgroundColor: C.surface,
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: C.gold + '55',
       padding: 16,
@@ -715,7 +715,7 @@ function makeStyles(C) {
     },
     howCard: {
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,
@@ -775,7 +775,7 @@ function makeStyles(C) {
     themePreview: {
       width: 72,
       height: 72,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       alignItems: 'center',
@@ -790,7 +790,7 @@ function makeStyles(C) {
     themeDot: {
       width: 12,
       height: 12,
-      borderRadius: 6,
+      borderRadius: 8,
     },
     themePattern: {
       fontSize: 16,
@@ -809,7 +809,7 @@ function makeStyles(C) {
     frameAvatar: {
       width: 64,
       height: 64,
-      borderRadius: 32,
+      borderRadius: 999,
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
@@ -844,7 +844,7 @@ function makeStyles(C) {
     },
     itemBtn: {
       width: '100%',
-      borderRadius: 10,
+      borderRadius: 12,
       paddingVertical: 8,
       alignItems: 'center',
     },
@@ -891,7 +891,7 @@ function makeStyles(C) {
       color: C.textMuted,
     },
     previewPanel: {
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       padding: 14,
       gap: 10,
@@ -935,7 +935,7 @@ function makeStyles(C) {
     previewDot: {
       width: 10,
       height: 10,
-      borderRadius: 5,
+      borderRadius: 8,
     },
     previewRowText: {
       flex: 1,
@@ -968,7 +968,7 @@ function makeStyles(C) {
     },
     previewAction: {
       width: '100%',
-      borderRadius: 11,
+      borderRadius: 12,
       paddingVertical: 10,
       alignItems: 'center',
     },
@@ -977,7 +977,7 @@ function makeStyles(C) {
       alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,
@@ -993,7 +993,7 @@ function makeStyles(C) {
     },
     vipHint: {
       backgroundColor: C.gold + '1a',
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.gold + '55',
       padding: 14,
@@ -1020,7 +1020,7 @@ const stylesConf = StyleSheet.create({
     right: 8,
     width: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

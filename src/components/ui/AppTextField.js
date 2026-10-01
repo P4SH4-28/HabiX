@@ -220,7 +220,7 @@ function makeStyles(C, radius, type, space) {
       height: 36,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 18,
+      borderRadius: 20,
     },
     msgRow: {
       flexDirection: 'row',

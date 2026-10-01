@@ -58,7 +58,7 @@ function makeStyles(C) {
     badge: {
       width: 76,
       height: 76,
-      borderRadius: 38,
+      borderRadius: 999,
       alignItems: 'center',
       justifyContent: 'center',
     },

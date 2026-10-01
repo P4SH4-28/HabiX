@@ -373,7 +373,7 @@ function makeStyles(C) {
     },
     offlineBox: {
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.danger,
       padding: 12,
@@ -441,7 +441,7 @@ function makeStyles(C) {
     podiumCard: {
       flex: 1,
       backgroundColor: C.surface,
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: C.border,
       alignItems: 'center',
@@ -489,7 +489,7 @@ function makeStyles(C) {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 12,
@@ -536,7 +536,7 @@ function makeStyles(C) {
       backgroundColor: C.accent + '22',
       paddingHorizontal: 6,
       paddingVertical: 2,
-      borderRadius: 6,
+      borderRadius: 8,
       overflow: 'hidden',
     },
     flagChip: {
@@ -546,7 +546,7 @@ function makeStyles(C) {
       backgroundColor: C.danger + '22',
       paddingHorizontal: 6,
       paddingVertical: 2,
-      borderRadius: 6,
+      borderRadius: 8,
     },
     flagChipText: {
       color: C.danger,
@@ -582,7 +582,7 @@ function makeStyles(C) {
       alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,

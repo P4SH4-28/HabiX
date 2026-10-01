@@ -73,7 +73,7 @@ function makeStyles(C) {
     emojiBox: {
       width: 36,
       height: 36,
-      borderRadius: 10,
+      borderRadius: 12,
       alignItems: 'center',
       justifyContent: 'center',
     },

@@ -264,7 +264,7 @@ function makeStyles(C) {
       right: -2,
       bottom: 0,
       backgroundColor: C.primary,
-      borderRadius: 14,
+      borderRadius: 16,
       width: 28,
       height: 28,
       alignItems: 'center',
@@ -295,7 +295,7 @@ function makeStyles(C) {
     },
     bioBox: {
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 14,
       minHeight: 60,
       justifyContent: 'center',
@@ -317,7 +317,7 @@ function makeStyles(C) {
     },
     bioInput: {
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 14,
       color: C.text,
       minHeight: 60,
@@ -413,7 +413,7 @@ function makeStyles(C) {
     statCard: {
       flex: 1,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       paddingVertical: 14,
       alignItems: 'center',
     },
@@ -440,7 +440,7 @@ function makeStyles(C) {
     actionBtn: {
       flex: 1,
       paddingVertical: 12,
-      borderRadius: 14,
+      borderRadius: 16,
       alignItems: 'center',
     },
     actionTextRow: {

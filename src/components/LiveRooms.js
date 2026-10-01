@@ -339,7 +339,7 @@ function makeStyles(C) {
     roomEmojiWrap: {
       width: 42,
       height: 42,
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.danger + '18',
       alignItems: 'center',
       justifyContent: 'center',
@@ -363,7 +363,7 @@ function makeStyles(C) {
       flexShrink: 1,
     },
     mineChip: {
-      borderRadius: 6,
+      borderRadius: 8,
       paddingHorizontal: 6,
       paddingVertical: 2,
     },
@@ -383,7 +383,7 @@ function makeStyles(C) {
     liveDot: {
       width: 8,
       height: 8,
-      borderRadius: 4,
+      borderRadius: 8,
     },
     participants: {
       color: C.text,
@@ -391,7 +391,7 @@ function makeStyles(C) {
       fontWeight: '800',
     },
     joinBtn: {
-      borderRadius: 9,
+      borderRadius: 8,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
@@ -400,7 +400,7 @@ function makeStyles(C) {
       fontWeight: '800',
     },
     leaveBtn: {
-      borderRadius: 9,
+      borderRadius: 8,
       backgroundColor: C.surfaceLight,
       paddingHorizontal: 12,
       paddingVertical: 6,

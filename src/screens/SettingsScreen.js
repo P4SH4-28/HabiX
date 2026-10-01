@@ -656,7 +656,7 @@ function makeStyles(C) {
     },
     primaryChip: {
       backgroundColor: C.primary + '22',
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 14,
       minHeight: 40,
       justifyContent: 'center',
@@ -671,7 +671,7 @@ function makeStyles(C) {
     },
     dangerButton: {
       backgroundColor: C.danger + '22',
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 14,
       minHeight: 40,
       justifyContent: 'center',
@@ -684,7 +684,7 @@ function makeStyles(C) {
     serverDot: {
       width: 10,
       height: 10,
-      borderRadius: 5,
+      borderRadius: 8,
     },
     dangerText: {
       color: C.danger,
@@ -696,7 +696,7 @@ function makeStyles(C) {
     },
     input: {
       height: 50,
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.border,
@@ -711,7 +711,7 @@ function makeStyles(C) {
     },
     primaryButton: {
       height: 50,
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',

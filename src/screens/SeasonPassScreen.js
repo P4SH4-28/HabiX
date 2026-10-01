@@ -331,7 +331,7 @@ function makeStyles(C) {
     },
     progressCard: {
       backgroundColor: C.surface,
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: C.border,
       padding: 16,
@@ -344,7 +344,7 @@ function makeStyles(C) {
     levelCircle: {
       width: 54,
       height: 54,
-      borderRadius: 27,
+      borderRadius: 999,
       backgroundColor: C.primary + '22',
       alignItems: 'center',
       justifyContent: 'center',
@@ -375,7 +375,7 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 12,
       backgroundColor: C.gold + '12',
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       padding: 16,
     },
@@ -397,7 +397,7 @@ function makeStyles(C) {
       alignItems: 'center',
       gap: 12,
       backgroundColor: C.gold + '12',
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       padding: 16,
     },
@@ -431,7 +431,7 @@ function makeStyles(C) {
       fontWeight: '800',
     },
     buyVipBtn: {
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 16,
       paddingVertical: 8,
     },
@@ -475,7 +475,7 @@ function makeStyles(C) {
     currentDot: {
       width: 6,
       height: 6,
-      borderRadius: 3,
+      borderRadius: 8,
       marginTop: 2,
     },
     levelBoxes: {
@@ -485,7 +485,7 @@ function makeStyles(C) {
     },
     box: {
       flex: 1,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       padding: 10,
       gap: 6,
@@ -594,7 +594,7 @@ function makeStyles(C) {
       alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,

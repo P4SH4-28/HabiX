@@ -147,7 +147,7 @@ function makeStyles(C) {
     },
     acceptBtn: {
       backgroundColor: C.primary,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 16,
       minHeight: 44,
       justifyContent: 'center',
@@ -164,7 +164,7 @@ function makeStyles(C) {
     },
     declineBtn: {
       backgroundColor: C.surfaceLight,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 16,
       paddingVertical: 9,
     },

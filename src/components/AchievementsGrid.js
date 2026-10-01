@@ -92,7 +92,7 @@ function makeStyles(C) {
     iconCircle: {
       width: 44,
       height: 44,
-      borderRadius: 22,
+      borderRadius: 999,
       backgroundColor: 'rgba(124, 92, 255, 0.15)',
       alignItems: 'center',
       justifyContent: 'center',

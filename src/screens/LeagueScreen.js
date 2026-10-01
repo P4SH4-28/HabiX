@@ -211,7 +211,7 @@ function makeStyles(C) {
     },
     tierCard: {
       backgroundColor: C.surface,
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       padding: 16,
       gap: 14,
@@ -336,7 +336,7 @@ function makeStyles(C) {
       gap: 10,
       paddingVertical: 9,
       paddingHorizontal: 10,
-      borderRadius: 10,
+      borderRadius: 12,
     },
     rankRowMe: {
       backgroundColor: C.primary + '18',
@@ -412,7 +412,7 @@ function makeStyles(C) {
       alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,

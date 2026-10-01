@@ -49,7 +49,7 @@ function makeStyles(C) {
   swatch: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: 20,
     borderWidth: 3,
     borderColor: 'transparent',
     alignItems: 'center',

@@ -270,7 +270,7 @@ function makeStyles(C) {
     closeBtn: {
       width: 32,
       height: 32,
-      borderRadius: 10,
+      borderRadius: 12,
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
@@ -282,7 +282,7 @@ function makeStyles(C) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 12,
     },
     itemIcon: {

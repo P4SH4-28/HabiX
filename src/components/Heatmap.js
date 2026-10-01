@@ -129,7 +129,7 @@ function makeStyles(C) {
     legendCell: {
       width: 12,
       height: 12,
-      borderRadius: 3,
+      borderRadius: 8,
     },
     grid: {
       flexDirection: 'row',
@@ -141,7 +141,7 @@ function makeStyles(C) {
       flexBasis: '12.5%',
       flexGrow: 1,
       aspectRatio: 1,
-      borderRadius: 4,
+      borderRadius: 8,
     },
   });
 }

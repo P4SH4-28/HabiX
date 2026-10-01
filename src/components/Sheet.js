@@ -72,7 +72,7 @@ function makeStyles(C, radius) {
       alignSelf: 'center',
       width: 40,
       height: 4,
-      borderRadius: 2,
+      borderRadius: 8,
       backgroundColor: 'rgba(255,255,255,0.2)',
     },
     titleRow: {

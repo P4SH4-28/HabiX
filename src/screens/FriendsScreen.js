@@ -224,7 +224,7 @@ function makeStyles(C) {
       alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: C.border,
       padding: 14,
@@ -259,7 +259,7 @@ function makeStyles(C) {
     },
     duelBtn: {
       backgroundColor: C.surfaceLight,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 10,
       paddingVertical: 8,
     },
@@ -291,7 +291,7 @@ function makeStyles(C) {
     statusDot: {
       width: 10,
       height: 10,
-      borderRadius: 5,
+      borderRadius: 8,
     },
   });
 }

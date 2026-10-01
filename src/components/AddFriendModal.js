@@ -185,7 +185,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     input: {
       height: 50,
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.border,
@@ -227,7 +227,7 @@ function makeStyles(C) {
     },
     sendButton: {
       backgroundColor: C.primary,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 8,
       minWidth: 104,
@@ -242,7 +242,7 @@ function makeStyles(C) {
       fontWeight: '800',
     },
     tag: {
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 8,
     },

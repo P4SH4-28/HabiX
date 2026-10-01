@@ -91,7 +91,7 @@ function makeStyles(C) {
     },
     card: {
       backgroundColor: C.surface,
-      borderRadius: 24,
+      borderRadius: 20,
       paddingVertical: 36,
       paddingHorizontal: 28,
       alignItems: 'center',
@@ -105,7 +105,7 @@ function makeStyles(C) {
       position: 'absolute',
       height: 210,
       width: 210,
-      borderRadius: 105,
+      borderRadius: 999,
       borderWidth: 2,
       borderColor: C.gold,
     },

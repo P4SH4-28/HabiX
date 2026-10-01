@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     flex: 1,
-    borderRadius: 28,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.09)',
     backgroundColor: 'rgba(16,18,26,0.82)',

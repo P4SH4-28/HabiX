@@ -130,14 +130,14 @@ function makeStyles(C) {
     barTrack: {
       width: 14,
       height: 90,
-      borderRadius: 7,
+      borderRadius: 8,
       backgroundColor: C.surfaceLight,
       justifyContent: 'flex-end',
       overflow: 'hidden',
     },
     barFill: {
       width: '100%',
-      borderRadius: 7,
+      borderRadius: 8,
     },
     dayLabel: {
       color: C.textMuted,

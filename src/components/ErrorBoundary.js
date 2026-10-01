@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   msgBox: {
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1.5,
     padding: 14,
     marginTop: 20,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   retryBtn: {
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 14,
     fontSize: 15,
     fontWeight: '800',

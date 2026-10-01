@@ -219,7 +219,7 @@ function makeStyles(C) {
     closeButton: {
       width: 36,
       height: 36,
-      borderRadius: 18,
+      borderRadius: 20,
       backgroundColor: C.surface,
       alignItems: 'center',
       justifyContent: 'center',
@@ -237,7 +237,7 @@ function makeStyles(C) {
     avatar: {
       width: 84,
       height: 84,
-      borderRadius: 42,
+      borderRadius: 999,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -256,7 +256,7 @@ function makeStyles(C) {
       backgroundColor: C.accent + '22',
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 10,
+      borderRadius: 12,
       overflow: 'hidden',
     },
     friendBadgeText: {
@@ -280,7 +280,7 @@ function makeStyles(C) {
     },
     card: {
       backgroundColor: C.surface,
-      borderRadius: 18,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: C.border,
       padding: 16,
@@ -291,7 +291,7 @@ function makeStyles(C) {
     },
     actionButton: {
       height: 52,
-      borderRadius: 14,
+      borderRadius: 16,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',
