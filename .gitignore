@@ -46,3 +46,6 @@ yarn-error.*
 # telegram opencode monitor (lokal secret ve calisma durumu)
 tools/telegram-opencode-monitor/.env
 tools/telegram-opencode-monitor/state/
+
+# Yedekler (yerel)
+src/_backup_*/
