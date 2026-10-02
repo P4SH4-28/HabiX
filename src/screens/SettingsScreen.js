@@ -51,7 +51,11 @@ import {
   scheduleDailyReminder,
 } from '../services/notifications';
 import { checkServerConnection } from '../services/connectionService';
-import { getTheme, useTheme } from '../theme';
+import { RADIUS, getTheme, useTheme } from '../theme';
+
+// Saat çipleri 36px görsel yükseklikte; dokunma hedefini 44'e tamamla
+// (görsel ölçü değişmez).
+const HOUR_CHIP_HIT_SLOP = { top: 4, bottom: 4, left: 4, right: 4 };
 
 // Onay kutusu: mobilde Alert (özel buton etiketi), web'de confirm.
 function confirmDialog(title, message, okLabel, onOk) {
@@ -376,6 +380,7 @@ export default function SettingsScreen() {
             onPress={() => setReminderHour(null)}
             accessibilityRole="button"
             accessibilityLabel="Hatırlatmayı kapat"
+            hitSlop={HOUR_CHIP_HIT_SLOP}
             style={[styles.hourChip, styles.hourChipOff, reminderHour == null && styles.hourChipOffActive]}
           >
             <Text style={[styles.hourChipOffText, reminderHour == null && styles.hourChipTextActive]}>
@@ -391,6 +396,7 @@ export default function SettingsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Hatırlatma saati ${h}.00`}
                 accessibilityState={{ selected: active }}
+                hitSlop={HOUR_CHIP_HIT_SLOP}
                 style={[styles.hourChip, active && styles.hourChipActive]}
               >
                 <Text style={[styles.hourChipText, active && styles.hourChipTextActive]}>
@@ -661,7 +667,7 @@ function makeStyles(C, type) {
     dot: {
       width: 10,
       height: 10,
-      borderRadius: 6,
+      borderRadius: RADIUS.full,
     },
 
     // ---- profil ----
@@ -700,7 +706,7 @@ function makeStyles(C, type) {
     hourChip: {
       minWidth: 40,
       height: 36,
-      borderRadius: 10,
+      borderRadius: RADIUS.md,
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.border,

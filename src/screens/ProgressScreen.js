@@ -50,7 +50,8 @@ export default function ProgressScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.screenTitle}>Gelişim</Text>
+      {/* Başlık AppHeader'da ("Gelişim") — burada yalnız açıklama satırı,
+          böylece ekran başlığı iki kez görünmez. */}
       <Text style={styles.screenSub}>İlerlemeni izle ve tutarlılığını gör</Text>
 
       {/* Özet istatistik kartları */}
@@ -119,11 +120,6 @@ function makeStyles(C) {
       padding: 20,
       gap: 14,
       paddingBottom: 60,
-    },
-    screenTitle: {
-      color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
     },
     screenSub: {
       color: C.textMuted,

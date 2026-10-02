@@ -38,7 +38,7 @@ import {
   weekKeyFor,
 } from '../data/leagues';
 import { success } from '../services/sfx';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 // Zone kuralları (yalnız görsel): en az 6 kişi varsa anlamlıdır.
 const PROMO_N = 3;
@@ -460,7 +460,7 @@ function makeStyles(C, type) {
     legendDot: {
       width: 8,
       height: 8,
-      borderRadius: 4,
+      borderRadius: RADIUS.full,
     },
     legendText: {
       ...type.micro,

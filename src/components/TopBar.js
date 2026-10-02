@@ -41,7 +41,11 @@ export default function TopBar({ title, onBack, right }) {
             color={C.text}
           />
         </Pressable>
-        <Text style={[styles.title, { color: C.text }]} numberOfLines={1}>
+        <Text
+          style={[styles.title, { color: C.text }]}
+          numberOfLines={1}
+          accessibilityRole="header"
+        >
           {title}
         </Text>
         <View style={styles.right}>

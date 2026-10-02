@@ -49,7 +49,7 @@ import {
   removeProfilePhoto,
   uploadProfilePhoto,
 } from '../services/avatarService';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 const MONTHS = [
   'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -434,7 +434,7 @@ function makeStyles(C, type) {
       right: -2,
       bottom: 0,
       backgroundColor: C.primary,
-      borderRadius: 14,
+      borderRadius: RADIUS.full,
       width: 28,
       height: 28,
       alignItems: 'center',

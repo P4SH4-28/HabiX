@@ -43,7 +43,7 @@ import {
 import { VIP_PRICE_GOLD } from '../data/quests';
 import { getFrame } from '../data/shop';
 import { serverNow } from '../services/serverClock';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 // seasonPass.js: 1-10. seviyeler 100, ... 41-50 → 500 XP (toplam 14.500).
 const SEASON_TOTAL_XP = 14500;
@@ -493,7 +493,7 @@ function makeStyles(C, type) {
     currentDot: {
       width: 6,
       height: 6,
-      borderRadius: 3,
+      borderRadius: RADIUS.full,
       backgroundColor: C.primary,
     },
     boxes: {

@@ -61,7 +61,7 @@ import {
   levelFromTotalXp,
   MAX_ACTIVE_HABITS,
 } from '../logic';
-import { SHADOWS, useTheme } from '../theme';
+import { RADIUS, SHADOWS, useTheme } from '../theme';
 
 const DAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const MONTHS = [
@@ -581,7 +581,7 @@ function makeStyles(C, type) {
     levelCircle: {
       width: 64,
       height: 64,
-      borderRadius: 32,
+      borderRadius: RADIUS.full,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',
@@ -661,7 +661,7 @@ function makeStyles(C, type) {
     checkbox: {
       width: 26,
       height: 26,
-      borderRadius: 13,
+      borderRadius: RADIUS.full,
       borderWidth: 1.5,
       borderColor: C.border,
       alignItems: 'center',
@@ -715,13 +715,13 @@ function makeStyles(C, type) {
       bottom: 20,
       width: 56,
       height: 56,
-      borderRadius: 28,
+      borderRadius: RADIUS.full,
       ...SHADOWS.card,
     },
     fabCircle: {
       width: 56,
       height: 56,
-      borderRadius: 28,
+      borderRadius: RADIUS.full,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',

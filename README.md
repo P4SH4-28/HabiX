@@ -31,15 +31,27 @@ Alışkanlıklarını oyunlaştırarak takip et, XP kazan, seviye atla, görevle
 | 👋 **İlk açılış rehberi** | Yeni kullanıcıya 3 sayfalık tanıtım |
 | 💾 **Yedek & Senkron** | Cihaz içi yedek + Supabase bulut senkronu (cihaz değişince devam et) |
 
-## 🎨 GUI Modernizasyonu
+## 🎨 Tasarım Sistemi v2
 
-Uygulama genelinde konfor ve etkileşim katmanı (Faz A–C):
+Uygulama genelinde tek bir tasarım dili (Apple × Linear karışımı). Tüm ekranlar
+`src/theme/` içindeki token'lardan beslenir.
 
-- **Basınç feedback:** `PressableFX` — tüm ana butonlarda basınca ölçek animasyonu + cihazda haptik "tap"
-- **Animasyonlu sayaçlar:** `AnimatedCounter` — altın/seri/XP/istatistik değerleri değişince yumuşakça sayılır
-- **Skeleton yükleme:** veri yüklenirken spinner yerine titreşimli iskelet ekranı
-- **Dükkan revizyonu:** sekmeler, canlı tema önizlemesi (renklerle mini ekran mock'u), sahip rozeti
-- **Silme güvenliği:** alışkanlık silme artık alt-sheet onayı ister — anında silinmez
+| Token | Ölçek | Kural |
+|---|---|---|
+| **Tipografi** | 5 boyut + `displayXl` (hero sayı) | Ağırlık yalnız 400 / 600 / 700 |
+| **Radius** | `sm 8` · `md 12` · `lg 16` · `xl 20` · `full` | Daire/rozet/çip = `full` |
+| **Boşluk** | 4'lü ölçek | Sayfa kenar boşluğu her ekranda **20** |
+| **Hareket** | `fast 150` · `normal 200` · `slow 300` | **300ms üstü yok**, sonsuz döngü yok |
+| **Renk** | 12 tema | Her kombinasyon **WCAG AA** (≥4.5:1) doğrulanmış |
+
+- **Etkileşim:** `PressableFX` — basınca ölçek + cihazda haptik "tap"
+- **Boş/hata durumu:** her ekranda `EmptyState` / `ErrorState` primitive'i
+- **Hareket azaltma:** sistem tercihi açıksa animasyonlar kapanır (`useReducedMotion`)
+- **Erişilebilirlik:** dokunma hedefleri ≥44×44, başlıklar `header` rolü,
+  ikon butonlarında `accessibilityLabel`, durum sadece renkle değil
+- **Performans:** `FlatList` pencereleme + sabit `renderItem` referansları
+
+Ayrıntılı kontrol listesi: **`docs/ui-test-checklist.md`** · sürüm geçmişi: **`CHANGELOG.md`**
 
 ## 🛡️ Anti-Farm Mimarisi (5 Katman)
 
@@ -124,6 +136,19 @@ için 4 GitHub secret'ı eklemen yeterli:
 
 Edge function karar mantıkları (tavan, saat koruması, ban, hediye) yerel simülasyonlarla doğrulanır — gerçek bir test veritabanı gerektirmez.
 
+```bash
+npm test          # jest — 65 unit test (logic + senkron kuyruğu)
+npm run typecheck # tsc --noEmit
+```
+
+**Cihazda elle test için:**
+
+| Belge | Kapsam |
+|---|---|
+| `docs/ui-test-checklist.md` | 18 ekranın arayüzü: boş durum, klavye, swipe, animasyon, hata, performans, erişilebilirlik |
+| `docs/manual-smoke-test.md` | Sunucu/veri katmanı: senkron, ekonomi tavanları, güvenlik, CI, APK |
+| `docs/release-checklist.md` | Yayın öncesi son kontrol listesi |
+
 ## 🔐 Hesap Sistemi
 
 - Kimlik, **kullanıcı adı + şifre** ile yürütülür (Supabase Auth kullanılmaz); şifre hash'lenir
@@ -136,19 +161,30 @@ Edge function karar mantıkları (tavan, saat koruması, ban, hediye) yerel sim�
 
 ```
 ├── App.js                      # Kök: navigasyon, tema, yasak ekranı
+├── CHANGELOG.md                # Sürüm geçmişi (v2.0 tasarım sistemi)
 ├── src/
-│   ├── screens/                # Home, Quest, Shop, Progress, Leaderboard, Friends, Settings, Admin
-│   ├── components/             # HabitCard, Sheet, Modals, Confetti, PressableFX, AnimatedCounter, SplashSkeleton…
+│   ├── screens/                # 18 ekran: Home, Habits, Progress, Shop, Leaderboard,
+│   │                           #   Social, QuestBoard, SeasonPass, Inventory,
+│   │                           #   Achievements, League, Team, Duel, Profile,
+│   │                           #   Pomodoro, Settings, Admin, Auth
+│   ├── components/             # HabitCard, Sheet, Modallar, Confetti, PressableFX, AnimatedCounter, SplashSkeleton…
+│   │   └── ui/                 # Tasarım sistemi primitifleri: Button, Card, TextInput,
+│   │                           #   EmptyState, ErrorState, SegmentedTabs, PillTabBar…
 │   ├── context/                # AuthContext (oturum) + DataContext (veri/senkron)
 │   ├── services/               # sync, profile, leaderboard, friend, admin, serverClock, effects, sfx
 │   ├── data/                   # quests (görev kataloğu), shop (ürünler), achievements, starterHabits
 │   ├── logic.js                # XP/seviye matematiği, tavan sabitleri
-│   └── theme.js                # 13 tema tanımı
+│   ├── theme/                  # Tasarım sistemi token'ları: colors, spacing, radius,
+│   │                           #   typography, shadows, animations + 12 tema
+│   └── hooks/                  # useReducedMotion, useSyncEngine
 ├── supabase/
 │   ├── schema.sql                # TEK PARÇA şema (tüm tablolar + RLS + realtime)
 │   └── functions/                # 7 edge function: sync-profile, sync-quest,
-│                                 # admin-action, recovery-action, duel-action,
-│                                 # chat-action, vip-action
-├── docs/playstore-yayin.md     # Play Store yayın rehberi
+│                                 #   admin-action, recovery-action, duel-action,
+│                                 #   chat-action, vip-action
+├── docs/
+│   ├── ui-test-checklist.md    # Cihazda arayüz testi (18 ekran)
+│   ├── manual-smoke-test.md    # Cihazda sunucu/veri testi
+│   └── playstore-yayin.md      # Play Store yayın rehberi
 └── .github/workflows/build-apk.yml
 ```

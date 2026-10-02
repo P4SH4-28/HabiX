@@ -37,7 +37,7 @@ import Pill from '../components/ui/Pill';
 import SectionHeader from '../components/ui/SectionHeader';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { formatDuration, POMODORO_DURATION_MS } from '../logic';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 const SEGMENTS = 60; // halka parçacığı (SVG yok → View dizisi)
 const RING = 220; // halka kapsayıcısı (px)
@@ -347,7 +347,7 @@ function makeStyles(C, type) {
     segDot: {
       width: 5,
       height: 9,
-      borderRadius: 2.5,
+      borderRadius: RADIUS.sm,
     },
     ringCenter: {
       ...StyleSheet.absoluteFillObject,

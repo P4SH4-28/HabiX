@@ -40,7 +40,7 @@ import TextInput from '../components/ui/TextInput';
 import { HabitSwipeRow } from './HomeScreen';
 import { useData } from '../context/DataContext';
 import { bestStreak, calcStreak, levelFromTotalXp, MAX_ACTIVE_HABITS } from '../logic';
-import { SHADOWS, useTheme } from '../theme';
+import { RADIUS, SHADOWS, useTheme } from '../theme';
 
 const FILTERS = [
   { key: 'all', label: 'Tümü' },
@@ -323,13 +323,13 @@ function makeStyles(C, type) {
       right: 20,
       width: 56,
       height: 56,
-      borderRadius: 28,
+      borderRadius: RADIUS.full,
       ...SHADOWS.card,
     },
     fabCircle: {
       width: 56,
       height: 56,
-      borderRadius: 28,
+      borderRadius: RADIUS.full,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',

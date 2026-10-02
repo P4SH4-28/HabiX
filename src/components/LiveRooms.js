@@ -36,6 +36,10 @@ function timeAgo(iso) {
   return `${Math.floor(diff / 86400)} gün önce`;
 }
 
+// Modül seviyesi sabit referans (FlatList renderItem'ı her render'da
+// değişmesin diye).
+const keyExtractor = (item) => item.id;
+
 export default function LiveRooms() {
   const { user: authUser } = useAuth();
   const { server } = useData();
@@ -92,7 +96,7 @@ export default function LiveRooms() {
     };
   }, [applyRooms, me]);
 
-  const handleJoin = async (room) => {
+  const handleJoin = useCallback(async (room) => {
     if (busyId) return;
     setBusyId(room.id);
     setError(null);
@@ -106,9 +110,9 @@ export default function LiveRooms() {
     } else {
       setError(r.error === 'room_not_found' ? 'Oda artık yok' : 'Odaya katılınamadı');
     }
-  };
+  }, [busyId, me, applyRooms]);
 
-  const handleLeave = async (roomId) => {
+  const handleLeave = useCallback(async (roomId) => {
     if (busyId) return;
     setBusyId(roomId);
     setError(null);
@@ -122,7 +126,7 @@ export default function LiveRooms() {
     } else {
       setError('Odadan ayrılamadı');
     }
-  };
+  }, [busyId, me, applyRooms]);
 
   const handleCreate = async () => {
     const name = newName.trim();
@@ -145,7 +149,7 @@ export default function LiveRooms() {
     }
   };
 
-  const renderRoom = ({ item }) => {
+  const renderRoom = useCallback(({ item }) => {
     const isMine = myRoom === item.id;
     return (
       <View style={[styles.room, { borderWidth: 1, borderColor: isMine ? C.primary + '66' : C.border }]}>
@@ -188,7 +192,7 @@ export default function LiveRooms() {
         </View>
       </View>
     );
-  };
+  }, [C, styles, me, myRoom, busyId, handleLeave, handleJoin]);
 
   return (
     <View style={styles.container}>
@@ -227,10 +231,14 @@ export default function LiveRooms() {
 
       <FlatList
         data={rooms}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderRoom}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={10}
+        maxToRenderPerBatch={8}
+        windowSize={9}
+        removeClippedSubviews
         ListHeaderComponent={
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Canlı Odalar</Text>

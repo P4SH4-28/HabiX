@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AddFriendModal from '../components/AddFriendModal';
@@ -10,6 +10,10 @@ import PlayerProfileModal from '../components/PlayerProfileModal';
 import { useData } from '../context/DataContext';
 import EmptyState from '../components/ui/EmptyState';
 import { useTheme } from '../theme';
+
+// Modül seviyesi sabit referans: FlatList keyExtractor'ı her render'da
+// değişmesin.
+const keyExtractor = (item) => item.id;
 
 export default function FriendsScreen() {
   const { colors: C } = useTheme();
@@ -32,7 +36,7 @@ export default function FriendsScreen() {
   const [busyDuel, setBusyDuel] = useState(null);
 
   // Düello daveti gönderir (arkadaş satırındaki ⚔️ butonu).
-  const startDuel = async (name) => {
+  const startDuel = useCallback(async (name) => {
     confirmDialog(
       'Düello daveti',
       `${name} ile 7 günlük XP yarışı başlatılsın mı? Kazanan +100 XP ve +50 altın kazanır.`,
@@ -41,7 +45,7 @@ export default function FriendsScreen() {
         if (!r.ok && r.error) confirmDialog('Bilgi', r.error, null);
       }
     );
-  };
+  }, [challengeDuel]);
 
   // Düelloyu bitir: sonucu göster (berabere bilgisi dahil).
   const handleFinish = async (duel) => {
@@ -54,6 +58,66 @@ export default function FriendsScreen() {
       confirmDialog('Bilgi', r.error, null);
     }
   };
+
+  // Arkadaş satırı: FlatList renderItem'ı — useCallback ile sabit referans.
+  const renderFriend = useCallback(
+    ({ item }) => {
+      const activeToday = item.lastActive === today;
+      return (
+        <Pressable
+          style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
+          onPress={() => setSelected(item)}
+          onLongPress={() =>
+            confirmDialog('Arkadaşı sil', `${item.name} silinecek. Emin misin?`, () =>
+              removeFriend(item.name)
+            )
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`${item.name}, ${item.streak} gün seri, ${item.totalXp} XP`}
+        >
+          <AvatarCircle
+            avatarId={item.avatarId}
+            emoji={item.avatarId ? undefined : item.emoji}
+            frameId={item.frameId}
+            photo={item.photoUrl}
+            size={44}
+          />
+          <View style={styles.info}>
+            <Text style={styles.name} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <View style={styles.metaRow}>
+              <View style={styles.metaItem}>
+                <Icon emoji="🔥" size={12} color={C.accent} />
+                <Text style={styles.metaText}>{item.streak} gün seri</Text>
+              </View>
+              <View style={styles.metaItem}>
+                <Icon emoji="⚡" size={12} color={C.primary} />
+                <Text style={styles.metaText}>{item.totalXp} XP</Text>
+              </View>
+            </View>
+          </View>
+          <Text style={styles.profileChevron}>›</Text>
+          <Pressable
+            style={styles.duelBtn}
+            onPress={() => startDuel(item.name)}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.name} ile düello başlat`}
+          >
+            <Icon emoji="⚔️" size={15} color={C.danger} />
+          </Pressable>
+          <View
+            style={[
+              styles.statusDot,
+              { backgroundColor: activeToday ? C.accent : C.textMuted },
+            ]}
+          />
+        </Pressable>
+      );
+    },
+    [C, styles, today, removeFriend, startDuel]
+  );
 
   // Başlık: düello kartları (varsa) + arkadaş listesi.
   const duels = server.duels || [];
@@ -109,7 +173,7 @@ export default function FriendsScreen() {
     <View style={styles.container}>
       <FlatList
         data={data.friends}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         ListHeaderComponent={header}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -123,57 +187,11 @@ export default function FriendsScreen() {
             progressBackgroundColor={C.surface}
           />
         }
-        renderItem={({ item }) => {
-          const activeToday = item.lastActive === today;
-          return (
-            <Pressable
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
-              onPress={() => setSelected(item)}
-              onLongPress={() =>
-                confirmDialog('Arkadaşı sil', `${item.name} silinecek. Emin misin?`, () =>
-                  removeFriend(item.name)
-                )
-              }
-            >
-              <AvatarCircle
-                avatarId={item.avatarId}
-                emoji={item.avatarId ? undefined : item.emoji}
-                frameId={item.frameId}
-                photo={item.photoUrl}
-                size={44}
-              />
-              <View style={styles.info}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <View style={styles.metaRow}>
-                  <View style={styles.metaItem}>
-                    <Icon emoji="🔥" size={12} color={C.accent} />
-                    <Text style={styles.metaText}>{item.streak} gün seri</Text>
-                  </View>
-                  <View style={styles.metaItem}>
-                    <Icon emoji="⚡" size={12} color={C.primary} />
-                    <Text style={styles.metaText}>{item.totalXp} XP</Text>
-                  </View>
-                </View>
-              </View>
-              <Text style={styles.profileChevron}>›</Text>
-              <Pressable
-                style={styles.duelBtn}
-                onPress={() => startDuel(item.name)}
-                hitSlop={6}
-              >
-                <Icon emoji="⚔️" size={15} color={C.danger} />
-              </Pressable>
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: activeToday ? C.accent : C.textMuted },
-                ]}
-              />
-            </Pressable>
-          );
-        }}
+        renderItem={renderFriend}
+        initialNumToRender={10}
+        maxToRenderPerBatch={8}
+        windowSize={9}
+        removeClippedSubviews
         ListEmptyComponent={
           <EmptyState
             icon="people"

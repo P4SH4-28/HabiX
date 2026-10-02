@@ -18,7 +18,6 @@ import {
   applyXpWithBank,
   calcStreak,
   DAILY_GOLD_CAP,
-  DAILY_XP_CAP,
   dateKey,
   dayPenalty,
   emptyDayCounter,
@@ -39,10 +38,7 @@ import {
   POMODORO_MINUTES,
   questClaimedToday,
   questMetricValue,
-  questProgress,
   questReward,
-  QUEST_DIFFICULTIES,
-  VIP_DURATION_MS,
   VIP_PRICE_GOLD,
 } from '../data/quests';
 import { getPassLevel, PASS_MAX_LEVEL, passRewardClaimed } from '../data/seasonPass';

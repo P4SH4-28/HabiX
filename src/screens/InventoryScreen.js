@@ -28,7 +28,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Icon from '../components/ui/icons';
 import IconTile from '../components/ui/IconTile';
 import SectionHeader from '../components/ui/SectionHeader';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 // Onay kutusu: mobilde Alert, web'de confirm.
 function confirmDialog(title, message, okLabel, onOk) {
@@ -277,7 +277,7 @@ function makeStyles(C, type) {
     },
     activeChip: {
       backgroundColor: C.primary + '22',
-      borderRadius: 10,
+      borderRadius: RADIUS.md,
       paddingHorizontal: 12,
       paddingVertical: 9,
     },

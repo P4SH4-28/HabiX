@@ -46,7 +46,6 @@ import SocialScreen from './src/screens/SocialScreen';
 import DuelScreen from './src/screens/DuelScreen';
 import TeamScreen from './src/screens/TeamScreen';
 import { resolveTheme, ThemeProvider } from './src/theme';
-import { useNavigation } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();

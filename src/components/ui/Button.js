@@ -124,6 +124,11 @@ function Button({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel || (typeof label === 'string' ? label : undefined)}
         accessibilityState={{ disabled: off, busy: loading }}
+        // sm (36) ve md (44) boyutlarda dokunma alanını 44'e tamamlar:
+        // görsel ölçü değişmez, yalnız hedef büyür.
+        hitSlop={
+          s.height >= 44 ? undefined : { top: (44 - s.height) / 2, bottom: (44 - s.height) / 2, left: 4, right: 4 }
+        }
       >
         <View style={boxStyle}>
           {loading ? (

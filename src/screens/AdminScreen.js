@@ -46,7 +46,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { FRAMES, SHOP_ITEMS } from '../data/shop';
 import { adminAction } from '../services/adminService';
-import { THEMES, useTheme } from '../theme';
+import { RADIUS, THEMES, useTheme } from '../theme';
 
 // Hediye kategorileri (SegmentedTabs).
 const GRANT_TABS = [
@@ -706,7 +706,7 @@ function makeStyles(C, type) {
     dot: {
       width: 10,
       height: 10,
-      borderRadius: 6,
+      borderRadius: RADIUS.full,
     },
     systemTitle: {
       ...type.bodyStrong,

@@ -28,7 +28,7 @@ import IconTile from '../components/ui/IconTile';
 import Pill from '../components/ui/Pill';
 import Progress from '../components/ui/Progress';
 import { ACHIEVEMENTS, computeAchievementState } from '../data/achievements';
-import { useTheme } from '../theme';
+import { RADIUS, useTheme } from '../theme';
 
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
@@ -334,7 +334,7 @@ function makeStyles(C, type) {
     cellIcon: {
       width: 42,
       height: 42,
-      borderRadius: 14,
+      borderRadius: RADIUS.md,
       alignItems: 'center',
       justifyContent: 'center',
     },

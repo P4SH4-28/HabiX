@@ -37,7 +37,7 @@ import { FRAMES, getShopItem, SHOP_ITEMS } from '../data/shop';
 import { ITEMS } from '../data/items';
 import { pickProfilePhoto, removeProfilePhoto, uploadProfilePhoto } from '../services/avatarService';
 import { success } from '../services/sfx';
-import { THEMES, useTheme } from '../theme';
+import { RADIUS, THEMES, useTheme } from '../theme';
 
 const TABS = [
   { key: 'themes', label: 'Temalar' },
@@ -554,7 +554,7 @@ function makeStyles(C, type) {
       right: 8,
       width: 20,
       height: 20,
-      borderRadius: 10,
+      borderRadius: RADIUS.full,
       backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',
@@ -587,7 +587,7 @@ function makeStyles(C, type) {
       alignItems: 'center',
       gap: 5,
       backgroundColor: C.gold + '22',
-      borderRadius: 10,
+      borderRadius: RADIUS.md,
       paddingHorizontal: 12,
       paddingVertical: 8,
       width: '100%',
@@ -615,7 +615,7 @@ function makeStyles(C, type) {
       left: 6,
       right: 6,
       height: 14,
-      borderRadius: 7,
+      borderRadius: RADIUS.sm,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
@@ -624,7 +624,7 @@ function makeStyles(C, type) {
     swatchDot: {
       width: 7,
       height: 7,
-      borderRadius: 4,
+      borderRadius: RADIUS.full,
     },
     swatchEmoji: {
       fontSize: 22,

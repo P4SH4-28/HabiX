@@ -1,5 +1,10 @@
 # Cihazda Manuel Smoke Test Planı (Release Öncesi)
 
+> **Bu plan sunucu/veri katmanını (senkron, ekonomi, güvenlik, CI) kapsar.**
+> **Arayüz katmanı** (18 ekranın tasarım sistemi, boş durumlar, klavye, swipe,
+> animasyon, erişilebilirlik) için ayrı liste: **`docs/ui-test-checklist.md`**
+> — yayın öncesi ikisini birlikte çalıştır.
+
 > **Kural:** Bu belgedeki hiçbir senaryo bu denetim ortamında **çalıştırılmadı** (cihaz/Supabase
 > erişimi yok). Tüm sonuç kutuları `[ ]` başlar; cihazda **gerçekten** yaptıktan sonra `[x]`
 > veya `[!]` (sorun) ile işaretlenir. PASS olarak **uydurulmaz**.
@@ -151,3 +156,19 @@ Sonuç: `[ ]` Not: ____
 | K Kurtarma | Hayır | `[ ]` |
 | L Sohbet/hız sınırı | Hayır | `[ ]` |
 | M CI artifact + APK temizliği | CI otomatik (koşum beklenir) | `[ ]` |
+
+---
+
+## N. Arayüz katmanı (18 ekran) — `MANUAL`
+
+Arayüz denetimi ayrı belgede toplandı: **`docs/ui-test-checklist.md`**
+
+1. Navigasyon iskeleti + başlık tekrarları yok mu?
+2. Her ekran: boş durum → dolu durum → hata durumu → geri dönüş.
+3. Klavye hiçbir formda alanı/butonu kapatmıyor mu?
+4. Swipe-to-delete yalnız istenen ekranda ve **onaylı** mı?
+5. Tüm animasyonlar ≤300ms, sonsuz döngü yok mu?
+6. 12 temada metin kontrastı okunabilir mi?
+7. Boş/hata durumlarında çökme, NaN, `undefined` yok mu?
+
+Sonuç: `[ ]` Not: ____

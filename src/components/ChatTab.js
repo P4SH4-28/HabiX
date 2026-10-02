@@ -31,6 +31,11 @@ function timeLabel(iso) {
   return `${h}:${m}`;
 }
 
+// Modül seviyesi sabit referanslar: FlatList her render'da yeni referans
+// almaz, gereksiz render tetiklenmez.
+const keyExtractor = (item) => item.id;
+const scrollToEnd = (ref) => ref?.current?.scrollToEnd({ animated: true });
+
 export default function ChatTab() {
   const { user: authUser } = useAuth();
   const { data } = useData();
@@ -103,7 +108,7 @@ export default function ChatTab() {
     }
   };
 
-  const renderMessage = ({ item }) => {
+  const renderMessage = useCallback(({ item }) => {
     const mine = item.username === me;
     return (
       <View style={[styles.msgRow, mine && styles.msgRowMine]}>
@@ -125,18 +130,22 @@ export default function ChatTab() {
         </View>
       </View>
     );
-  };
+  }, [C, me, styles]);
 
   return (
     <View style={styles.container}>
       <FlatList
         ref={listRef}
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderMessage}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        windowSize={9}
+        removeClippedSubviews
+        onContentSizeChange={() => scrollToEnd(listRef)}
         ListEmptyComponent={
           loading ? (
             <View style={styles.skeletonList}>

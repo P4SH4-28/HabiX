@@ -119,6 +119,7 @@ export const THEMES = [
     desc: 'Sevimli kalp deseni',
     pattern: '❤️',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#23121E',
       surfaceLight: '#381C2D',
       border: '#381C2E',
@@ -135,6 +136,8 @@ export const THEMES = [
     desc: 'Yeşilin huzuru',
     pattern: '🌲',
     colors: {
+      textMuted: '#9797A5',
+      onPrimary: '#0A0A0F',
       surface: '#142118',
       surfaceLight: '#213327',
       border: '#223226',
@@ -151,6 +154,8 @@ export const THEMES = [
     desc: 'Derin mavi dalgalar',
     pattern: '🌊',
     colors: {
+      textMuted: '#9494A3',
+      onPrimary: '#0A0A0F',
       surface: '#101F25',
       surfaceLight: '#19303B',
       border: '#192E3B',
@@ -167,6 +172,7 @@ export const THEMES = [
     desc: 'Yumuşak mor tonlar',
     pattern: '💜',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#181125',
       surfaceLight: '#261B39',
       border: '#261C38',
@@ -183,6 +189,8 @@ export const THEMES = [
     desc: 'Turuncu-pembe ufuk',
     pattern: '🌅',
     colors: {
+      textMuted: '#8F8F9E',
+      onPrimary: '#0A0A0F',
       surface: '#241611',
       surfaceLight: '#3A231A',
       border: '#3A241A',
@@ -199,10 +207,11 @@ export const THEMES = [
     desc: 'Yıldız tozu deseni',
     pattern: '✨',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#101325',
       surfaceLight: '#191D3B',
       border: '#1A1E3A',
-      primary: '#8B5CF6',
+      primary: '#9164F6',
       primaryDark: '#6F3FE0',
       accent: '#38BDF8',
     },
@@ -215,6 +224,7 @@ export const THEMES = [
     desc: 'Tatlı pembe-mor',
     pattern: '🍬',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#191125',
       surfaceLight: '#251B39',
       border: '#261B39',
@@ -231,6 +241,8 @@ export const THEMES = [
     desc: 'Kırmızı-pembe kiraz',
     pattern: '🍒',
     colors: {
+      textMuted: '#8C8C9C',
+      onPrimary: '#0A0A0F',
       surface: '#241221',
       surfaceLight: '#361E32',
       border: '#351F34',
@@ -247,12 +259,13 @@ export const THEMES = [
     desc: 'Neon yeşil-mor',
     pattern: '🤖',
     colors: {
+      textMuted: '#8F8F9E',
       surface: '#101A25',
       surfaceLight: '#1A2A3A',
       border: '#1B2B39',
       primary: '#00FFC2',
       primaryDark: '#00CC9B',
-      accent: '#7C5CFF',
+      accent: '#886BFF',
       onPrimary: '#00231A',
     },
   },
@@ -264,6 +277,7 @@ export const THEMES = [
     desc: 'Altın ve mor ihtişam',
     pattern: '👑',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#161025',
       surfaceLight: '#22193B',
       border: '#22193B',
@@ -280,6 +294,7 @@ export const THEMES = [
     desc: 'Ateşli kırmızı-amber',
     pattern: '🐲',
     colors: {
+      onPrimary: '#0A0A0F',
       surface: '#151124',
       surfaceLight: '#221B39',
       border: '#241D37',
