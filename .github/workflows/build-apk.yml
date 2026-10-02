@@ -12,7 +12,11 @@ on:
       - 'docs/**'
       - 'supabase/**'
       - 'supabase-*.sql'
-      - 'HabitTracker.apk' # Derleme sonrası APK'nın depoya geri yüklenmesi yeni build tetiklemesin
+      # Artık bot main'e commit atmıyor (aşağıdaki 11. adım kaldırıldı);
+      # APK yalnızca artifact + release olarak yayınlanır. Bu girdi, yine de
+      # depoda duran eski HabitTracker.apk elle güncellenirse sonsuz döngü
+      # oluşmasın diye korunur.
+      - 'HabitTracker.apk'
   workflow_dispatch: # GitHub arayüzünden manuel "Çalıştır" butonu ekler
 
 jobs:
@@ -152,8 +156,8 @@ jobs:
       # 10. ADIM: APK + AAB'yi GitHub Release'e ekliyoruz (sabit indirme linki)
       # Her derlemede en yeni dosyalar "latest" release'ine yüklenir.
       # İndirme linkleri:
-      #   APK: https://github.com/P4SH4-28/HabitTracker/releases/latest/download/HabitTracker.apk
-      #   AAB: https://github.com/P4SH4-28/HabitTracker/releases/latest/download/app-release.aab
+      #   APK: https://github.com/P4SH4-28/HabiX/releases/latest/download/HabitTracker.apk
+      #   AAB: https://github.com/P4SH4-28/HabiX/releases/latest/download/app-release.aab
       # DİKKAT: sabit APK linki "HabitTracker.apk" adını arar; bu yüzden dosya
       # yüklenmeden önce o adla kopyalanır (app-release.apk adı linki kırardı).
       - name: APK'yı Sabit Link Adına Kopyala
@@ -168,24 +172,12 @@ jobs:
           body: |
             Otomatik derlenen en güncel sürüm.
 
-            - APK (telefon kurulumu): `https://github.com/P4SH4-28/HabitTracker/releases/latest/download/HabitTracker.apk`
-            - AAB (Play Store yüklemesi): `https://github.com/P4SH4-28/HabitTracker/releases/latest/download/app-release.aab`
-            - Build zamanı: $(date -u)
+            - APK (telefon kurulumu): `https://github.com/P4SH4-28/HabiX/releases/latest/download/HabitTracker.apk`
+            - AAB (Play Store yüklemesi): `https://github.com/P4SH4-28/HabiX/releases/latest/download/app-release.aab`
+            - Kaynak commit: `${{ github.sha }}`
           files: |
             HabitTracker.apk
             android/app/build/outputs/bundle/release/app-release.aab
           make_latest: 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 11. ADIM: APK'yı depo kök dizinine kopyalayıp main dalına itiyoruz.
-      # Böylece README'nin altında dosya listesinde "HabitTracker.apk" görünür
-      # ve GitHub'dan tek tıkla indirilebilir.
-      - name: APK'yı Depoya Geri Yükle (README Yanına)
-        run: |
-          cp android/app/build/outputs/apk/release/app-release.apk HabitTracker.apk
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add HabitTracker.apk
-          git commit -m "chore: güncel APK derlemesi" || echo "APK değişmemiş, commit atlanıyor"
-          git push origin main

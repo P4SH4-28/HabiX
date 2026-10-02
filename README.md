@@ -101,7 +101,11 @@ npm run web                # tarayıcıda test
 1. Actions otomatik olarak **jest + tsc** çalıştırır — hatalı kod APK'ya ulaşamaz
 2. `expo prebuild` → Gradle ile APK + AAB derlenir
 3. `build-<run_number>` etiketiyle GitHub Release oluşturulur (APK + AAB eklenir)
-4. APK ayrıca depo köküne geri yüklenir (`HabitTracker.apk`)
+4. APK ayrıca Actions artifact'ı olarak yüklenir
+
+> Not: Derleme botu artık `main` dalına **commit atmaz**. APK yalnızca
+> [Release](https://github.com/P4SH4-28/HabiX/releases/latest) ve artifact
+> üzerinden yayınlanır; böylece her build'de push çakışması oluşmaz.
 
 Elle APK indirmek istersen:
 
@@ -111,9 +115,8 @@ Elle APK indirmek istersen:
 
 Sabit indirme linkleri (her build'de güncellenir):
 
-- **APK** (telefon kurulumu): `https://github.com/P4SH4-28/HabitTracker/releases/latest/download/HabitTracker.apk`
-- **AAB** (Play Store): `https://github.com/P4SH4-28/HabitTracker/releases/latest/download/app-release.aab`
-- Depo dosya listesindeki `HabitTracker.apk` da doğrudan indirilebilir.
+- **APK** (telefon kurulumu): `https://github.com/P4SH4-28/HabiX/releases/latest/download/HabitTracker.apk`
+- **AAB** (Play Store): `https://github.com/P4SH4-28/HabiX/releases/latest/download/app-release.aab`
 
 Manuel derleme için: `.github/workflows/build-apk.yml` → **Run workflow**.
 
