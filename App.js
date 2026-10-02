@@ -35,6 +35,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
 import LeagueScreen from './src/screens/LeagueScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import PomodoroScreen from './src/screens/PomodoroScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import QuestBoardScreen from './src/screens/QuestBoardScreen';
@@ -70,6 +71,7 @@ const TAB_TITLES = {
 };
 
 const STACK_TITLES = {
+  Pomodoro: 'Odak Zamanı',
   QuestBoard: 'Günün Görevleri',
   SeasonPass: 'Season Pass',
   Inventory: 'Envanter',
@@ -186,6 +188,7 @@ function RootNavigator() {
     >
       <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="Habits" component={HabitsScreen} />
+      <Stack.Screen name="Pomodoro" component={PomodoroScreen} />
       <Stack.Screen name="QuestBoard" component={QuestBoardScreen} />
       <Stack.Screen name="SeasonPass" component={SeasonPassScreen} />
       <Stack.Screen name="Inventory" component={InventoryScreen} />

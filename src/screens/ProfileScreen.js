@@ -1,32 +1,84 @@
 // ============================================================
-// ProfileScreen — Profil bilgileri (Instagram tarzı)
-// Büyük fotoğraf/avatar, isim, seviye/XP, bio ve istatistikler.
-// Fotoğraf: galeriden seçilir → Supabase Storage'a yüklenir → URL
-// profil kaydına yazılır. Bio yerel + sunucuya senkron edilir.
+// ProfileScreen — "Profilim" alt ekranı (v3 design system ile sıfırdan)
+//
+// YAPI:
+//   1) Üst satır     → sağ üstte Ayarlar dişli butonu
+//   2) Kimlik        → avatar/foto (dokun yükle) · isim (h1) · seviye + VIP · @kullanıcı
+//   3) Bio           → Card + ui/TextInput (düzenle) + ui/Button (Kaydet/Vazgeç)
+//   4) 4 mini stat   → Seri / Tamamlama / XP / Altın
+//   5) Envanter      → satır kartı → Inventory
+//   6) Seviye özeti  → Progress + 4 hücre + Başarımlar butonu
+//   7) Son 3 aktivite→ tamamlama geçmişi (bugün/dün/tarih)
+//   8) Aksiyonlar    → fotoğraf yükle/değiştir · Çerçeve→Shop · fotoğrafı kaldır
+//
+// DataContext/Auth hook'ları DEĞİŞMEDİ:
+//   useData  → data, today, updateBio, setProfilePhoto, pushToast, vipActive
+//   useAuth  → user
+//   servis   → pickProfilePhoto / uploadProfilePhoto / removeProfilePhoto
+//
+// SAFE AREA: üst başlık Stack header'ı (AppHeader/TopBar) karşılar;
+//   alt inset bu ekran uygular (stack'te PillTabBar yok).
+//
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (Card/Button
+//   100ms press) · 3 vurgu rengi (primary/success/gold) + danger yalnız
+//   fotoğraf kaldırma · statik emoji yok (hepsi Icon → Ionicons).
 // ============================================================
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AnimatedCounter from '../components/AnimatedCounter';
 import AvatarCircle from '../components/AvatarCircle';
 import PressableFX from '../components/PressableFX';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import Progress from '../components/ui/Progress';
-import { ACHIEVEMENTS } from '../data/achievements';
-import { levelFromTotalXp, bestStreak } from '../logic';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
 import Icon from '../components/ui/icons';
-import { pickProfilePhoto, removeProfilePhoto, uploadProfilePhoto } from '../services/avatarService';
+import IconTile from '../components/ui/IconTile';
+import Pill from '../components/ui/Pill';
+import Progress from '../components/ui/Progress';
+import SectionHeader from '../components/ui/SectionHeader';
+import TextInput from '../components/ui/TextInput';
+import { ACHIEVEMENTS } from '../data/achievements';
+import { bestStreak, levelFromTotalXp, totalCompletions } from '../logic';
+import {
+  pickProfilePhoto,
+  removeProfilePhoto,
+  uploadProfilePhoto,
+} from '../services/avatarService';
 import { useTheme } from '../theme';
 
+const MONTHS = [
+  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+];
+
+// 'YYYY-MM-DD' → [yıl, ay, gün] (yerel saat sapması olmadan)
+function parseKey(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return [y, m, d];
+}
+
+function dayLabel(key, today, yesterdayKey) {
+  if (key === today) return 'Bugün';
+  if (key === yesterdayKey) return 'Dün';
+  const [, m, d] = parseKey(key);
+  return `${d} ${MONTHS[m - 1]}`;
+}
+
 export default function ProfileScreen() {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
-  const { data, today, updateBio, setProfilePhoto, pushToast } = useData();
+  const { colors: C, type } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const { data, today, updateBio, setProfilePhoto, pushToast, vipActive } = useData();
   const { user: authUser } = useAuth();
   const navigation = useNavigation();
   const { stats, habits, settings } = data;
 
+  // ---------- türetilmiş veriler ----------
   const username = settings.username || authUser?.name || 'kullanici';
   const photoUrl = settings.photoUrl || null;
   const levelInfo = levelFromTotalXp(stats.totalXp);
@@ -35,12 +87,37 @@ export default function ProfileScreen() {
   const doneToday = habits.filter((h) => h.completedDates.includes(today)).length;
   const unlockedCount = (data.achievements || []).length;
 
+  // Son 3 aktivite: tüm tamamlamaların gün anahtarından en yeniler.
+  const recent3 = useMemo(() => {
+    const rows = [];
+    habits.forEach((h) =>
+      (h.completedDates || []).forEach((d) =>
+        rows.push({ key: `${h.id}_${d}`, name: h.name, emoji: h.emoji, date: d })
+      )
+    );
+    rows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    return rows.slice(0, 3);
+  }, [habits]);
+
+  const yesterdayKey = useMemo(() => {
+    const [y, m, d] = parseKey(today);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() - 1);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(
+      dt.getDate()
+    ).padStart(2, '0')}`;
+  }, [today]);
+
   // ---------- Bio ----------
   const [bioDraft, setBioDraft] = useState(settings.bio || '');
   const [editingBio, setEditingBio] = useState(false);
 
   const onSaveBio = () => {
     updateBio(bioDraft.trim());
+    setEditingBio(false);
+  };
+  const onCancelBio = () => {
+    setBioDraft(settings.bio || '');
     setEditingBio(false);
   };
 
@@ -73,101 +150,156 @@ export default function ProfileScreen() {
     setProfilePhoto(null);
   };
 
+  const stats4 = [
+    { value: streak, icon: '🔥', label: 'Seri', color: C.success },
+    // NOT: eski ekranda `stats.totalCompletions` kullanılıyordu; o alan
+    // DataContext'te yok (her zaman 0 görünüyordu) → logic'teki sayaç.
+    { value: totalCompletions(habits), icon: '✅', label: 'Tamamlama', color: C.primary },
+    { value: stats.totalXp, icon: '⚡', label: 'XP', color: C.gold },
+    { value: stats.gold || 0, icon: '🪙', label: 'Altın', color: C.gold },
+  ];
+
+  const summaryCells = [
+    { icon: '📅', value: habits.length, label: 'Aktif alışkanlık' },
+    { icon: '🎯', value: `${doneToday}/${habits.length || 0}`, label: 'Bugün tamamlanan' },
+    { icon: '🍅', value: stats.pomodoroCount || 0, label: 'Odak seansı' },
+    { icon: '🏆', value: `${unlockedCount}/${ACHIEVEMENTS.length}`, label: 'Başarım' },
+  ];
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Profil fotoğrafı + yükleme rozeti */}
-      <View style={styles.photoSection}>
-        <Pressable onPress={pickAndUpload} disabled={photoBusy}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(24, insets.bottom + 24) },
+      ]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ---------- 1) ÜST SATIR: Ayarlar ---------- */}
+      <View style={styles.topRow}>
+        <PressableFX
+          onPress={() => navigation.navigate('Settings')}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Ayarlar"
+          style={styles.gearBtn}
+        >
+          <Ionicons name="settings-outline" size={20} color={C.text} />
+        </PressableFX>
+      </View>
+
+      {/* ---------- 2) KİMLİK ---------- */}
+      <View style={styles.identity}>
+        <PressableFX
+          onPress={pickAndUpload}
+          disabled={photoBusy}
+          accessibilityRole="button"
+          accessibilityLabel={photoUrl ? 'Profil fotoğrafını değiştir' : 'Profil fotoğrafı yükle'}
+        >
           <AvatarCircle
             avatarId={settings.avatarId}
             frameId={settings.frameId}
             photo={photoUrl}
-            size={120}
+            size={112}
+            ringColor={C.primary}
           />
           <View style={styles.photoBadge}>
             <Icon emoji={photoBusy ? '⏳' : '📷'} size={13} color={C.onPrimary} />
           </View>
-        </Pressable>
+        </PressableFX>
+
+        <Text style={styles.name} numberOfLines={1}>
+          {authUser?.name || 'Misafir'}
+        </Text>
+
+        <View style={styles.levelRow}>
+          <Text style={styles.levelText}>
+            Seviye {levelInfo.level} · <AnimatedCounter value={stats.totalXp} /> XP
+          </Text>
+          {vipActive ? (
+            <Pill size="sm" icon="👑" bg={C.gold + '1A'} color={C.gold}>
+              VIP
+            </Pill>
+          ) : null}
+        </View>
+
+        <Text style={styles.username}>@{username}</Text>
       </View>
 
-      <Text style={styles.name}>{authUser?.name || 'Misafir'}</Text>
-      <Text style={styles.levels}>
-        {levelInfo.level} Seviye · {stats.totalXp} XP
-      </Text>
-      <Text style={styles.username}>@{username}</Text>
-
-      {/* Bio */}
-      <View style={styles.bioCard}>
+      {/* ---------- 3) BIO ---------- */}
+      <Card>
         {editingBio ? (
-          <>
+          <View style={styles.bioEdit}>
             <TextInput
-              style={styles.bioInput}
+              label="BİO"
               value={bioDraft}
               onChangeText={setBioDraft}
               placeholder="Kendinden bahset…"
-              placeholderTextColor={C.textMuted}
               maxLength={200}
               multiline
+              numberOfLines={3}
+              hint={`${bioDraft.length}/200 karakter`}
             />
-            <Pressable style={[styles.bioSaveBtn, { backgroundColor: C.primary }]} onPress={onSaveBio}>
-              <Text style={styles.bioSaveText}>Kaydet</Text>
-            </Pressable>
-          </>
+            <View style={styles.bioBtnRow}>
+              <Button label="Vazgeç" variant="ghost" size="sm" style={styles.bioBtn} onPress={onCancelBio} />
+              <Button label="Kaydet" variant="primary" size="sm" style={styles.bioBtn} onPress={onSaveBio} />
+            </View>
+          </View>
         ) : (
-          <Pressable style={styles.bioBox} onPress={() => setEditingBio(true)}>
-            <Text style={styles.bioText} numberOfLines={4}>
-              {settings.bio || 'Bio ekle'}
-            </Text>
-            {!settings.bio ? (
-              <View style={styles.bioHintRow}>
-                <Icon emoji="✏️" size={12} color={C.textMuted} />
-                <Text style={styles.bioHintText}>dokun ve yaz</Text>
-              </View>
-            ) : null}
-          </Pressable>
+          <PressableFX
+            onPress={() => setEditingBio(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Bio düzenle"
+          >
+            <View>
+              <Text style={styles.bioText} numberOfLines={4}>
+                {settings.bio || 'Bio ekle'}
+              </Text>
+              {!settings.bio ? (
+                <View style={styles.bioHintRow}>
+                  <Icon emoji="✏️" size={12} color={C.textMuted} />
+                  <Text style={styles.bioHintText}>dokun ve yaz</Text>
+                </View>
+              ) : null}
+            </View>
+          </PressableFX>
         )}
-      </View>
+      </Card>
 
-      {/* İstatistikler */}
+      {/* ---------- 4) 4 MİNİ STAT ---------- */}
       <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <AnimatedCounter value={streak} style={styles.statValue} />
-          <View style={styles.statLabelRow}>
-            <Icon emoji="🔥" size={10} color={C.accent} />
-            <Text style={styles.statLabel}>Seri</Text>
-          </View>
-        </View>
-        <View style={styles.statCard}>
-          <AnimatedCounter value={stats.totalCompletions || 0} style={styles.statValue} />
-          <View style={styles.statLabelRow}>
-            <Icon emoji="✅" size={10} color={C.accent} />
-            <Text style={styles.statLabel}>Tamamlama</Text>
-          </View>
-        </View>
-        <View style={styles.statCard}>
-          <AnimatedCounter value={stats.totalXp} style={styles.statValue} />
-          <View style={styles.statLabelRow}>
-            <Icon emoji="⚡" size={10} color={C.xp} />
-            <Text style={styles.statLabel}>XP</Text>
-          </View>
-        </View>
-        <View style={styles.statCard}>
-          <AnimatedCounter value={stats.gold || 0} style={styles.statValue} />
-          <View style={styles.statLabelRow}>
-            <Icon emoji="🪙" size={10} color={C.gold} />
-            <Text style={styles.statLabel}>Altın</Text>
-          </View>
-        </View>
+        {stats4.map((s) => (
+          <Card key={s.label} padding="sm" style={styles.statCard}>
+            <Icon emoji={s.icon} size={16} color={s.color} />
+            <AnimatedCounter value={s.value} style={styles.statValue} />
+            <Text style={styles.statLabel} numberOfLines={2}>
+              {s.label}
+            </Text>
+          </Card>
+        ))}
       </View>
 
-      {/* İstatistik özeti kartı */}
-      <View style={styles.summaryCard}>
-        <View style={styles.xpRow}>
+      {/* ---------- 5) ENVANTER LİNKİ ---------- */}
+      <Card onPress={() => navigation.navigate('Inventory')} accessibilityLabel="Envanter">
+        <View style={styles.linkRow}>
+          <IconTile icon="cube" tint={C.primary} size={40} />
+          <View style={styles.linkInfo}>
+            <Text style={styles.h3}>Envanter</Text>
+            <Text style={styles.hint}>Eşyalarını kullan ve etkinleştir</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={C.textMuted} />
+        </View>
+      </Card>
+
+      {/* ---------- 6) SEVİYE ÖZETİ ---------- */}
+      <Card>
+        <View style={styles.rowBetween}>
           <View style={styles.xpTexts}>
-            <Text style={styles.xpLabel}>
+            <Text style={styles.h3}>
               Seviye {levelInfo.level} → {levelInfo.level + 1}
             </Text>
-            <Text style={styles.xpSub}>
+            <Text style={styles.hint}>
               {levelInfo.curXp}/{levelInfo.nextThreshold} XP
             </Text>
           </View>
@@ -176,200 +308,253 @@ export default function ProfileScreen() {
         <Progress
           value={xpPct / 100}
           height={8}
-          colors={[C.xp, C.accent]}
-          style={{ marginTop: 10 }}
+          colors={[C.primary, C.primary]}
+          style={styles.xpProgress}
           accessibilityLabel={`Seviye ilerlemesi yüzde ${xpPct}`}
         />
 
         <View style={styles.summaryGrid}>
-          <View style={styles.summaryCell}>
-            <Icon emoji="📅" size={15} color={C.primary} />
-            <Text style={styles.summaryCellValue}>{habits.length}</Text>
-            <Text style={styles.summaryCellLabel}>Aktif alışkanlık</Text>
-          </View>
-          <View style={styles.summaryCell}>
-            <Icon emoji="🎯" size={15} color={C.primary} />
-            <Text style={styles.summaryCellValue}>
-              {doneToday}/{habits.length || 0}
-            </Text>
-            <Text style={styles.summaryCellLabel}>Bugün tamamlanan</Text>
-          </View>
-          <View style={styles.summaryCell}>
-            <Icon emoji="🍅" size={15} color={C.accent} />
-            <Text style={styles.summaryCellValue}>{stats.pomodoroCount || 0}</Text>
-            <Text style={styles.summaryCellLabel}>Odak seansı</Text>
-          </View>
-          <View style={styles.summaryCell}>
-            <Icon emoji="🏆" size={15} color={C.gold} />
-            <Text style={styles.summaryCellValue}>
-              {unlockedCount}/{ACHIEVEMENTS.length}
-            </Text>
-            <Text style={styles.summaryCellLabel}>Başarım</Text>
-          </View>
+          {summaryCells.map((cell) => (
+            <View key={cell.label} style={styles.summaryCell}>
+              <Icon emoji={cell.icon} size={15} color={C.primary} />
+              <Text style={styles.summaryCellValue}>{cell.value}</Text>
+              <Text style={styles.summaryCellLabel}>{cell.label}</Text>
+            </View>
+          ))}
         </View>
 
-        <PressableFX
+        <Button
+          label="Tüm başarımları gör"
+          variant="secondary"
+          size="sm"
+          fullWidth
           style={styles.achBtn}
+          icon={<Ionicons name="trophy" size={16} color={C.gold} />}
           onPress={() => navigation.navigate('Achievements')}
-        >
-          <View style={styles.achBtnTextRow}>
-            <Icon emoji="🏆" size={14} color={C.gold} />
-            <Text style={styles.achBtnText}>Tüm başarımları gör →</Text>
-          </View>
-        </PressableFX>
+        />
+      </Card>
+
+      {/* ---------- 7) SON 3 AKTİVİTE ---------- */}
+      <View>
+        <SectionHeader title="Son Aktiviteler" />
+        <Card>
+          {recent3.length === 0 ? (
+            <EmptyState
+              compact
+              name="time"
+              title="Henüz aktivite yok"
+              subtitle="Bir alışkanlığı tamamladığında burada görünür."
+            />
+          ) : (
+            recent3.map((a) => (
+              <View key={a.key} style={styles.activityRow}>
+                <Icon emoji={a.emoji} size={16} color={C.textMuted} />
+                <Text style={styles.activityName} numberOfLines={1}>
+                  {a.name}
+                </Text>
+                <Text style={styles.activityDate}>{dayLabel(a.date, today, yesterdayKey)}</Text>
+              </View>
+            ))
+          )}
+        </Card>
       </View>
 
-      {/* Eylemler */}
-      <View style={styles.actionsRow}>
-        <Pressable style={[styles.actionBtn, { backgroundColor: C.primary }]} onPress={pickAndUpload}>
-          <View style={styles.actionTextRow}>
-            <Icon emoji={photoBusy ? '⏳' : '📷'} size={14} color={C.onPrimary} />
-            <Text style={[styles.actionText, { color: C.onPrimary }]}>
-              {photoBusy ? 'Yükleniyor…' : photoUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}
-            </Text>
-          </View>
-        </Pressable>
-        <Pressable
-          style={[styles.actionBtn, { backgroundColor: C.surfaceLight }]}
+      {/* ---------- 8) AKSİYONLAR ---------- */}
+      <View style={styles.actionsCol}>
+        <Button
+          label={
+            photoBusy ? 'Yükleniyor…' : photoUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'
+          }
+          variant="primary"
+          size="sm"
+          fullWidth
+          icon={<Icon emoji={photoBusy ? '⏳' : '📷'} size={15} color={C.onPrimary} />}
+          loading={photoBusy}
+          onPress={pickAndUpload}
+        />
+        <Button
+          label="Çerçeve (Dükkan)"
+          variant="secondary"
+          size="sm"
+          fullWidth
+          icon={<Ionicons name="diamond-outline" size={15} color={C.primary} />}
           onPress={() => navigation.navigate('Shop')}
-        >
-          <View style={styles.actionTextRow}>
-            <Icon emoji="💍" size={14} color={C.primary} />
-            <Text style={styles.actionText}>Çerçeve</Text>
-          </View>
-        </Pressable>
+        />
       </View>
-      {photoUrl && (
-        <Pressable style={styles.removeBtn} onPress={removePhoto}>
-          <Text style={styles.removeText}>Fotoğrafı Kaldır</Text>
-        </Pressable>
-      )}
+
+      {photoUrl ? (
+        <Button
+          label="Fotoğrafı Kaldır"
+          variant="danger"
+          size="sm"
+          fullWidth
+          onPress={removePhoto}
+        />
+      ) : null}
     </ScrollView>
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: C.background,
-      padding: 20,
     },
-    photoSection: {
+    content: {
+      padding: 20,
+      gap: 16,
+    },
+
+    // ---- üst satır ----
+    topRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      marginTop: -4,
+    },
+    gearBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       alignItems: 'center',
-      marginTop: 8,
+      justifyContent: 'center',
+      backgroundColor: C.surface,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+
+    // ---- kimlik ----
+    identity: {
+      alignItems: 'center',
+      gap: 4,
+      marginTop: 4,
     },
     photoBadge: {
       position: 'absolute',
       right: -2,
       bottom: 0,
       backgroundColor: C.primary,
-      borderRadius: 16,
+      borderRadius: 14,
       width: 28,
       height: 28,
       alignItems: 'center',
       justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: C.background,
     },
     name: {
+      ...type.h1,
       color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
+      marginTop: 10,
       textAlign: 'center',
-      marginTop: 12,
     },
-    levels: {
-      color: C.textMuted,
-      fontSize: 15,
-      textAlign: 'center',
+    levelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
       marginTop: 2,
+    },
+    levelText: {
+      ...type.small,
+      color: C.textMuted,
     },
     username: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
-      textAlign: 'center',
-      marginTop: 2,
       opacity: 0.8,
     },
-    bioCard: {
-      marginTop: 16,
+
+    // ---- bio ----
+    bioEdit: {
+      gap: 12,
     },
-    bioBox: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-      minHeight: 60,
-      justifyContent: 'center',
+    bioBtnRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    bioBtn: {
+      flex: 1,
+    },
+    bioText: {
+      ...type.body,
+      color: C.text,
     },
     bioHintRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      marginTop: 4,
+      marginTop: 6,
     },
     bioHintText: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 11,
     },
-    bioText: {
-      color: C.text,
-      fontSize: 15,
-      lineHeight: 20,
-    },
-    bioInput: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-      color: C.text,
-      minHeight: 60,
-      textAlignVertical: 'top',
-    },
-    bioSaveBtn: {
-      marginTop: 8,
-      borderRadius: 12,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    bioSaveText: {
-      color: C.onPrimary,
-      fontWeight: '700',
-    },
+
+    // ---- statlar ----
     statsRow: {
       flexDirection: 'row',
       gap: 10,
-      marginTop: 16,
     },
-    summaryCard: {
-      marginTop: 12,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 16,
+    statCard: {
+      flex: 1,
+      alignItems: 'center',
+      gap: 4,
     },
-    xpRow: {
+    statValue: {
+      // Dar sütun: h3 ölçeği (17) + tabular — 5 boyut dışına ÇIKMAZ.
+      ...type.h3,
+      color: C.text,
+      fontVariant: ['tabular-nums'],
+    },
+    statLabel: {
+      ...type.micro,
+      color: C.textMuted,
+      textAlign: 'center',
+    },
+
+    // ---- link satırı ----
+    linkRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    linkInfo: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    h3: {
+      ...type.h3,
+      color: C.text,
+    },
+    hint: {
+      ...type.small,
+      color: C.textMuted,
+    },
+
+    // ---- seviye özeti ----
+    rowBetween: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      gap: 12,
     },
     xpTexts: {
       gap: 2,
-    },
-    xpLabel: {
-      color: C.text,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    xpSub: {
-      color: C.textMuted,
-      fontSize: 13,
+      flexShrink: 1,
     },
     xpValue: {
-      color: C.xp,
-      fontSize: 17,
-      fontWeight: '700',
+      ...type.h3,
+      color: C.primary,
+      fontVariant: ['tabular-nums'],
+    },
+    xpProgress: {
+      marginTop: 12,
     },
     summaryGrid: {
       flexDirection: 'row',
-      marginTop: 16,
       gap: 10,
+      marginTop: 16,
     },
     summaryCell: {
       flex: 1,
@@ -380,85 +565,40 @@ function makeStyles(C) {
       gap: 4,
     },
     summaryCellValue: {
+      ...type.h3,
       color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
+      fontVariant: ['tabular-nums'],
     },
     summaryCellLabel: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '600',
       textAlign: 'center',
     },
     achBtn: {
       marginTop: 14,
-      borderRadius: 12,
-      alignItems: 'center',
-      paddingVertical: 10,
     },
-    achBtnTextRow: {
+
+    // ---- aktivite ----
+    activityRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: 10,
+      paddingVertical: 8,
     },
-    achBtnPressed: {
-      opacity: 0.7,
-    },
-    achBtnText: {
+    activityName: {
+      ...type.body,
       color: C.text,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    statCard: {
       flex: 1,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      paddingVertical: 14,
-      alignItems: 'center',
+      minWidth: 0,
     },
-    statValue: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: C.text,
-    },
-    statLabelRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-      marginTop: 2,
-    },
-    statLabel: {
-      fontSize: 11,
+    activityDate: {
+      ...type.micro,
       color: C.textMuted,
     },
-    actionsRow: {
-      flexDirection: 'row',
+
+    // ---- aksiyonlar ----
+    actionsCol: {
       gap: 10,
-      marginTop: 16,
-    },
-    actionBtn: {
-      flex: 1,
-      paddingVertical: 12,
-      borderRadius: 16,
-      alignItems: 'center',
-    },
-    actionTextRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    actionText: {
-      color: C.text,
-      fontWeight: '700',
-    },
-    removeBtn: {
-      marginTop: 12,
-      alignItems: 'center',
-      paddingVertical: 10,
-    },
-    removeText: {
-      color: C.danger,
-      fontWeight: '600',
     },
   });
 }

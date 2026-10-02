@@ -20,6 +20,7 @@ import Icon from './ui/icons';
 
 const MENU_ITEMS = [
   { key: 'QuestBoard', icon: 'flag', label: 'Günün Görevleri', desc: 'Günlük 4+4 görev' },
+  { key: 'Pomodoro', icon: 'timer', label: 'Odak Zamanı', desc: 'Seans başlat ve odaklan' },
   { key: 'SeasonPass', icon: 'ticket', label: 'Season Pass', desc: 'Seviye ödülleri ve VIP' },
   { key: 'Inventory', icon: 'cube', label: 'Envanter', desc: 'Eşyalarını kullan' },
   { key: 'Achievements', icon: 'trophy', label: 'Başarımlar', desc: 'Kupa ve ödüller' },

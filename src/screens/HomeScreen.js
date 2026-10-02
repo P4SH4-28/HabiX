@@ -150,6 +150,8 @@ export default function HomeScreen() {
   const openQuests = useCallback(() => navigation.navigate('QuestBoard'), [navigation]);
   // "Tümünü gör" → App.js'de kayıtlı "Habits" stack route'u (yığından geri döner).
   const openHabits = useCallback(() => navigation.navigate('Habits'), [navigation]);
+  // Pomodoro kartı → "Odak Zamanı" stack route'u.
+  const openPomodoro = useCallback(() => navigation.navigate('Pomodoro'), [navigation]);
 
   return (
     <View style={styles.container}>
@@ -283,8 +285,10 @@ export default function HomeScreen() {
           </Text>
         </Card>
 
-        {/* ---------- 5) POMODORO (mevcut bileşen, mantık aynen) ---------- */}
-        <PomodoroTimer />
+        {/* ---------- 5) POMODORO (kart → Odak Zamanı ekranı) ---------- */}
+        <PressableFX onPress={openPomodoro} accessibilityRole="button" accessibilityLabel="Odak Zamanı ekranını aç">
+          <PomodoroTimer />
+        </PressableFX>
 
         {/* ---------- 6) ALIŞKANLIKLAR ---------- */}
         <SectionHeader

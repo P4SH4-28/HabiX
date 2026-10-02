@@ -162,6 +162,9 @@ const INITIAL_STATE = {
   // Pomodoro oturumu. state: idle (boşta) | running (çalışıyor) | paused (duraklatıldı).
   // "endAt" süre bitiş anıdır; böylece uygulama kapansa bile süre doğru işler.
   pomodoro: { state: 'idle', endAt: 0, remainingMs: POMODORO_DURATION_MS },
+  // Son odak seansları (PomodoroScreen "Son Seanslar" listesi, en fazla 5):
+  // { at: ms, dk: dakika }. Eski kayıtlarda yok → varsayılan [].
+  sessionLog: [],
   // Envanter: satın alınan eşya adetleri (id → adet). Dükkan'dan alınır,
   // Envanter ekranında kullanılır (bkz. items.js).
   inventory: emptyInventory(),
@@ -468,6 +471,9 @@ export function DataProvider({ children }) {
                   ? parsed.passClaims
                   : {},
               pomodoro: { ...INITIAL_STATE.pomodoro, ...(parsed.pomodoro || {}) },
+              sessionLog: Array.isArray(parsed.sessionLog)
+                ? parsed.sessionLog.slice(-5)
+                : [],
               // Eşya envanteri + aktif etkiler: eski kayıtlarda yoktur,
               // varsayılanla birleştirilir.
               inventory: {
@@ -1583,16 +1589,30 @@ export function DataProvider({ children }) {
   // alınsa bile süre 25 dakikayı aşamaz (saat oynatma koruması).
 
   // Boştaysa sayacı başlatır (duraklatılmıştan devam etme ayrı fonksiyonda).
-  const startPomodoro = useCallback(() => {
+  // durationMs verilirse oturum O SÜREDEN başlar (ör. 45 dk); sayısal değilse
+  // eskisi gibi 25 dk → mevcut onPress çağırmaları (nesne argüman) değişmez.
+  const startPomodoro = useCallback((durationMs) => {
     setData((d) => {
       if (d.pomodoro.state === 'running') return d;
-      const base = Math.min(POMODORO_DURATION_MS, d.pomodoro.remainingMs || POMODORO_DURATION_MS);
+      const cap =
+        typeof durationMs === 'number' && durationMs > 0
+          ? durationMs
+          : POMODORO_DURATION_MS;
+      // Duraklatılmış oturum kaldığı yerden devam eder (eskisi gibi min());
+      // yeniden başlarken seçilen süre esas alınır.
+      const base =
+        d.pomodoro.state === 'paused' && d.pomodoro.remainingMs > 0
+          ? Math.min(cap, d.pomodoro.remainingMs)
+          : cap;
       return {
         ...d,
         pomodoro: {
           state: 'running',
           endAt: serverNow() + base,
           remainingMs: base,
+          // Oturumun toplam süresi: duraklat/kaldır clamp'i ve seans geçmişi
+          // (sessionLog) için saklanır.
+          sessionMs: base,
         },
       };
     });
@@ -1602,12 +1622,19 @@ export function DataProvider({ children }) {
   const pausePomodoro = useCallback(() => {
     setData((d) => {
       if (d.pomodoro.state !== 'running') return d;
+      // Kapanan süre oturumun KENDİ toplamını aşamaz (saat oynatma koruması).
+      // Eski sabit 25 dk klibi, özel süreli oturumlarda (45 dk) yanlıştı.
+      const cap =
+        typeof d.pomodoro.sessionMs === 'number' && d.pomodoro.sessionMs > 0
+          ? d.pomodoro.sessionMs
+          : POMODORO_DURATION_MS;
       return {
         ...d,
         pomodoro: {
           state: 'paused',
           endAt: 0,
-          remainingMs: Math.max(0, Math.min(POMODORO_DURATION_MS, d.pomodoro.endAt - serverNow())),
+          remainingMs: Math.max(0, Math.min(cap, d.pomodoro.endAt - serverNow())),
+          sessionMs: cap,
         },
       };
     });
@@ -1623,16 +1650,22 @@ export function DataProvider({ children }) {
           state: 'running',
           endAt: serverNow() + d.pomodoro.remainingMs,
           remainingMs: d.pomodoro.remainingMs,
+          sessionMs: d.pomodoro.sessionMs || POMODORO_DURATION_MS,
         },
       };
     });
   }, []);
 
-  // Oturumu sıfırlar (tam 25 dakikaya döner).
-  const resetPomodoro = useCallback(() => {
+  // Oturumu sıfırlar. durationMs verilirse sayaç O SÜREYE döner (süre
+  // seçicisi); sayısal değilse eskisi gibi 25 dakika (geriye uyumlu).
+  const resetPomodoro = useCallback((durationMs) => {
+    const cap =
+      typeof durationMs === 'number' && durationMs > 0
+        ? durationMs
+        : POMODORO_DURATION_MS;
     setData((d) => ({
       ...d,
-      pomodoro: { state: 'idle', endAt: 0, remainingMs: POMODORO_DURATION_MS },
+      pomodoro: { state: 'idle', endAt: 0, remainingMs: cap, sessionMs: cap },
     }));
   }, []);
 
@@ -1718,7 +1751,22 @@ export function DataProvider({ children }) {
       return {
         ...d,
         stats,
-        pomodoro: { state: 'idle', endAt: 0, remainingMs: POMODORO_DURATION_MS },
+        // Son 5 seans geçmişe yazılır (PomodoroScreen listesi; en yenisi sona).
+        sessionLog: [
+          ...(d.sessionLog || []),
+          {
+            at: serverNow(),
+            dk: Math.round(
+              (d.pomodoro.sessionMs || POMODORO_DURATION_MS) / 60000
+            ),
+          },
+        ].slice(-5),
+        pomodoro: {
+          state: 'idle',
+          endAt: 0,
+          remainingMs: POMODORO_DURATION_MS,
+          sessionMs: POMODORO_DURATION_MS,
+        },
       };
     });
   }, []);
