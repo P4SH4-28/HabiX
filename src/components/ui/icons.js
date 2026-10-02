@@ -7,6 +7,10 @@
 import { Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// Geçerli Ionicons adları kümesi (createIconSet `glyphMap`'i statik olarak
+// açar). `emoji` prop'uyla İKON ADI geçen çağrıları da yakalarız.
+const IONICON_NAMES = Ionicons.glyphMap;
+
 export const ICON_MAP = {
   '🎯': 'navigate',
   '🔔': 'notifications',
@@ -70,7 +74,17 @@ export const ICON_MAP = {
 
 // Emoji'yi ait olduğu Ionicons adına çevirir (bilinmiyorsa null).
 export function iconForEmoji(emoji) {
-  return emoji && ICON_MAP[emoji] ? ICON_MAP[emoji] : null;
+  if (!emoji) return null;
+  if (ICON_MAP[emoji]) return ICON_MAP[emoji];
+  // DİKKAT: bazı ekranlar `emoji`/`icon` prop'uyla doğrudan İKON ADI geçiyordu
+  // (IconTile icon="cube", AppMenu icon="flag"…). Haritada bulunmayınca Icon
+  // bileşeni o string'i <Text> olarak basıyor ve ekranda "cube" yazısı
+  // ikonun üstüne biniyordu. Geçerli bir Ionicons adıysa doğrudan ikon
+  // olarak render et; gerçek emoji (avatar/içerik) yine metin olarak kalır.
+  if (IONICON_NAMES && Object.prototype.hasOwnProperty.call(IONICON_NAMES, emoji)) {
+    return emoji;
+  }
+  return null;
 }
 
 // Evrensel ikon render'ı: `name` (Ionicons) → `emoji` (haritadan eşleme) →

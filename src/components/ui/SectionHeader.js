@@ -8,12 +8,14 @@ export default function SectionHeader({ title, actionLabel, onAction, style }) {
   const { colors: C } = useTheme();
   return (
     <View style={[styles.row, style]}>
-      <Text style={[styles.title, { color: C.text }]} numberOfLines={1}>
+      <Text style={[styles.title, { color: C.text }]} numberOfLines={1} ellipsizeMode="tail">
         {title}
       </Text>
       {actionLabel ? (
         <Pressable onPress={onAction} hitSlop={8} disabled={!onAction}>
-          <Text style={[styles.action, { color: C.primary }]}>{actionLabel}</Text>
+          <Text style={[styles.action, { color: C.primary }]} numberOfLines={1}>
+            {actionLabel}
+          </Text>
         </Pressable>
       ) : null}
     </View>
@@ -25,14 +27,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 12,
   },
   title: {
     fontSize: 17,
     fontWeight: '700',
+    flexShrink: 1,
   },
   action: {
     fontSize: 13,
     fontWeight: '700',
+    flexShrink: 0,
   },
 });

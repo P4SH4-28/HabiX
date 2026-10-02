@@ -184,7 +184,7 @@ export default function ShopScreen() {
     if (tab === 'items') {
       const afford = !buyDisabled(entry.price);
       return (
-        <Card key={entry.id} style={styles.card}>
+        <Card key={entry.id} padding="sm" style={styles.card}>
           <Icon emoji={entry.item.emoji} size={30} color={C.text} />
           <Text style={styles.cardName} numberOfLines={1}>
             {entry.name}
@@ -198,13 +198,14 @@ export default function ShopScreen() {
             variant="secondary"
             fullWidth
             disabled={!afford}
-            icon={<Icon emoji="🪙" size={12} color={C.gold} />}
             onPress={() => {
               buyItem(entry.id);
               notifyBuy(entry.name);
             }}
           />
-          <Text style={styles.cardSub}>{entry.count} adetin var</Text>
+          <Text style={styles.cardSub} numberOfLines={1}>
+            {entry.count} adetin var
+          </Text>
         </Card>
       );
     }
@@ -212,7 +213,7 @@ export default function ShopScreen() {
     const isItemsTheme = tab === 'themes';
     const afford = !buyDisabled(entry.price);
     return (
-      <Card key={entry.id} style={[styles.card, entry.selected && styles.cardSelected]}>
+      <Card key={entry.id} padding="sm" style={[styles.card, entry.selected && styles.cardSelected]}>
         {entry.selected ? (
           <View style={styles.ownedBadge}>
             <Icon name="checkmark" size={12} color={C.onPrimary} />
@@ -260,7 +261,9 @@ export default function ShopScreen() {
         {entry.selected ? (
           <View style={styles.stateChip}>
             <Icon name="checkmark-circle" size={13} color={C.gold} />
-            <Text style={styles.stateChipText}>Seçili</Text>
+            <Text style={styles.stateChipText} numberOfLines={1}>
+              Seçili
+            </Text>
           </View>
         ) : entry.owned ? (
           <Button
@@ -276,13 +279,6 @@ export default function ShopScreen() {
             size="sm"
             fullWidth
             disabled={!afford}
-            icon={
-              entry.vip && entry.price === 0 ? (
-                <Icon emoji="👑" size={12} color={C.gold} />
-              ) : (
-                <Icon emoji="🪙" size={12} color={C.gold} />
-              )
-            }
             onPress={() => {
               if (isItemsTheme) {
                 buyTheme(entry.id);
@@ -297,7 +293,11 @@ export default function ShopScreen() {
             }}
           />
         )}
-        {entry.owned && !entry.selected ? <Text style={styles.cardSub}>Sahip Olunan</Text> : null}
+        {entry.owned && !entry.selected ? (
+          <Text style={styles.cardSub} numberOfLines={1}>
+            Sahip Olunan
+          </Text>
+        ) : null}
       </Card>
     );
   };
@@ -334,9 +334,11 @@ export default function ShopScreen() {
       </View>
 
       <Card style={styles.profileCard}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.profileName}>{currentItem?.name || 'Avatar'}</Text>
-          <Text style={styles.profileHint}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.profileName} numberOfLines={1}>
+            {currentItem?.name || 'Avatar'}
+          </Text>
+          <Text style={styles.profileHint} numberOfLines={2}>
             Bugün ekranında ve liderlikte bu avatar görünür.
           </Text>
         </View>
@@ -374,7 +376,12 @@ export default function ShopScreen() {
               onPress={() => setFilter(f.key)}
               style={[styles.filterChip, active && styles.filterChipActive]}
             >
-              <Text style={[styles.filterText, active && styles.filterTextActive]}>{f.label}</Text>
+              <Text
+                style={[styles.filterText, active && styles.filterTextActive]}
+                numberOfLines={1}
+              >
+                {f.label}
+              </Text>
             </PressableFX>
           );
         })}
@@ -385,13 +392,15 @@ export default function ShopScreen() {
         <Card style={styles.howCard}>
           <View style={styles.howHead}>
             <Icon emoji="🪙" size={14} color={C.gold} />
-            <Text style={styles.howTitle}>Altın nasıl kazanılır?</Text>
+            <Text style={styles.howTitle} numberOfLines={1}>
+              Altın nasıl kazanılır?
+            </Text>
           </View>
           <View style={styles.howGrid}>
-            <Text style={styles.howItem}>✅ Alışkanlık +5</Text>
-            <Text style={styles.howItem}>🍅 Odak +15</Text>
-            <Text style={styles.howItem}>🏆 Başarım +25..250</Text>
-            <Text style={styles.howItem}>🎯 Görev +20..150</Text>
+            <Text style={styles.howItem} numberOfLines={1}>✅ Alışkanlık +5</Text>
+            <Text style={styles.howItem} numberOfLines={1}>🍅 Odak +15</Text>
+            <Text style={styles.howItem} numberOfLines={1}>🏆 Başarım +25..250</Text>
+            <Text style={styles.howItem} numberOfLines={1}>🎯 Görev +20..150</Text>
           </View>
         </Card>
       ) : null}
@@ -414,7 +423,7 @@ export default function ShopScreen() {
       {tab === 'frames' && !vipActive ? (
         <View style={styles.vipHint}>
           <Icon emoji="👑" size={13} color={C.gold} />
-          <Text style={styles.vipHintText}>
+          <Text style={styles.vipHintText} numberOfLines={3}>
             VIP çerçeveler Season Pass'te seni bekliyor — VIP olarak hepsini
             açabilirsin!
           </Text>
@@ -480,9 +489,12 @@ function makeStyles(C, type) {
     },
 
     // ---- filtre ----
+    // flexWrap ŞART: "Tümü / Uygun fiyatlı / Sahip olduklarım" üç chip'i
+    // tek satıra sığmıyordu ve son chip ekran dışına taşıp kırpılıyordu.
     filterRow: {
       flexDirection: 'row',
       gap: 8,
+      flexWrap: 'wrap',
     },
     filterChip: {
       paddingHorizontal: 12,
@@ -491,6 +503,8 @@ function makeStyles(C, type) {
       backgroundColor: C.surface,
       borderWidth: 1,
       borderColor: C.border,
+      flexShrink: 1,
+      maxWidth: '100%',
     },
     filterChipActive: {
       backgroundColor: C.primary + '22',
@@ -500,6 +514,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontWeight: '700',
+      flexShrink: 1,
     },
     filterTextActive: {
       color: C.primary,
@@ -544,6 +559,8 @@ function makeStyles(C, type) {
       alignItems: 'center',
       gap: 8,
       position: 'relative',
+      // Grid kartı dar → içerik taşmasın, metin kırpılsın.
+      minWidth: 0,
     },
     cardSelected: {
       borderColor: C.gold,
@@ -563,13 +580,16 @@ function makeStyles(C, type) {
     cardNameRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 4,
+      maxWidth: '100%',
     },
     cardName: {
       ...type.small,
       color: C.text,
       fontWeight: '700',
       textAlign: 'center',
+      flexShrink: 1,
     },
     cardDesc: {
       ...type.micro,
@@ -581,6 +601,7 @@ function makeStyles(C, type) {
     cardSub: {
       ...type.micro,
       color: C.textMuted,
+      textAlign: 'center',
     },
     stateChip: {
       flexDirection: 'row',

@@ -15,9 +15,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tint, useTheme } from '../../theme';
 import PressableFX from '../PressableFX';
 
-const ICON_SIZE = 26;
+const ICON_SIZE = 24;
 const LABEL_SIZE = 11;
 const MIN_BAR_HEIGHT = 60;
+const ICON_LABEL_GAP = 3;
 const TRANSITION_MS = 150;
 const ACTIVE_TINT_ALPHA = '26'; // primary ~%15 alpha — hafif pill zemini
 // Android gesture bar (edge-to-edge) için ekstra boşluk.
@@ -136,29 +137,35 @@ const styles = StyleSheet.create({
   },
   bar: {
     flex: 1,
-    minHeight: MIN_BAR_HEIGHT,
+    // SABİT yükseklik: minHeight tek başına bar'ı içerikten daha uzun
+    // bırakıyor, çocuklar (barInner) tepede kalıp ikonlar "havada" duruyordu.
+    height: MIN_BAR_HEIGHT,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.09)',
     backgroundColor: 'rgba(16,18,26,0.82)',
     overflow: 'hidden',
   },
   barInner: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 2,
     paddingHorizontal: 4,
-    paddingVertical: 6,
   },
   itemWrap: {
     flex: 1,
+    justifyContent: 'center',
   },
   item: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
     borderRadius: 16,
-    gap: 5,
+    gap: ICON_LABEL_GAP,
   },
   pill: {
     ...StyleSheet.absoluteFillObject,
@@ -173,5 +180,7 @@ const styles = StyleSheet.create({
     fontSize: LABEL_SIZE,
     lineHeight: 14,
     fontWeight: '700',
+    textAlign: 'center',
+    maxWidth: '100%',
   },
 });

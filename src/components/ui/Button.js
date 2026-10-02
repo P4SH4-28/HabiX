@@ -31,13 +31,13 @@ import { DURATION, EASE, useTheme } from '../../theme';
 import Icon from './icons';
 
 const SIZES = {
-  sm: { height: 36, pv: 12, ph: 16, font: 13, icon: 14 },
+  sm: { height: 36, pv: 12, ph: 12, font: 13, icon: 14 },
   md: { height: 44, pv: 14, ph: 20, font: 15, icon: 16 },
   lg: { height: 52, pv: 16, ph: 24, font: 17, icon: 18 },
 };
 
 const SPRING = { damping: 18, stiffness: 340, mass: 0.8 };
-const GAP = 8;
+const GAP = 6;
 const DISABLED_OPACITY = 0.45;
 
 function renderGlyph(node, size, color) {
@@ -155,18 +155,26 @@ function makeStyles(C, radius) {
   return StyleSheet.create({
     wrap: { borderRadius: radius.md },
     full: { alignSelf: 'stretch' },
-    box: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: GAP,
-      borderRadius: radius.md,
-      overflow: 'hidden',
-    },
-    outline: { borderWidth: 1, borderColor: C.border },
-    off: { opacity: DISABLED_OPACITY },
-    label: { fontWeight: '600', textAlign: 'center' },
-  });
+  box: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: GAP,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    // Dar kaplarda (grid kartı, 2 sütun) buton taşmasın: içerik
+    // sıkışsın, etiket kırpılsın — dışarı taşmasın.
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  outline: { borderWidth: 1, borderColor: C.border },
+  off: { opacity: DISABLED_OPACITY },
+  label: {
+    fontWeight: '600',
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+});
 }
 
 export default memo(Button);

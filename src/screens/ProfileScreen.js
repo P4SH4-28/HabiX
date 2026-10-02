@@ -273,7 +273,7 @@ export default function ProfileScreen() {
           <Card key={s.label} padding="sm" style={styles.statCard}>
             <Icon emoji={s.icon} size={16} color={s.color} />
             <AnimatedCounter value={s.value} style={styles.statValue} />
-            <Text style={styles.statLabel} numberOfLines={2}>
+            <Text style={styles.statLabel} numberOfLines={1}>
               {s.label}
             </Text>
           </Card>
@@ -283,10 +283,14 @@ export default function ProfileScreen() {
       {/* ---------- 5) ENVANTER LİNKİ ---------- */}
       <Card onPress={() => navigation.navigate('Inventory')} accessibilityLabel="Envanter">
         <View style={styles.linkRow}>
-          <IconTile icon="cube" tint={C.primary} size={40} />
+          <IconTile name="cube" tint={C.primary} size={40} />
           <View style={styles.linkInfo}>
-            <Text style={styles.h3}>Envanter</Text>
-            <Text style={styles.hint}>Eşyalarını kullan ve etkinleştir</Text>
+            <Text style={styles.h3} numberOfLines={1}>
+              Envanter
+            </Text>
+            <Text style={styles.hint} numberOfLines={2}>
+              Eşyalarını kullan ve etkinleştir
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={C.textMuted} />
         </View>
@@ -296,10 +300,10 @@ export default function ProfileScreen() {
       <Card>
         <View style={styles.rowBetween}>
           <View style={styles.xpTexts}>
-            <Text style={styles.h3}>
+            <Text style={styles.h3} numberOfLines={1}>
               Seviye {levelInfo.level} → {levelInfo.level + 1}
             </Text>
-            <Text style={styles.hint}>
+            <Text style={styles.hint} numberOfLines={1}>
               {levelInfo.curXp}/{levelInfo.nextThreshold} XP
             </Text>
           </View>
@@ -317,8 +321,12 @@ export default function ProfileScreen() {
           {summaryCells.map((cell) => (
             <View key={cell.label} style={styles.summaryCell}>
               <Icon emoji={cell.icon} size={15} color={C.primary} />
-              <Text style={styles.summaryCellValue}>{cell.value}</Text>
-              <Text style={styles.summaryCellLabel}>{cell.label}</Text>
+              <Text style={styles.summaryCellValue} numberOfLines={1}>
+                {cell.value}
+              </Text>
+              <Text style={styles.summaryCellLabel} numberOfLines={1}>
+                {cell.label}
+              </Text>
             </View>
           ))}
         </View>
@@ -352,7 +360,9 @@ export default function ProfileScreen() {
                 <Text style={styles.activityName} numberOfLines={1}>
                   {a.name}
                 </Text>
-                <Text style={styles.activityDate}>{dayLabel(a.date, today, yesterdayKey)}</Text>
+                <Text style={styles.activityDate} numberOfLines={1}>
+                  {dayLabel(a.date, today, yesterdayKey)}
+                </Text>
               </View>
             ))
           )}
@@ -497,6 +507,10 @@ function makeStyles(C, type) {
     },
     statCard: {
       flex: 1,
+      // 4 kart yan yana → "TAMAMLAMA" gibi 9 harfli üstün başlık ikiye
+      // bölünüyordu. minWidth:0 + tek satır + dar harf aralığı ile
+      // kesilmeden sığdırılır.
+      minWidth: 0,
       alignItems: 'center',
       gap: 4,
     },
@@ -510,6 +524,8 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      letterSpacing: 0,
+      flexShrink: 1,
     },
 
     // ---- link satırı ----
@@ -558,6 +574,7 @@ function makeStyles(C, type) {
     },
     summaryCell: {
       flex: 1,
+      minWidth: 0,
       alignItems: 'center',
       backgroundColor: C.surfaceLight,
       borderRadius: 12,
@@ -573,6 +590,8 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      letterSpacing: 0,
+      flexShrink: 1,
     },
     achBtn: {
       marginTop: 14,

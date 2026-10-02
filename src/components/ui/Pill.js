@@ -71,5 +71,6 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
+    flexShrink: 1,
   },
 });
