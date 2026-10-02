@@ -1,8 +1,9 @@
-# 🎯 Habit Tracker
+# 🎯 HabiX
 
-Alışkanlıklarını oyunlaştırarak takip et, XP kazan, seviye atla, görevleri tamamla ve arkadaşlarınla yarış.
+**Oyunlaştırılmış alışkanlık takibi** — alışkanlıklarını takip et, XP kazan,
+seviye atla, görevleri tamamla ve arkadaşlarınla yarış.
 
-![Expo](https://img.shields.io/badge/Expo-57-black) ![React Native](https://img.shields.io/badge/React%20Native-0.86-blue) ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Edge%20Functions-green)
+![Expo](https://img.shields.io/badge/Expo-57-black) ![React Native](https://img.shields.io/badge/React%20Native-0.86-blue) ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Edge%20Functions-green) ![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-2.0.0-7C5CFF)
 
 ## ✨ Özellikler
 
@@ -17,11 +18,13 @@ Alışkanlıklarını oyunlaştırarak takip et, XP kazan, seviye atla, görevle
 | 🛍️ **Dükkan** | Sekmeli yapı (Eşyalar/Avatarlar/Çerçeveler/Temalar), tema kartına dokununca **canlı mini önizleme**, sahip olduklarında ✓ rozeti, satın alımda toast + haptic |
 | 🏆 **Liderlik** | Seviye 5'te açılır; arkadaşlar + kendin, 7 günlük XP trendi, şüpheli kullanıcı rozeti |
 | 👥 **Arkadaşlar** | Kullanıcı adıyla arama, istek gönder/kabul et/reddet |
-| ⚔️ **Arkadaş Düellosu** | 7 günlük XP yarışı: davet → kabul → canlı skor çubuğu → kazanan +100 XP / +50 🪙 |
-| 🍅 **Pomodoro** | Uygulama kapansa bile süre doğru işler; tamamlama ödülü |
-| 🎖️ **Başarımlar** | Kilidi açılan rozetler, bildirim tostları |
+| 💬 **Sosyal sekmesi** | 3 bölüm: **Arkadaşlar** · **Canlı Odalar** (oda kur/katıl/ayrıl, realtime) · **Sohbet** (gerçek zamanlı mesajlaşma) |
+| ⚔️ **Düello** | 7 günlük XP yarışı: davet → kabul → canlı skor çubuğu → kazanan +100 XP / +50 🪙 (DuelScreen) |
+| 🍅 **Pomodoro** | 15 / 25 / 45 dk süre seçici; uygulama kapansa bile süre doğru işler; tamamlama ödülü |
+| 🎖️ **Başarımlar** | **14 rozet**; kilidi açılanlar bildirim toast'u ile bildirilir |
 | 🎒 **Envanter & Eşyalar** | Seri Dondurucu, Ceza Kalkanı, 2x XP Enerjisi — altınla alınır, etkileri sunucu gününe bağlı |
 | 🏅 **Haftalık Ligler** | 7 günlük XP'ye göre Bronz → Elmas, hafta sonu altın ödülü |
+| 🎫 **Season Pass** | **50 tier** sezon geçişi, Free/VIP; tier başına ödül kutusu ve VIP avantajları |
 | 👥 **Takımlar (Kulüpler)** | Takım kur/katıl, ortak 1000 XP haftalık hedefi, üye sıralaması |
 | 📷 **Profil** | Bio + profil fotoğrafı (Supabase Storage), istatistik özet kartı (seviye barı, aktif alışkanlık, odak seansı, başarımlar) |
 | 📊 **Gelişim ekranı** | Isı haritası + çubuk grafikler **animasyonlu** (kademeli beliriş, yaylanan çubuklar, sayaçlar); bugün hücresi nabız atar |
@@ -72,17 +75,35 @@ Oyun ekonomisini korumak için çok katmanlı bir savunma kuruldu:
 - **expo-haptics** — dokunsal geri bildirim (apan/ödül haptikleri)
 - **GitHub Actions** — otomatik APK derleme
 
-## 🚀 Çalıştırma
+## 🚀 Kurulum
 
 ```bash
+git clone https://github.com/P4SH4-28/HabiX.git
+cd HabiX
 npm install
-npx expo start          # QR ile Expo Go'da aç
-npx expo start --web    # tarayıcıda test
+
+npm start                  # QR ile Expo Go'da aç
+npm run android            # native Android (build + kur)
+npm run web                # tarayıcıda test
 ```
+
+> **Sürüm 2.0.0** · Expo SDK 57 · React Native 0.86 · Node 20+
+>
+> `npm install` sonrası `postinstall` otomatik olarak `patch-package` çalıştırır
+> (`react-native-reanimated` patch'ı uygulanır). Bu adım atlanırsa uygulama
+> animasyonlarda "tag not found" hatası verir.
 
 ## 📱 APK Derleme
 
-`main` dalına her push, GitHub Actions'ı tetikler:
+`main` dalına **kod değişikliği** içeren her push, GitHub Actions'ı tetikler
+(`.md` / `docs/` / APK değişiklikleri tetiklemez):
+
+1. Actions otomatik olarak **jest + tsc** çalıştırır — hatalı kod APK'ya ulaşamaz
+2. `expo prebuild` → Gradle ile APK + AAB derlenir
+3. `build-<run_number>` etiketiyle GitHub Release oluşturulur (APK + AAB eklenir)
+4. APK ayrıca depo köküne geri yüklenir (`HabitTracker.apk`)
+
+Elle APK indirmek istersen:
 
 1. GitHub → **Actions** → **Android APK Build** → bitmesini bekle (~15-20 dk)
 2. **HabitTracker-App-Release** artifact'ını indir (`app-release.apk` + `app-release.aab`)
