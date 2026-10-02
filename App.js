@@ -30,6 +30,7 @@ import PillTabBar from './src/components/ui/PillTabBar';
 import AuthScreen from './src/screens/AuthScreen';
 import AchievementsScreen from './src/screens/AchievementsScreen';
 import AdminScreen from './src/screens/AdminScreen';
+import HabitsScreen from './src/screens/HabitsScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
 import LeagueScreen from './src/screens/LeagueScreen';
@@ -184,6 +185,7 @@ function RootNavigator() {
       }}
     >
       <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="Habits" component={HabitsScreen} />
       <Stack.Screen name="QuestBoard" component={QuestBoardScreen} />
       <Stack.Screen name="SeasonPass" component={SeasonPassScreen} />
       <Stack.Screen name="Inventory" component={InventoryScreen} />
