@@ -34,6 +34,16 @@ export const TYPE = {
   // ---------- Sayısal vurgu (h1 ölçeği + tabular) ----------
   stat: { fontSize: 22, lineHeight: 31, fontWeight: '700', fontVariant: ['tabular-nums'] },
 
+  // ---------- Hero sayı (İSTİSNA) ----------
+  // Kural: sadece ÇOK vurgulu sayılar — timer, hero sayı. Başlık/gövdede YASAK.
+  displayXl: {
+    fontSize: 48,
+    lineHeight: 67,
+    fontWeight: '700',
+    letterSpacing: -1,
+    fontVariant: ['tabular-nums'],
+  },
+
   // ---------- ALIAS (eski anahtarlar → 5 ölçek) ----------
   display: { fontSize: 22, lineHeight: 31, fontWeight: '700', letterSpacing: -0.3 },
   h2: { fontSize: 15, lineHeight: 21, fontWeight: '700', letterSpacing: -0.1 },

@@ -23,7 +23,7 @@
 //
 // KURALLAR: glow/gradient/blur/loop YOK · animasyon YOK (tick render,
 //   ≤300ms gerekirse) · 3 vurgu rengi (primary/success/gold) ·
-//   emoji glyph yok (Icon → Ionicons) · 5 tipografi boyutu.
+//   emoji glyph yok (Icon → Ionicons) · 5 tipografi boyutu + displayXl (yalnız timer).
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -356,9 +356,8 @@ function makeStyles(C, type) {
       gap: 4,
     },
     time: {
-      ...type.stat,
+      ...type.displayXl,
       color: C.text,
-      letterSpacing: -0.5,
     },
     timeSub: {
       ...type.micro,
