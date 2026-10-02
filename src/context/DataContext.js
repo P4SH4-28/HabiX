@@ -145,6 +145,10 @@ const INITIAL_STATE = {
   players: [],
   // Açılmış başarımların id listesi (AsyncStorage'a otomatik kaydedilir).
   achievements: [],
+  // Başarım kilit açma zamanları: { [achievementId]: epoch_ms }.
+  // Yalnızca bu istemciye aittir (sunucu senkronu yok). Eski kayıtlarda
+  // yok → {}; ekranlar tarih bulamazsa modalda göstermez. id listesine dokunulmaz.
+  achievementDates: {},
   // Dükkan'dan satın alınan avatar id'leri (ücretsizler baştan verilir).
   ownedAvatars: FREE_AVATARS,
   // Dükkan'dan satın alınan tema id'leri (Gece + Siyah Beyaz baştan açıktır).
@@ -440,6 +444,12 @@ export function DataProvider({ children }) {
               achievements: Array.isArray(parsed.achievements)
                 ? parsed.achievements
                 : [],
+              achievementDates:
+                parsed.achievementDates &&
+                typeof parsed.achievementDates === 'object' &&
+                !Array.isArray(parsed.achievementDates)
+                  ? parsed.achievementDates
+                  : {},
               ownedAvatars: Array.isArray(parsed.ownedAvatars)
                 ? parsed.ownedAvatars
                 : INITIAL_STATE.ownedAvatars,
@@ -784,6 +794,12 @@ export function DataProvider({ children }) {
         ...d.achievements,
         ...newly.map((a) => a.id).filter((id) => !d.achievements.includes(id)),
       ],
+      // Kilit açma anı: ekranlar modalda tarih göstersin (eski kayıtlarda yok).
+      achievementDates: newly.reduce(
+        (acc, a) =>
+          d.achievements.includes(a.id) ? acc : { ...acc, [a.id]: serverNow() },
+        d.achievementDates || {}
+      ),
       // Başarımlar altın da kazandırır → dükkanda avatar/tema satın alınır.
       stats: bumpDay(
         { ...d.stats, gold: (d.stats.gold || 0) + rewardSum },

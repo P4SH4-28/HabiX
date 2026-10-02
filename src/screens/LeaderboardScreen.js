@@ -1,68 +1,153 @@
 // ============================================================
-// LeaderboardScreen — "Liderlik" sekmesi
-// - 5. seviyeden önce KİLİTLİDİR: kilit ekranında seviye 5'e kaç XP
-//   kaldığı gösterilir.
-// - Açılınca: sunucudaki HERKES toplam XP'ye göre sıralanır.
-//   Arkadaş olması şart değildir; sunucuya bağlanılamazsa önbellek
-//   verisi ve "çevrimdışı" uyarısı gösterilir.
-// - Bir satıra dokununca o kullanıcının profili açılır; profilinden
-//   Gelişim verilerine bakabilir ve arkadaşlık isteği gönderebilirsin.
+// LeaderboardScreen — "Liderlik" sekmesi (v3 design system, sıfırdan)
+//
+// YAPI:
+//   1) Sekmeler      → Global (canlı toplam XP) · Arkadaşlar · Haftalık (xp7d)
+//   2) Podium        → ilk 3 büyük kart (2-1-3 sırası, madalya renkleri)
+//   3) Liste 4+      → sıra + avatar + isim + lig rozeti + XP (satır → profil)
+//   4) Sticky footer → kendi sıran HER ZAMAN ekranda (tab barın üstünde)
+//   5) Kilidi        → seviye 5'e kadar kilit ekranı (ilerleme çubuğu)
+//   6) EmptyState    → sekme boşsa (arkadaş yok / haftalık XP yok / veri yok)
+//
+// DataContext API (değişmedi): data, today, leaderboardMinLevel/MinXp,
+//   refreshServer, refreshing · useAuth().user ·
+//   getLeaderboardData(name) → { ok, leaderboard } | { ok:false, error }
+//
+// SAFE AREA: TAB ekranı — üst başlık AppHeader (TAB_TITLES['Liderlik']),
+//   alt PillTabBar tarafından karşılanır; sticky footer ekranın EN ALTINDA
+//   (tab bar'ın hemen üstünde) durur.
+//
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (primitive) ·
+//   4 vurgu rengi (primary/altın/success/danger; lig renkleri VERİ rengidir) ·
+//   5 tipografi ölçeği · h1 yok (header).
 // ============================================================
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import PlayerProfileModal from '../components/PlayerProfileModal';
-import AvatarCircle from '../components/AvatarCircle';
-import SoftButton from '../components/ui/SoftButton';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { getAvatarEmoji } from '../data/shop';
-import { bestStreak, levelFromTotalXp } from '../logic';
-import { getLeaderboardData } from '../services/leaderboardService';
-import { useTheme } from '../theme';
+import PlayerProfileModal from '../components/PlayerProfileModal';
+import AvatarCircle from '../components/AvatarCircle';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
 import Icon from '../components/ui/icons';
 import IconTile from '../components/ui/IconTile';
 import Pill from '../components/ui/Pill';
 import Progress from '../components/ui/Progress';
+import SegmentedTabs from '../components/ui/SegmentedTabs';
+import { getAvatarEmoji } from '../data/shop';
+import { getLeague } from '../data/leagues';
+import { bestStreak, levelFromTotalXp } from '../logic';
+import { getLeaderboardData } from '../services/leaderboardService';
+import { useTheme } from '../theme';
 
 const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const TABS = [
+  { key: 'global', label: 'Global' },
+  { key: 'friends', label: 'Arkadaşlar' },
+  { key: 'weekly', label: 'Haftalık' },
+];
 
 export default function LeaderboardScreen() {
-  const { data, today, leaderboardMinLevel, leaderboardMinXp, refreshServer, refreshing } = useData();
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const { data, today, leaderboardMinLevel, leaderboardMinXp, refreshServer, refreshing } =
+    useData();
   const { user: authUser } = useAuth();
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
-  // Madalya renkleri tema token'larından gelir (koyu temada klasik
-  // altın/gümüş/bronz, açık temada kontrast için uyarlanır).
-  const PODIUM_COLORS = useMemo(
-    () => ({ 1: C.gold, 2: C.silver, 3: C.bronze }),
-    [C]
-  );
+  const PODIUM_COLORS = useMemo(() => ({ 1: C.gold, 2: C.silver, 3: C.bronze }), [C]);
+
   const { stats, friends, players } = data;
   const meName = authUser?.name || 'Sen';
   const myLevel = levelFromTotalXp(stats.totalXp).level;
   const locked = myLevel < leaderboardMinLevel;
-  const [selected, setSelected] = useState(null);
 
-  // Canlı Supabase liderlik verisi: { ok, leaderboard } | { ok: false, error }.
-  const [live, setLive] = useState(null);
+  const [tab, setTab] = useState('global');
+  const [selected, setSelected] = useState(null);
+  const [live, setLive] = useState(null); // null=yükleniyor | {ok} | {ok:false}
 
   const loadLive = useCallback(async () => {
     setLive(await getLeaderboardData(authUser?.name));
   }, [authUser?.name]);
 
-  // Açılışta canlı veriyi çek.
   useEffect(() => {
     loadLive();
   }, [loadLive]);
 
-  // Arkadaşları id'ye göre hızlıca bulmak için bir küme (set).
-  const friendIds = useMemo(() => new Set(friends.map((f) => f.id)), [friends]);
-
-  // Çek-yenile: canlı liderlik verisi + sunucu senkronu.
   const onRefresh = useCallback(() => {
     loadLive();
     refreshServer();
   }, [loadLive, refreshServer]);
+
+  const friendIds = useMemo(() => new Set(friends.map((f) => f.id)), [friends]);
+
+  // ---------- havuz: canlı varsa onu, yoksa players+friends ----------
+  const entries = useMemo(() => {
+    const decorate = (e) => ({
+      ...e,
+      league: getLeague(e.xp7d || 0),
+      isFriend: !e.isMe && friendIds.has(e.id),
+    });
+    if (live?.ok) {
+      return live.leaderboard
+        .map((p) =>
+          decorate({
+            id: p.id,
+            name: p.username,
+            avatarId: p.isCurrentUser ? data.settings.avatarId : p.avatarId,
+            frameId: p.isCurrentUser ? data.settings.frameId : p.frameId,
+            photoUrl: p.isCurrentUser ? data.settings.photoUrl : p.photoUrl,
+            emoji: p.isCurrentUser ? getAvatarEmoji(data.settings.avatarId) : '😀',
+            totalXp: p.xp,
+            coins: p.coins,
+            xp7d: p.xp7d || 0,
+            isMe: p.isCurrentUser,
+            flagged: !!p.flagged,
+          })
+        )
+        .sort((a, b) => b.totalXp - a.totalXp);
+    }
+    const poolIds = new Set(players.map((p) => p.id));
+    const extraFriends = friends.filter((f) => !poolIds.has(f.id) && f.name !== meName);
+    return [
+      {
+        id: 'me',
+        name: meName,
+        emoji: getAvatarEmoji(data.settings.avatarId),
+        avatarId: data.settings.avatarId,
+        frameId: data.settings.frameId,
+        photoUrl: data.settings.photoUrl,
+        totalXp: stats.totalXp,
+        xp7d: 0,
+        isMe: true,
+        streak: bestStreak(data.habits, today),
+      },
+      ...players
+        .filter((p) => p.name !== meName)
+        .map((p) => ({ ...p, xp7d: p.xp7d || 0, isMe: false })),
+      ...extraFriends.map((f) => ({ ...f, xp7d: f.xp7d || 0, isMe: false })),
+    ]
+      .sort((a, b) => b.totalXp - a.totalXp)
+      .map(decorate);
+  }, [live, players, friends, stats.totalXp, friendIds, data.habits, data.settings, today, meName]);
+
+  // ---------- sekmeye göre liste ----------
+  const view = useMemo(() => {
+    if (tab === 'friends') {
+      const list = entries.filter((e) => e.isMe || e.isFriend);
+      return { list: [...list].sort((a, b) => b.totalXp - a.totalXp), empty: 'friends' };
+    }
+    if (tab === 'weekly') {
+      const withXp = entries.filter((e) => (e.xp7d || 0) > 0);
+      return {
+        list: [...withXp].sort((a, b) => (b.xp7d || 0) - (a.xp7d || 0)),
+        empty: withXp.length === 0 ? 'weekly' : null,
+      };
+    }
+    return { list: entries, empty: entries.length === 0 ? 'all' : null };
+  }, [tab, entries]);
+
+  const myIndex = view.list.findIndex((e) => e.isMe);
+  const meEntry = myIndex >= 0 ? view.list[myIndex] : null;
 
   const refreshProps = {
     refreshing,
@@ -72,100 +157,125 @@ export default function LeaderboardScreen() {
     progressBackgroundColor: C.surface,
   };
 
-  // Sıralama: canlı veri varsa (sen + arkadaşların) kullanılır;
-  // yoksa önbellekteki sunucu listesi + arkadaşlar gösterilir.
-  const entries = useMemo(() => {
-    // live leaderboard verisi varsa onu kullan;
-    // yoksa yerel player/ friend verisi + önbellek gösterilir.
-    if (live?.ok) {
-      return live.leaderboard.map((p) => ({
-        id: p.id,
-        name: p.username,
-        emoji: p.isCurrentUser ? getAvatarEmoji(data.settings.avatarId) : '😀',
-        avatarId: p.isCurrentUser ? data.settings.avatarId : p.avatarId,
-        frameId: p.isCurrentUser ? data.settings.frameId : p.frameId,
-        photoUrl: p.isCurrentUser ? data.settings.photoUrl : p.photoUrl,
-        totalXp: p.xp,
-        coins: p.coins,
-        streak: 0,
-        isMe: p.isCurrentUser,
-        isFriend: !p.isCurrentUser,
-        flagged: !!p.flagged,
-        xp7d: p.xp7d || 0,
-      }));
-    }
-    // Yerel hesaplama: players + friends birleştirilir.
-    // Her bir players objesi zaten id, name, xp, avatar, streak içerir.
-    const poolIds = new Set(players.map((p) => p.id));
-    const extraFriends = friends.filter(
-      (f) => !poolIds.has(f.id) && f.name !== meName
-    );
-    return [
-      {
-        id: 'me',
-        name: authUser?.name || 'Sen',
-        emoji: getAvatarEmoji(data.settings.avatarId),
-        avatarId: data.settings.avatarId,
-        frameId: data.settings.frameId,
-        photoUrl: data.settings.photoUrl,
-        totalXp: stats.totalXp,
-        isMe: true,
-        streak: bestStreak(data.habits, today),
-      },
-      ...players
-        .filter((p) => p.name !== meName)
-        .map((p) => ({ ...p, isMe: false, isFriend: friendIds.has(p.id) })),
-      ...extraFriends.map((f) => ({ ...f, isMe: false, isFriend: true })),
-    ].sort((a, b) => b.totalXp - a.totalXp);
-  }, [live, players, friends, stats.totalXp, friendIds, data.habits, today, data.settings.avatarId, data.settings.frameId, data.settings.photoUrl, meName, authUser?.name]);
-
-  // ---------- KİLİT EKRANI: seviye 5'ten önce ----------
+  // ================= KİLİT EKRANI =================
   if (locked) {
     const neededXp = Math.max(0, leaderboardMinXp - stats.totalXp);
     const pct = Math.min(100, (stats.totalXp / leaderboardMinXp) * 100);
     return (
-      <View style={styles.container}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl {...refreshProps} />}
-        >
-          <Text style={styles.screenTitle}>Liderlik</Text>
-          <Text style={styles.screenSub}>Arkadaşlarınla rekabet et</Text>
-
-          <View style={styles.lockBox}>
-            <IconTile icon="trophy" emoji="🏆" variant="gold" size={60} iconSize={27} />
-            <Text style={styles.lockTitle}>Liderlik Tablosu Kilitli</Text>
-            <Text style={styles.lockText}>
-              {leaderboardMinLevel}. seviyeye ulaştığında tablo açılır ve herkesin
-              ilerlemesini görüp profillerini ziyaret edebilirsin.
-            </Text>
-
-            {/* Seviye 5'e ilerleme çubuğu */}
-            <View style={styles.lockProgressHeader}>
-              <Text style={styles.lockProgressLabel}>Seviye {leaderboardMinLevel} yolu</Text>
-              <Text style={styles.lockProgressValue}>%{Math.round(pct)}</Text>
-            </View>
-            <Progress
-              value={pct / 100}
-              height={10}
-              colors={[C.gold, C.accent]}
-              accessibilityLabel={`Seviye ${leaderboardMinLevel} yolunun yüzdesi ${Math.round(pct)}`}
-            />
-            <Text style={styles.lockHint}>
-              Şu an Seviye {myLevel} — Seviye {leaderboardMinLevel} için {neededXp} XP daha
-              kazanmalısın
-            </Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl {...refreshProps} />}
+      >
+        <Card style={styles.lockCard}>
+          <IconTile icon="trophy" emoji="🏆" variant="gold" size={64} iconSize={28} />
+          <Text style={styles.lockTitle}>Liderlik Tablosu Kilitli</Text>
+          <Text style={styles.lockText}>
+            {leaderboardMinLevel}. seviyeye ulaştığında tablo açılır ve herkesin
+            ilerlemesini görüp profillerini ziyaret edebilirsin.
+          </Text>
+          <View style={styles.lockBarHead}>
+            <Text style={styles.lockBarLabel}>SEVİYE {leaderboardMinLevel} YOLU</Text>
+            <Text style={styles.lockBarValue}>%{Math.round(pct)}</Text>
           </View>
-        </ScrollView>
-      </View>
+          <Progress
+            value={pct / 100}
+            height={10}
+            colors={[C.gold]}
+            accessibilityLabel={`Seviye ${leaderboardMinLevel} yolunun yüzdesi ${Math.round(pct)}`}
+          />
+          <Text style={styles.lockHint}>
+            Şu an Seviye {myLevel} — {neededXp} XP daha kazanmalısın
+          </Text>
+        </Card>
+      </ScrollView>
     );
   }
 
-  // ---------- AÇIK LİDERLİK TABLOSU ----------
-  const podium = entries.slice(0, 3);
-  const rest = entries.slice(3);
+  // ================= AÇIK TABLO =================
+  const podium = view.list.slice(0, 3);
+  const rest = view.list.slice(3);
   const podiumOrder = podium.length === 3 ? [1, 0, 2] : podium.map((_, i) => i);
+
+  const renderRow = (e, i) => {
+    const rank = i + 1;
+    return (
+      <Card
+        key={e.id}
+        padding="sm"
+        style={[styles.row, e.isMe && styles.rowMe]}
+        onPress={() => setSelected(e)}
+        accessibilityLabel={`${rank}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
+      >
+        <Text style={styles.rankNum}>{rank}</Text>
+        <AvatarCircle
+          avatarId={e.avatarId}
+          photo={e.photoUrl}
+          frameId={e.frameId}
+          size={36}
+          ringColor={rank <= 3 ? PODIUM_COLORS[rank] : undefined}
+        />
+        <View style={styles.rowInfo}>
+          <View style={styles.rowNameLine}>
+            <Text style={styles.rowName} numberOfLines={1}>
+              {e.name}
+              {e.isMe ? <Text style={styles.meTag}> (sen)</Text> : null}
+            </Text>
+            {e.flagged ? (
+              <Pill size="sm" bg={C.danger + '1A'} color={C.danger}>
+                ŞÜPHELİ
+              </Pill>
+            ) : null}
+          </View>
+          <View style={styles.rowMeta}>
+            <Pill
+              size="sm"
+              bg={e.league.color + '22'}
+              color={e.league.color}
+              accessibilityLabel={`${e.league.name} lig`}
+            >
+              {e.league.emoji} {e.league.name}
+            </Pill>
+            {e.isFriend ? (
+              <Pill size="sm" bg={C.primary + '1A'} color={C.primary}>
+                ARKADAŞ
+              </Pill>
+            ) : null}
+            {e.xp7d > 0 ? (
+              <Text style={styles.rowWeek}>7g: +{e.xp7d} XP</Text>
+            ) : null}
+          </View>
+        </View>
+        <Text style={styles.rowXp}>{e.totalXp} XP</Text>
+        <Icon name="chevron-forward" size={16} color={C.textMuted} />
+      </Card>
+    );
+  };
+
+  const emptyBlock =
+    view.empty === 'friends' ? (
+      <EmptyState
+        compact
+        name="people"
+        title="Henüz arkadaş yok"
+        subtitle="Liderlik tablosundan profil ziyaretiyle arkadaşlık isteği gönder — onaylandıklarında burada yarışırlar."
+      />
+    ) : view.empty === 'weekly' ? (
+      <EmptyState
+        compact
+        name="stats-chart"
+        title="Bu hafta henüz XP yok"
+        subtitle="Haftalık sıralama 7 günlük XP kazancına göredir. Alışkanlık tamamlayıp XP kazanınca burada listelenirsin."
+      />
+    ) : view.empty === 'all' ? (
+      <EmptyState
+        compact
+        name="trophy"
+        title="Sıralama yüklenemedi"
+        subtitle="Çek-yenile ile tekrar deneyebilirsin — bağlantı gelince liste burada görünür."
+      />
+    ) : null;
 
   return (
     <View style={styles.container}>
@@ -174,417 +284,321 @@ export default function LeaderboardScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl {...refreshProps} />}
       >
-        <Text style={styles.screenTitle}>Liderlik</Text>
-        <Text style={styles.screenSub}>Herkes burada — profillere dokunarak göz at</Text>
+        <SegmentedTabs options={TABS} value={tab} onChange={setTab} />
 
-        {live === null && (
-          <View style={styles.liveLoading} accessibilityRole="progressbar">
-            <ActivityIndicator size="small" color={C.textMuted} />
-            <Text style={styles.liveLoadingText}>Canlı sıralama yükleniyor…</Text>
-          </View>
-        )}
+        {live === null ? (
+          <Pill size="sm" bg={C.surfaceLight} color={C.textMuted}>
+            Canlı sıralama yükleniyor…
+          </Pill>
+        ) : null}
 
-        {live && !live.ok && (
+        {live && !live.ok ? (
           <View style={styles.offlineBox}>
-            <View style={styles.offlineRow}>
-              <Icon emoji="📡" size={14} color={C.danger} />
-              <Text style={styles.offlineText}>
-                Canlı liderlik verisi alınamadı — önbellek gösteriliyor.
-              </Text>
-            </View>
-            <SoftButton
+            <Icon emoji="📡" size={14} color={C.danger} />
+            <Text style={styles.offlineText}>
+              Canlı liderlik verisi alınamadı — önbellek gösteriliyor.
+            </Text>
+            <Button
               label="Yenile"
-              variant="ghost"
-              size="xs"
+              size="sm"
+              variant="secondary"
               onPress={() => {
                 refreshServer();
                 loadLive();
               }}
             />
           </View>
-        )}
+        ) : null}
 
-        {entries.length > 0 && (
+        {emptyBlock}
+
+        {/* ---------- PODIUM (ilk 3) ---------- */}
+        {!emptyBlock && podium.length > 0 ? (
           <View style={styles.podiumRow}>
             {podiumOrder.map((idx) => {
               const e = podium[idx];
               const rank = idx + 1;
               const isTop = rank === 1;
               return (
-                <Pressable
+                <Card
                   key={e.id}
-                  style={[styles.podiumCard, { height: isTop ? 130 : 100 }, e.isMe && styles.meCard]}
                   onPress={() => setSelected(e)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${rank}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
+                  style={[
+                    styles.podiumCard,
+                    isTop && styles.podiumCardTop,
+                    e.isMe && styles.podiumMe,
+                  ]}
+                  accessibilityLabel={`${rank}. sıra ${e.name}, ${e.totalXp} XP`}
                 >
-                  <Icon emoji={MEDALS[rank]} size={24} color={PODIUM_COLORS[rank]} style={styles.podiumMedal} />
+                  <Icon emoji={MEDALS[rank]} size={20} color={PODIUM_COLORS[rank]} />
                   <AvatarCircle
                     avatarId={e.avatarId}
                     photo={e.photoUrl}
                     frameId={e.frameId}
-                    size={48}
+                    size={isTop ? 52 : 44}
                     ringColor={PODIUM_COLORS[rank]}
                   />
                   <Text style={styles.podiumName} numberOfLines={1}>
                     {e.name}
                   </Text>
                   <Text style={[styles.podiumXp, { color: PODIUM_COLORS[rank] }]}>
-                    {e.totalXp} XP
+                    {tab === 'weekly' ? `${e.xp7d} XP` : `${e.totalXp} XP`}
                   </Text>
-                  {e.coins != null && (
-                    <View style={styles.podiumCoinRow}>
-                      <Icon emoji="🪙" size={10} color={C.gold} />
-                      <Text style={styles.podiumCoins}>{e.coins}</Text>
-                    </View>
-                  )}
-                  {e.isMe && <Text style={styles.meLabel}>SEN</Text>}
-                </Pressable>
+                  {e.isMe ? (
+                    <Pill size="sm" bg={C.primary + '1A'} color={C.primary}>
+                      SEN
+                    </Pill>
+                  ) : null}
+                </Card>
               );
             })}
           </View>
-        )}
+        ) : null}
 
-        <View style={styles.list}>
-          {entries.map((e, i) => (
-            <Pressable
-              key={e.id}
-              style={({ pressed }) => [
-                styles.row,
-                e.isMe && styles.meRow,
-                pressed && { opacity: 0.85 },
-              ]}
-              onPress={() => setSelected(e)}
-              accessibilityRole="button"
-              accessibilityLabel={`${i + 1}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
-            >
-              <View style={styles.rankBox}>
-                <Pill
-                  size="sm"
-                  bg={C.surfaceLight}
-                  color={i < 3 ? PODIUM_COLORS[i + 1] : C.textMuted}
-                  style={styles.rankPill}
-                >
-                  {i + 1}
-                </Pill>
-              </View>
-              <AvatarCircle
-                avatarId={e.avatarId}
-                photo={e.photoUrl}
-                frameId={e.frameId}
-                size={38}
-              />
-              <View style={styles.rowInfo}>
-                <View style={styles.rowNameLine}>
-                  <Text style={styles.rowName} numberOfLines={1}>
-                    {e.name} {e.isMe && <Text style={styles.meName}>(sen)</Text>}
-                  </Text>
-                  {e.isFriend && <Text style={styles.friendChip}>ARKADAŞ</Text>}
-                  {/* Katman 4: şüpheli kullanıcı bayrağı (herkese görünür) */}
-                  {e.flagged && (
-                    <View style={styles.flagChip}>
-                      <Icon emoji="⚠️" size={10} color={C.danger} />
-                      <Text style={styles.flagChipText}>ŞÜPHELİ</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.rowStreak}>
-                  {e.coins != null ? (
-                    <>
-                      <Icon emoji="🪙" size={12} color={C.gold} />
-                      <Text style={styles.rowStreakText}>{e.coins}</Text>
-                    </>
-                  ) : (
-                    <>
-                      <Icon emoji="🔥" size={12} color={C.textMuted} />
-                      <Text style={styles.rowStreakText}>{e.streak} günlük seri</Text>
-                    </>
-                  )}
-                  {e.xp7d > 0 ? (
-                    <>
-                      <Text style={styles.rowStreakSep}>•</Text>
-                      <Text style={styles.rowStreakText}>7 gün: +{e.xp7d} XP</Text>
-                    </>
-                  ) : null}
-                </View>
-              </View>
-              <Text style={styles.rowXp}>{e.totalXp} XP</Text>
-              <Icon name="chevron-forward" size={16} color={C.textMuted} />
-            </Pressable>
-          ))}
-        </View>
+        {/* ---------- LİSTE (4+) ---------- */}
+        <View style={styles.list}>{rest.map(renderRow)}</View>
 
-        <View style={styles.noteBox}>
-          <Icon emoji="💡" size={14} color={C.primary} style={styles.noteIcon} />
-          <Text style={styles.noteText}>
-            Profillere dokunabilir, o kullanıcının gelişim verilerini görebilir ve arkadaşlık
-            isteği gönderebilirsin. Onaylanan arkadaşların Arkadaşlar sekmesinde listelenir.
-          </Text>
-        </View>
+        {/* Podiumda olmayan tek kişilik durumda liste boş kalmasın diye
+            (me alone in friends tab) satır zaten view.list'te varsa çizilir: */}
+        {rest.length === 0 && podium.length === view.list.length ? null : null}
+
+        <Text style={styles.note}>
+          Profillere dokunabilir, gelişim verilerini görebilir ve arkadaşlık isteği
+          gönderebilirsin.
+        </Text>
       </ScrollView>
 
+      {/* ---------- STICKY BOTTOM: kendi sıran ---------- */}
+      {meEntry && myIndex >= 0 ? (
+        <View style={styles.footer}>
+          <Card padding="sm" style={styles.selfCard}>
+            <Text style={styles.selfRank}>#{myIndex + 1}</Text>
+            <AvatarCircle
+              avatarId={meEntry.avatarId}
+              photo={meEntry.photoUrl}
+              frameId={meEntry.frameId}
+              size={34}
+              ringColor={C.primary}
+            />
+            <View style={styles.selfInfo}>
+              <Text style={styles.selfName} numberOfLines={1}>
+                {meEntry.name} (sen)
+              </Text>
+              <View style={styles.selfMeta}>
+                <Pill size="sm" bg={meEntry.league.color + '22'} color={meEntry.league.color}>
+                  {meEntry.league.emoji} {meEntry.league.name}
+                </Pill>
+              </View>
+            </View>
+            <Text style={styles.selfXp}>
+              {tab === 'weekly' ? `+${meEntry.xp7d} 7g` : `${meEntry.totalXp} XP`}
+            </Text>
+          </Card>
+        </View>
+      ) : null}
+
       {/* Profil ziyareti modalı */}
-      <PlayerProfileModal
-        player={selected}
-        onClose={() => setSelected(null)}
-      />
+      <PlayerProfileModal player={selected} onClose={() => setSelected(null)} />
     </View>
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: C.background,
     },
     content: {
       padding: 20,
       gap: 14,
-      paddingBottom: 60,
+      paddingBottom: 24,
     },
-    screenTitle: {
-      color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
-    },
-    screenSub: {
-      color: C.textMuted,
-      fontSize: 13,
-      marginBottom: 4,
-    },
-    liveLoading: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      alignSelf: 'flex-start',
-      backgroundColor: C.surface,
-      borderRadius: 999,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      marginBottom: 6,
-    },
-    liveLoadingText: {
-      color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    offlineBox: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 12,
-    },
-    offlineRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-    },
-    offlineText: {
-      flex: 1,
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 17,
-    },
-    lockBox: {
-      backgroundColor: C.surface,
-      borderRadius: 20,
-      padding: 24,
+
+    // ---- kilit ----
+    lockCard: {
       alignItems: 'center',
       gap: 12,
-      marginTop: 20,
+      marginTop: 12,
+      paddingVertical: 24,
     },
     lockTitle: {
+      ...type.h3,
       color: C.text,
-      fontSize: 17,
-      fontWeight: '700',
     },
     lockText: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
       textAlign: 'center',
-      lineHeight: 20,
     },
-    lockProgressHeader: {
+    lockBarHead: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       width: '100%',
-      marginTop: 6,
     },
-    lockProgressLabel: {
+    lockBarLabel: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
     },
-    lockProgressValue: {
-      color: C.primary,
-      fontSize: 13,
-      fontWeight: '700',
+    lockBarValue: {
+      ...type.micro,
+      color: C.gold,
+      fontVariant: ['tabular-nums'],
     },
     lockHint: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
       textAlign: 'center',
+      fontVariant: ['tabular-nums'],
     },
+
+    // ---- uyarı ----
+    offlineBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: C.danger + '14',
+      borderRadius: 16,
+      padding: 12,
+    },
+    offlineText: {
+      ...type.small,
+      color: C.text,
+      flex: 1,
+      fontWeight: '600',
+    },
+
+    // ---- podium ----
     podiumRow: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       justifyContent: 'center',
       gap: 10,
-      marginTop: 10,
     },
     podiumCard: {
       flex: 1,
-      backgroundColor: C.surface,
-      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'flex-end',
-      padding: 12,
       gap: 4,
+      paddingVertical: 14,
     },
-    meCard: {
-      borderWidth: 1,
+    podiumCardTop: {
+      paddingVertical: 20,
+      borderColor: C.gold + '66',
+    },
+    podiumMe: {
       borderColor: C.primary,
     },
-    podiumMedal: {
-      fontSize: 22,
-      position: 'absolute',
-      top: 8,
-    },
     podiumName: {
+      ...type.small,
       color: C.text,
-      fontSize: 13,
       fontWeight: '700',
+      maxWidth: '100%',
     },
     podiumXp: {
-      fontSize: 13,
+      ...type.small,
       fontWeight: '700',
+      fontVariant: ['tabular-nums'],
     },
-    podiumCoins: {
-      color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    podiumCoinRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-    },
-    meLabel: {
-      color: C.primary,
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 1,
-    },
+
+    // ---- liste ----
     list: {
       gap: 8,
     },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
-      padding: 12,
-      gap: 12,
+      gap: 10,
     },
-    meRow: {
+    rowMe: {
       borderColor: C.primary,
-      backgroundColor: C.primaryDark + '33',
+      backgroundColor: C.primary + '0F',
     },
-    rankBox: {
-      width: 32,
-      alignItems: 'center',
-    },
-    rankPill: {
-      minWidth: 26,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    rowEmoji: {
-      fontSize: 22,
+    rankNum: {
+      ...type.small,
+      color: C.textMuted,
+      fontWeight: '700',
+      width: 24,
+      textAlign: 'center',
+      fontVariant: ['tabular-nums'],
     },
     rowInfo: {
       flex: 1,
-      gap: 2,
+      minWidth: 0,
+      gap: 4,
     },
     rowNameLine: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 6,
     },
     rowName: {
+      ...type.bodyStrong,
       color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
+      flexShrink: 1,
     },
-    meName: {
+    meTag: {
       color: C.primary,
-      fontWeight: '700',
     },
-    friendChip: {
-      color: C.accent,
-      fontSize: 11,
-      fontWeight: '700',
-      backgroundColor: C.accent + '22',
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-      borderRadius: 8,
-      overflow: 'hidden',
-    },
-    flagChip: {
+    rowMeta: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 3,
-      backgroundColor: C.danger + '22',
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-      borderRadius: 8,
+      gap: 6,
+      flexWrap: 'wrap',
     },
-    flagChipText: {
-      color: C.danger,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    rowStreak: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-    },
-    rowStreakText: {
+    rowWeek: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
-    },
-    rowStreakSep: {
-      color: C.textMuted,
-      fontSize: 13,
-      opacity: 0.4,
+      fontVariant: ['tabular-nums'],
     },
     rowXp: {
+      ...type.small,
       color: C.xp,
-      fontSize: 13,
       fontWeight: '700',
+      fontVariant: ['tabular-nums'],
     },
-    chevron: {
+
+    note: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 17,
-      fontWeight: '700',
     },
-    noteBox: {
+
+    // ---- sticky bottom ----
+    footer: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+    },
+    selfCard: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: C.surfaceLight,
+      borderColor: C.primary + '66',
+      borderWidth: 1,
     },
-    noteIcon: {
-      marginTop: 1,
+    selfRank: {
+      ...type.stat,
+      color: C.primary,
+      minWidth: 52,
+      textAlign: 'center',
     },
-    noteText: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
+    selfInfo: {
+      flex: 1,
+      minWidth: 0,
+      gap: 3,
+    },
+    selfName: {
+      ...type.bodyStrong,
+      color: C.text,
+    },
+    selfMeta: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    selfXp: {
+      ...type.h3,
+      color: C.text,
+      fontVariant: ['tabular-nums'],
     },
   });
 }

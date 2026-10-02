@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import AddFriendModal from '../components/AddFriendModal';
 import AvatarCircle from '../components/AvatarCircle';
 import Icon from '../components/ui/icons';
@@ -13,6 +14,7 @@ import { useTheme } from '../theme';
 export default function FriendsScreen() {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const navigation = useNavigation();
   const {
     data,
     today,
@@ -62,9 +64,21 @@ export default function FriendsScreen() {
           <Text style={styles.screenTitle}>Arkadaşlar</Text>
           <Text style={styles.screenSub}>Arkadaşların liderlik tablosunda da görünür</Text>
         </View>
-        <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}>
-          <Text style={styles.addButtonText}>+ Ekle</Text>
-        </Pressable>
+        <View style={styles.titleActions}>
+          {/* Düello merkezi girişi (DuelScreen) */}
+          <Pressable
+            style={styles.duelEntry}
+            onPress={() => navigation.navigate('Duel')}
+            accessibilityRole="button"
+            accessibilityLabel="Düello merkezini aç"
+          >
+            <Icon emoji="⚔️" size={13} color={C.danger} />
+            <Text style={styles.duelEntryText}>Düello</Text>
+          </Pressable>
+          <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <Text style={styles.addButtonText}>+ Ekle</Text>
+          </Pressable>
+        </View>
       </View>
       {duels.length > 0 && (
         <View style={styles.duelSection}>
@@ -213,6 +227,28 @@ function makeStyles(C) {
       paddingHorizontal: 16,
       minHeight: 44,
       justifyContent: 'center',
+    },
+    titleActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    duelEntry: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      backgroundColor: C.surfaceLight,
+      borderWidth: 1,
+      borderColor: C.danger + '66',
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      minHeight: 44,
+      justifyContent: 'center',
+    },
+    duelEntryText: {
+      color: C.danger,
+      fontSize: 13,
+      fontWeight: '700',
     },
     addButtonText: {
       color: C.onPrimary,

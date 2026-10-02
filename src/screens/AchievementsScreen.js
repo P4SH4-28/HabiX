@@ -1,20 +1,42 @@
 // ============================================================
-// AchievementsScreen — "Başarımlar" ekranı (sol menüden açılır)
-// Açılan başarımlar altın ödülleriyle birlikte listelenir; kilitli
-// olanların ilerlemesi (ör. 7/10 tamamlama) çubukla gösterilir.
-// Kilit açma mantığı DataContext'te çalışır (evaluateAchievements).
+// AchievementsScreen — "Başarımlar" ekranı (v3 design system, sıfırdan)
+//
+// YAPI:
+//   1) Özet kartı  → "3/14 başarım açıldı" + kazanılan toplam altın
+//   2) 3'lü grid   → açık: altın renkli (GLOW YOK) + kilit açma tarihi
+//                    kilitli: gri + 🔒 + ilerleme (0/10) çubuğu
+//   3) Detay modal → ikon + açıklama + ödül + tarih/ilerleme + Kapat
+//   4) EmptyState  → hiç başarım açılmadıysa (kilitli grid yine görünür)
+//
+// DataContext API: data, today · data.achievements (id listesi, DEĞİŞMEDİ) ·
+//   achievementDates (yeni, geriye uyumlu: {id: epoch_ms} — eski kayıtlarda yok).
+// İlerleme mantığı korunur: progressFor + computeAchievementState (data/achievements).
+//
+// SAFE AREA: STACK ekranı — AppHeader 'Başarımlar', alt inset content'te.
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (Modal fade) ·
+//   h1 yok (AppHeader) · 5 tipografi ölçeği.
 // ============================================================
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
-import Progress from '../components/ui/Progress';
-import {
-  ACHIEVEMENTS,
-  computeAchievementState,
-} from '../data/achievements';
-import { useTheme } from '../theme';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
 import Icon from '../components/ui/icons';
 import IconTile from '../components/ui/IconTile';
+import Pill from '../components/ui/Pill';
+import Progress from '../components/ui/Progress';
+import { ACHIEVEMENTS, computeAchievementState } from '../data/achievements';
+import { useTheme } from '../theme';
+
+const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+
+// Kilit açma tarihini "12 Eki 2026" biçimine çevirir (Hermes Intl'e güvenmeden).
+function formatDate(ms) {
+  const d = new Date(ms);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
 
 // Sayısal başarımın ilerlemesi: { cur, target } döndürür (yoksa null).
 // Kilitli kartlarda çubuk ve "x/y" bu değerle çizilir.
@@ -54,10 +76,13 @@ function progressFor(achievement, state) {
 }
 
 export default function AchievementsScreen() {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const insets = useSafeAreaInsets();
   const { data, today } = useData();
+
   const unlockedIds = data.achievements || [];
+  const dates = data.achievementDates || {};
   const state = computeAchievementState(data, today);
   const unlockedCount = unlockedIds.length;
   const totalReward = ACHIEVEMENTS.filter((a) => unlockedIds.includes(a.id)).reduce(
@@ -65,91 +90,182 @@ export default function AchievementsScreen() {
     0
   );
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.summaryCard}>
-        <IconTile icon="trophy" emoji="🏆" variant="gold" size={52} iconSize={24} />
-        <View style={styles.summaryInfo}>
-          <Text style={styles.summaryTitle}>
-            {unlockedCount}/{ACHIEVEMENTS.length} başarım açıldı
-          </Text>
-          <View style={styles.summarySubRow}>
-            <Icon emoji="🪙" size={12} color={C.gold} />
-            <Text style={styles.summarySub}>
-              Açtığın başarımlar toplam {totalReward} kazandırdı
-            </Text>
-          </View>
-        </View>
-      </View>
+  const [selected, setSelected] = useState(null);
 
-      {ACHIEVEMENTS.map((a) => {
-        const unlocked = unlockedIds.includes(a.id);
-        const prog = progressFor(a, state);
-        const pct = prog ? Math.min(1, prog.cur / prog.target) : 0;
-        return (
-          <View
-            key={a.id}
-            style={[
-              styles.card,
-              unlocked && styles.cardUnlocked,
-              !unlocked && styles.cardLocked,
-            ]}
-          >
-            <View style={styles.cardHeader}>
-            <View style={[styles.iconBox, unlocked && styles.iconBoxUnlocked]}>
-              <Icon emoji={unlocked ? a.icon : '🔒'} size={24} color={C.text} />
+  const close = () => setSelected(null);
+
+  const selUnlocked = selected ? unlockedIds.includes(selected.id) : false;
+  const selProg = selected ? progressFor(selected, state) : null;
+  const selPct = selProg ? Math.min(1, selProg.cur / selProg.target) : 0;
+  const selDate = selected && dates[selected.id] ? formatDate(dates[selected.id]) : null;
+
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(24, insets.bottom + 24) },
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* ---------- ÖZET ---------- */}
+        <Card style={styles.summaryCard}>
+          <IconTile icon="trophy" emoji="🏆" variant="gold" size={52} iconSize={24} />
+          <View style={styles.summaryInfo}>
+            <Text style={styles.summaryTitle}>
+              {unlockedCount}/{ACHIEVEMENTS.length} başarım açıldı
+            </Text>
+            <View style={styles.summarySubRow}>
+              <Icon emoji="🪙" size={12} color={C.gold} />
+              <Text style={styles.summarySub}>
+                Açtıkların toplam {totalReward} altın kazandırdı
+              </Text>
             </View>
-              <View style={styles.cardInfo}>
-                <Text style={[styles.title, unlocked && styles.titleUnlocked]}>
+          </View>
+        </Card>
+
+        {/* ---------- EMPTY (hiç açılmadı) ---------- */}
+        {unlockedCount === 0 ? (
+          <EmptyState
+            compact
+            name="trophy"
+            emoji="🏆"
+            title="Henüz başarım yok"
+            subtitle="İlk alışkanlığını ekleyip tamamladığında ilk başarım burada otomatik açılır — ödülün anında envanterine düşer."
+          />
+        ) : null}
+
+        {/* ---------- 3'LÜ GRID ---------- */}
+        <View style={styles.grid}>
+          {ACHIEVEMENTS.map((a) => {
+            const unlocked = unlockedIds.includes(a.id);
+            const prog = progressFor(a, state);
+            const pct = prog ? Math.min(1, prog.cur / prog.target) : 0;
+            const date = dates[a.id] ? formatDate(dates[a.id]) : null;
+            return (
+              <Pressable
+                key={a.id}
+                onPress={() => setSelected(a)}
+                accessibilityRole="button"
+                accessibilityLabel={`${a.title} — ${unlocked ? 'açıldı' : 'kilitli'}. Detay`}
+                style={({ pressed }) => [
+                  styles.cell,
+                  unlocked ? styles.cellUnlocked : styles.cellLocked,
+                  pressed && styles.cellPressed,
+                ]}
+              >
+                <View style={[styles.cellIcon, unlocked ? styles.cellIconOn : styles.cellIconOff]}>
+                  <Icon emoji={unlocked ? a.icon : '🔒'} size={20} color={unlocked ? C.text : C.textMuted} />
+                </View>
+                <Text style={[styles.cellTitle, !unlocked && styles.cellTitleOff]} numberOfLines={2}>
                   {a.title}
                 </Text>
-                <Text style={styles.desc}>{a.desc}</Text>
+                {unlocked ? (
+                  date ? (
+                    <Text style={styles.cellDate}>{date}</Text>
+                  ) : (
+                    <Text style={styles.cellDate}>Açıldı</Text>
+                  )
+                ) : prog ? (
+                  <View style={styles.cellProgRow}>
+                    <Progress
+                      value={pct}
+                      height={6}
+                      colors={[C.primary, C.primaryDark]}
+                      accessibilityLabel={`${a.title} ilerlemesi`}
+                    />
+                    <Text style={styles.cellProgText}>
+                      {Math.min(prog.cur, prog.target)}/{prog.target}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.cellHint}>Şart bekleniyor</Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.noteBox}>
+          <Icon emoji="💡" size={13} color={C.primary} style={{ marginTop: 2 }} />
+          <Text style={styles.noteText}>
+            Başarımlar otomatik açılır; altın ödülü hemen envanterine eklenir ve
+            ekranın üstünde kısa bir bildirim görürsün.
+          </Text>
+        </View>
+      </ScrollView>
+
+      {/* ---------- DETAY MODAL ---------- */}
+      <Modal
+        visible={!!selected}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={close}
+      >
+        <Pressable style={styles.backdrop} onPress={close}>
+          <Pressable style={styles.sheet}>
+            <Card style={styles.sheetCard}>
+              <IconTile
+                icon={selUnlocked ? 'trophy' : 'lock'}
+                emoji={selected ? (selUnlocked ? selected.icon : '🔒') : ''}
+                variant={selUnlocked ? 'gold' : 'default'}
+                size={64}
+                iconSize={28}
+              />
+              <Text style={styles.sheetTitle}>{selected?.title}</Text>
+              <Text style={styles.sheetDesc}>{selected?.desc}</Text>
+
+              <View style={styles.sheetChips}>
+                <Pill size="sm" bg={C.gold + '22'} color={C.gold}>
+                  <Icon emoji="🪙" size={11} color={C.gold} /> +{selected?.reward || 0}
+                </Pill>
+                <Pill
+                  size="sm"
+                  bg={selUnlocked ? C.success + '22' : C.surfaceLight}
+                  color={selUnlocked ? C.success : C.textMuted}
+                >
+                  {selUnlocked ? 'AÇILDI' : 'KİLİTLİ'}
+                </Pill>
               </View>
-              {unlocked ? (
-                <View style={styles.rewardChip}>
-                  <Icon emoji="🪙" size={11} color={C.gold} />
-                  <Text style={styles.rewardText}>+{a.reward}</Text>
+
+              {selUnlocked ? (
+                <View style={styles.sheetDateRow}>
+                  <Icon name="calendar-outline" size={14} color={C.textMuted} />
+                  <Text style={styles.sheetDateText}>
+                    {selDate ? `${selDate} tarihinde açıldı` : 'Kilit açma tarihi kaydedilmemiş'}
+                  </Text>
                 </View>
-              ) : null}
-            </View>
-            {!unlocked && prog ? (
-              <View style={styles.progressRow}>
-                <View style={{ flex: 1 }}>
+              ) : selProg ? (
+                <View style={styles.sheetProgWrap}>
+                  <View style={styles.sheetProgHead}>
+                    <Text style={styles.sheetProgLabel}>İLERLEME</Text>
+                    <Text style={styles.sheetProgValue}>
+                      {Math.min(selProg.cur, selProg.target)}/{selProg.target}
+                    </Text>
+                  </View>
                   <Progress
-                    value={pct}
+                    value={selPct}
                     height={8}
                     colors={[C.primary, C.primaryDark]}
-                    accessibilityLabel={`${a.title} ilerlemesi yüzde ${Math.round(pct * 100)}`}
+                    accessibilityLabel={`${selected?.title} ilerlemesi`}
                   />
                 </View>
-                <Text style={styles.progressText}>
-                  {Math.min(prog.cur, prog.target)}/{prog.target}
-                </Text>
-              </View>
-            ) : null}
-            {!unlocked && !prog ? (
-              <Text style={styles.hintText}>Şartını sağlayınca otomatik açılır.</Text>
-            ) : null}
-          </View>
-        );
-      })}
+              ) : (
+                <Text style={styles.sheetHint}>Şartını sağladığında otomatik açılır.</Text>
+              )}
 
-      <View style={styles.noteBox}>
-        <Icon emoji="💡" size={13} color={C.primary} style={styles.noteIcon} />
-        <Text style={styles.noteText}>
-          Başarımlar otomatik açılır ve açıldığında altın ödülü hemen
-          envanterine eklenir — ekranın üstünde de kısa bir bildirim görürsün.
-        </Text>
-      </View>
-    </ScrollView>
+              <Button label="Kapat" variant="ghost" fullWidth onPress={close} />
+            </Card>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </View>
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -157,17 +273,14 @@ function makeStyles(C) {
     },
     content: {
       padding: 20,
-      gap: 10,
-      paddingBottom: 60,
+      gap: 12,
     },
+
+    // ---- özet ----
     summaryCard: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-      marginBottom: 6,
     },
     summaryInfo: {
       flex: 1,
@@ -176,109 +289,179 @@ function makeStyles(C) {
     summarySubRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 5,
     },
     summaryTitle: {
+      ...type.bodyStrong,
       color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
     },
     summarySub: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
     },
-    card: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
+
+    // ---- grid ----
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 10,
     },
-    cardUnlocked: {
-      borderWidth: 1,
-      borderColor: C.gold + '66',
-    },
-    cardLocked: {
-      opacity: 0.85,
-    },
-    cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    iconBox: {
-      width: 46,
-      height: 46,
+    cell: {
+      flexBasis: '31%',
+      flexGrow: 1,
       borderRadius: 16,
+      borderWidth: 1,
+      paddingVertical: 14,
+      paddingHorizontal: 8,
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: C.surface,
+      minHeight: 116,
+      justifyContent: 'center',
+    },
+    cellUnlocked: {
+      borderColor: C.gold + '66',
+      backgroundColor: C.surface,
+    },
+    cellLocked: {
+      borderColor: C.border,
       backgroundColor: C.surfaceLight,
+      opacity: 0.9,
+    },
+    cellPressed: {
+      opacity: 0.7,
+    },
+    cellIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    iconBoxUnlocked: {
+    cellIconOn: {
       backgroundColor: C.gold + '22',
     },
-    cardInfo: {
-      flex: 1,
-      gap: 2,
+    cellIconOff: {
+      backgroundColor: C.surface,
+      borderWidth: 1,
+      borderColor: C.border,
     },
-    title: {
-      color: C.textMuted,
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    titleUnlocked: {
+    cellTitle: {
+      ...type.micro,
       color: C.text,
+      fontWeight: '700',
+      textAlign: 'center',
+      fontSize: 11,
     },
-    desc: {
+    cellTitleOff: {
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 16,
     },
-    rewardChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: C.gold + '22',
-      borderRadius: 12,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-    },
-    rewardText: {
+    cellDate: {
+      ...type.micro,
       color: C.gold,
-      fontSize: 13,
-      fontWeight: '700',
+      fontVariant: ['tabular-nums'],
     },
-    progressRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
+    cellProgRow: {
+      width: '100%',
+      gap: 4,
     },
-    progressText: {
+    cellProgText: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
-      minWidth: 36,
-      textAlign: 'right',
+      textAlign: 'center',
+      fontVariant: ['tabular-nums'],
     },
-    hintText: {
+    cellHint: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
+      textAlign: 'center',
     },
+
+    // ---- not ----
     noteBox: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
       gap: 8,
       backgroundColor: C.surface,
       borderRadius: 16,
+      borderWidth: 1,
+      borderColor: C.border,
       padding: 14,
-      marginTop: 6,
-    },
-    noteIcon: {
-      marginTop: 2,
+      marginTop: 4,
     },
     noteText: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
+      flex: 1,
       lineHeight: 18,
+    },
+
+    // ---- modal ----
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    sheet: {
+      width: '100%',
+    },
+    sheetCard: {
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 24,
+    },
+    sheetTitle: {
+      ...type.h3,
+      color: C.text,
+      textAlign: 'center',
+    },
+    sheetDesc: {
+      ...type.small,
+      color: C.textMuted,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    sheetChips: {
+      flexDirection: 'row',
+      gap: 8,
+      alignItems: 'center',
+    },
+    sheetDateRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: C.surfaceLight,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    sheetDateText: {
+      ...type.small,
+      color: C.textMuted,
+      fontVariant: ['tabular-nums'],
+    },
+    sheetProgWrap: {
+      width: '100%',
+      gap: 6,
+    },
+    sheetProgHead: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    sheetProgLabel: {
+      ...type.micro,
+      color: C.textMuted,
+    },
+    sheetProgValue: {
+      ...type.micro,
+      color: C.primary,
+      fontWeight: '700',
+      fontVariant: ['tabular-nums'],
+    },
+    sheetHint: {
+      ...type.small,
+      color: C.textMuted,
+      textAlign: 'center',
     },
   });
 }

@@ -43,6 +43,7 @@ import SeasonPassScreen from './src/screens/SeasonPassScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ShopScreen from './src/screens/ShopScreen';
 import SocialScreen from './src/screens/SocialScreen';
+import DuelScreen from './src/screens/DuelScreen';
 import TeamScreen from './src/screens/TeamScreen';
 import { resolveTheme, ThemeProvider } from './src/theme';
 import { useNavigation } from '@react-navigation/native';
@@ -78,6 +79,7 @@ const STACK_TITLES = {
   Achievements: 'Başarımlar',
   League: 'Haftalık Ligler',
   Team: 'Takımım',
+  Duel: 'Düello',
   Profile: 'Profilim',
   Settings: 'Ayarlar',
   Admin: 'Yönetici Paneli',
@@ -195,6 +197,7 @@ function RootNavigator() {
       <Stack.Screen name="Achievements" component={AchievementsScreen} />
       <Stack.Screen name="League" component={LeagueScreen} />
       <Stack.Screen name="Team" component={TeamScreen} />
+      <Stack.Screen name="Duel" component={DuelScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       {authUser?.isAdmin ? <Stack.Screen name="Admin" component={AdminScreen} /> : null}
@@ -265,7 +268,7 @@ function Root() {
   }, [startPomodoro]);
   const handleDuelCreate = useCallback(() => {
     if (navigationRef.isReady()) {
-      navigationRef.navigate('Main', { screen: 'Social' });
+      navigationRef.navigate('Duel');
     }
   }, []);
   useDeepLink(handlePomodoroStart, handleDuelCreate);
