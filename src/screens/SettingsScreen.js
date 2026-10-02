@@ -1,24 +1,46 @@
 // ============================================================
-// SettingsScreen — "Ayarlar" sekmesi
-// Bölümler: Profil, Bildirimler, Görünüm, Sunucu, Veri, Hakkında.
-// Bildirimler (hatırlatma saati), Görünüm, Veri (yedek/sıfırla), Hakkında.
+// SettingsScreen — "Ayarlar" ekranı (v3 design system, sıfırdan)
+//
+// BÖLÜMLER: PROFİL · BİLDİRİMLER · GÖRÜNÜM · SUNUCU · VERİ · YÖNETİCİ
+// Her satır: icon (IconTile) + label/desc + chevron/değer/aktion.
+// - Bildirimler: 24'lük yatay saat şeridi (null = Kapalı) + 2 Switch
+// - Sunucu: bağlantı durumu (nokta) + Senkronla butonu
+// - Veri: Yedekle / Geri Yükle / Sıfırla (danger)
+// - Çıkış (danger) ve yöneticiyse Admin linki + hesabı sil
+//
+// DataContext API (değişmedi): data, today, setReminderHour(null=kapalı),
+//   setOsNotify, setHourlyNotify, backupData, restoreData, backupTs,
+//   resetAll, server, refreshServer · AuthContext: user, logout,
+//   changeName, changePassword, deleteAccount.
+//
+// NOT: Eski Sheet bileşeni BlurView içerir (blur yasağı) → isim/şifre
+//   düzenleme için kendi fade-modal'ı kullanılır.
+//
+// SAFE AREA: STACK ekranı — AppHeader 'Ayarlar', alt inset content'te.
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (Modal fade) ·
+//   h1 yok (AppHeader) · danger yalnız çıkış/sil/sıfırla.
 // ============================================================
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
-  TextInput,
-  Pressable,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarCircle from '../components/AvatarCircle';
-import { confirmDialog } from '../components/HabitCard';
-import Sheet from '../components/Sheet';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Icon from '../components/ui/icons';
+import IconTile from '../components/ui/IconTile';
+import SectionHeader from '../components/ui/SectionHeader';
+import TextInput from '../components/ui/TextInput';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { getShopItem } from '../data/shop';
@@ -31,7 +53,19 @@ import {
 import { checkServerConnection } from '../services/connectionService';
 import { getTheme, useTheme } from '../theme';
 
-// Kullanıcıya bilgilendirme gösterir (mobilde Alert, web'de tarayıcı kutusu).
+// Onay kutusu: mobilde Alert (özel buton etiketi), web'de confirm.
+function confirmDialog(title, message, okLabel, onOk) {
+  if (Platform.OS === 'web') {
+    if (window.confirm(`${title}\n\n${message}`)) onOk();
+  } else {
+    Alert.alert(title, message, [
+      { text: 'Vazgeç', style: 'cancel' },
+      { text: okLabel, style: 'destructive', onPress: onOk },
+    ]);
+  }
+}
+
+// Bilgilendirme: mobilde Alert, web'de tarayıcı kutusu.
 function notify(title, message) {
   if (Platform.OS === 'web') {
     window.alert(`${title}\n\n${message}`);
@@ -40,36 +74,44 @@ function notify(title, message) {
   }
 }
 
-function Section({ title, children }) {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-function SettingRow({ label, description, right }) {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
-  return (
-    <View style={styles.settingRow}>
-      <View style={styles.settingText}>
-        <Text style={styles.settingLabel}>{label}</Text>
-        {description ? <Text style={styles.settingDesc}>{description}</Text> : null}
+// Ayar satırı: icon + label/desc + sağ aksiyon (chevron/değer/switch/buton).
+function Row({ name, label, desc, right, onPress, danger }) {
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const body = (
+    <>
+      <IconTile name={name} size={36} iconSize={17} variant={danger ? 'danger' : 'glass'} />
+      <View style={styles.rowText}>
+        <Text style={[styles.rowLabel, danger && { color: C.danger }]}>{label}</Text>
+        {desc ? <Text style={styles.rowDesc}>{desc}</Text> : null}
       </View>
-      {right}
-    </View>
+      {right !== undefined ? (
+        right
+      ) : onPress ? (
+        <Icon name="chevron-forward" size={16} color={C.textMuted} />
+      ) : null}
+    </>
   );
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      >
+        {body}
+      </Pressable>
+    );
+  }
+  return <View style={styles.row}>{body}</View>;
 }
 
-// Küçük giriş sayfası: başlık + metin alanı(ları) + hata + buton.
-function EditSheet({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
-  const [values, setValues] = useState(fields.map(() => ''));
+// İsim/şifre değiştirme modalı (blur YOK — düz fade + Card).
+function EditModal({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const [values, setValues] = useState(() => fields.map(() => ''));
   const [error, setError] = useState('');
 
   const reset = () => {
@@ -88,31 +130,37 @@ function EditSheet({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
   };
 
   return (
-    <Sheet
-      visible={visible}
-      onClose={() => {
-        reset();
-        onClose();
-      }}
-      title={title}
-    >
-      {fields.map((f, i) => (
-        <TextInput
-          key={f}
-          style={styles.input}
-          placeholder={f}
-          placeholderTextColor={C.textMuted}
-          value={values[i]}
-          onChangeText={(t) => setValues((prev) => prev.map((v, j) => (j === i ? t : v)))}
-          secureTextEntry={f.toLowerCase().includes('şifre')}
-          autoCapitalize="none"
-        />
-      ))}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable style={styles.primaryButton} onPress={submit}>
-        <Text style={styles.primaryButtonText}>{buttonLabel}</Text>
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={() => { reset(); onClose(); }}>
+      <Pressable style={styles.backdrop} onPress={() => { reset(); onClose(); }}>
+        <Pressable style={styles.sheet}>
+          <Card style={styles.sheetCard}>
+            <Text style={styles.sheetTitle}>{title}</Text>
+            {fields.map((f, i) => (
+              <TextInput
+                key={f}
+                label={f.toUpperCase()}
+                value={values[i]}
+                onChangeText={(t) => setValues((prev) => prev.map((v, j) => (j === i ? t : v)))}
+                placeholder={f}
+                secureTextEntry={f.toLowerCase().includes('şifre')}
+                autoCapitalize="none"
+              />
+            ))}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Button label={buttonLabel} fullWidth onPress={submit} />
+            <Button
+              label="Vazgeç"
+              variant="ghost"
+              fullWidth
+              onPress={() => {
+                reset();
+                onClose();
+              }}
+            />
+          </Card>
+        </Pressable>
       </Pressable>
-    </Sheet>
+    </Modal>
   );
 }
 
@@ -131,26 +179,33 @@ export default function SettingsScreen() {
     refreshServer,
   } = useData();
   const { user: authUser, logout, changeName, changePassword, deleteAccount } = useAuth();
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
   const reminderHour = data.settings.reminderHour;
   const osNotify = !!data.settings.osNotify;
   const hourlyNotify = !!data.settings.hourlyNotify;
-  // Bugün henüz tamamlanmamış alışkanlık sayısı → hatırlatma metnini
-  // planlama anında güncel tutar: 0 ise kutlama, >0 ise kalan sayı.
+  // Bugün tamamlanmamış alışkanlık sayısı → hatırlatma metni güncel kalsın.
   const pendingToday =
     data.habits.length - data.habits.filter((h) => h.completedDates.includes(today)).length;
 
-  // OS bildirimi açıkken saat değiştirilirse plan yenilenir.
+  const [editSheet, setEditSheet] = useState(null); // 'name' | 'password'
+  const [busy, setBusy] = useState('');
+  // Son senkron sonucu: 'online' | 'offline' | null.
+  const [syncStatus, setSyncStatus] = useState(null);
+
+  // OS bildirimi açıkken saat değişirse plan tazelenir; saat kapanırsa iptal.
   useEffect(() => {
     if (osNotify && reminderHour != null) {
       scheduleDailyReminder(reminderHour, pendingToday);
+    } else if (osNotify && reminderHour == null) {
+      cancelDailyReminder();
     }
   }, [reminderHour, osNotify, pendingToday]);
 
-  // "Kapalıyken de hatırlatsın" anahtarı: izin iste + planla / iptal et.
+  // "Kapalıyken de hatırlatsın": izin iste + planla / iptal et.
   const toggleOsNotify = async (value) => {
     if (value) {
       const granted = await ensureNotificationPermission();
@@ -170,8 +225,8 @@ export default function SettingsScreen() {
       setOsNotify(false);
     }
   };
-  // "Saatlik motivasyon" anahtarı: izin iste + aç/kapat.
-  // Planlama (görev durumuna göre metin seçimi) DataContext'te yapılır.
+
+  // Saatlik motivasyon: izin iste + aç/kapat (planlama DataContext'te).
   const toggleHourlyNotify = async (value) => {
     if (value) {
       const granted = await ensureNotificationPermission();
@@ -185,20 +240,15 @@ export default function SettingsScreen() {
       setHourlyNotify(false);
     }
   };
+
   const currentTheme = getTheme(data.settings.themeId || 'dark');
   const currentAvatar = getShopItem(data.settings.avatarId || 'av_fox');
-
-  const [editSheet, setEditSheet] = useState(null); // 'name' | 'password'
-  const [busy, setBusy] = useState('');
-  // Son el senkron sonucu: 'online' | 'offline' | null (henüz kontrol edilmedi).
-  const [syncStatus, setSyncStatus] = useState(null);
 
   const handleSync = async () => {
     setBusy('server');
     let ok = false;
     try {
       ok = await checkServerConnection();
-      // Bağlantı varsa gerçek bir senkron da tetiklensin (buton "Senkronla").
       if (ok && refreshServer) await refreshServer();
     } catch (e) {
       ok = false;
@@ -224,123 +274,141 @@ export default function SettingsScreen() {
     confirmDialog(
       'Yedeği geri yükle',
       'Mevcut verinin yerine yedekteki veri gelecek. Emin misin?',
+      'Geri Yükle',
       async () => {
         setBusy('restore');
         const result = await restoreData();
         setBusy('');
-        if (!result.ok) confirmDialog('Hata', result.error || 'Geri yüklenemedi', () => {});
+        if (!result.ok) notify('Hata', result.error || 'Geri yüklenemedi');
       }
     );
   };
 
-  const openAdminPanel = () => {
-    navigation.navigate('Admin');
-  };
+  const serverDesc =
+    syncStatus === 'online'
+      ? 'Çevrimiçi — Supabase bulut veritabanına bağlı'
+      : syncStatus === 'offline'
+        ? 'Çevrimdışı — internet veya bulut erişim sorunu'
+        : server.connected
+          ? server.lastSync
+            ? `Bağlı — son senkron: ${new Date(server.lastSync).toLocaleString('tr-TR')}`
+            : 'Bağlı'
+          : 'Çevrimdışı — arkadaşlık ve liderlik özellikleri önbellekten çalışır';
+  const serverDot =
+    syncStatus === 'offline' || (syncStatus === null && !server.connected) ? C.danger : C.success;
+
+  const contentStyle = [
+    styles.content,
+    { paddingBottom: Math.max(24, insets.bottom + 24) },
+  ];
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={contentStyle}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
-      <Text style={styles.screenTitle}>Ayarlar</Text>
-      <Text style={styles.screenSub}>Hesabını ve deneyimini kişiselleştir</Text>
+      {/* ---------- PROFİL ---------- */}
+      <SectionHeader title="Profil" />
+      <Card style={styles.profileCard}>
+        <AvatarCircle
+          avatarId={data.settings.avatarId}
+          frameId={data.settings.frameId}
+          photo={data.settings.photoUrl}
+          size={64}
+          ringColor={C.gold}
+        />
+        <View style={styles.profileInfo}>
+          <Text style={styles.profileName}>{authUser?.name || 'Kullanıcı'}</Text>
+          <Text style={styles.profileSub}>
+            {currentAvatar?.name || 'Avatar'} · hesap adın liderlikte görünür
+          </Text>
+        </View>
+      </Card>
+      <View style={styles.group}>
+        <Row
+          name="person"
+          label="İsim değiştir"
+          desc="Liderlik tablosunda görünen adın"
+          onPress={() => setEditSheet('name')}
+        />
+        <Row
+          name="key"
+          label="Şifre değiştir"
+          desc="Eski şifreni doğrulayarak yenisini belirle"
+          onPress={() => setEditSheet('password')}
+        />
+        <Row
+          name="log-out"
+          label="Çıkış yap"
+          desc="Bir dahaki açılışta isim ve şifre istenir"
+          danger
+          right={
+            <Button
+              label="Çıkış"
+              variant="danger"
+              size="sm"
+              onPress={() =>
+                confirmDialog('Çıkış yap', 'Hesabından çıkış yapılsın mı?', 'Çıkış', () => logout())
+              }
+            />
+          }
+        />
+      </View>
 
-      {/* Profil */}
-      <Section title="Profil">
-        <View style={styles.profileCard}>
-          <AvatarCircle
-            avatarId={data.settings.avatarId}
-            frameId={data.settings.frameId}
-            photo={data.settings.photoUrl}
-            size={72}
-            ringColor={C.gold}
-          />
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{authUser?.name || 'Kullanıcı'}</Text>
-            <Text style={styles.profileSub}>{currentAvatar?.name || 'Avatar'} — hesap adın liderlikte görünür</Text>
+      {/* ---------- BİLDİRİMLER ---------- */}
+      <SectionHeader title="Bildirimler" />
+      <Card style={styles.hourCard}>
+        <View style={styles.hourHead}>
+          <IconTile name="alarm" size={36} iconSize={17} variant="glass" />
+          <View style={styles.rowText}>
+            <Text style={styles.rowLabel}>Günlük hatırlatma</Text>
+            <Text style={styles.rowDesc}>
+              {reminderHour == null
+                ? 'Kapalı — bir saat seçerek aç'
+                : `Her gün ${String(reminderHour).padStart(2, '0')}:00'de hatırlatır`}
+            </Text>
           </View>
         </View>
-        <SettingRow
-          label="İsim değiştir"
-          description="Liderlik tablosunda görünen adını güncelle"
-          right={
-            <Pressable style={styles.primaryChip} hitSlop={8} onPress={() => setEditSheet('name')}>
-              <Text style={styles.primaryChipText}>Değiştir</Text>
-            </Pressable>
-          }
-        />
-        <SettingRow
-          label="Şifre değiştir"
-          description="Yeni şifre belirlemek için eski şifreni doğrula"
-          right={
-            <Pressable style={styles.primaryChip} hitSlop={8} onPress={() => setEditSheet('password')}>
-              <Text style={styles.primaryChipText}>Değiştir</Text>
-            </Pressable>
-          }
-        />
-        <SettingRow
-          label="Çıkış yap"
-          description="Bir dahaki açılışta isim ve şifre istenir"
-          right={
-            <Pressable
-              style={styles.dangerButton}
-                hitSlop={8}
-              onPress={() =>
-                confirmDialog('Çıkış yap', 'Hesabından çıkış yapılsın mı?', () => logout())
-              }
-            >
-              <Text style={styles.dangerText}>Çıkış</Text>
-            </Pressable>
-          }
-        />
-      </Section>
-
-      {/* Bildirimler */}
-      <Section title="Bildirimler">
-        <SettingRow
-          label="Günlük hatırlatma"
-          description={
-            reminderHour == null
-              ? 'Kapalı — açmak için bir saat seç'
-              : `Her gün ${String(reminderHour).padStart(2, '0')}:00'de hatırlatır`
-          }
-          right={
-            <View style={styles.stepper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hourStrip}>
+          <Pressable
+            onPress={() => setReminderHour(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Hatırlatmayı kapat"
+            style={[styles.hourChip, styles.hourChipOff, reminderHour == null && styles.hourChipOffActive]}
+          >
+            <Text style={[styles.hourChipOffText, reminderHour == null && styles.hourChipTextActive]}>
+              Kapalı
+            </Text>
+          </Pressable>
+          {Array.from({ length: 24 }, (_, h) => {
+            const active = reminderHour === h;
+            return (
               <Pressable
-                style={styles.stepperButton}
-                hitSlop={6}
+                key={h}
+                onPress={() => setReminderHour(h)}
                 accessibilityRole="button"
-                accessibilityLabel="Hatirlatma saatini azalt"
-                onPress={() =>
-                  setReminderHour(reminderHour == null ? 20 : (reminderHour + 23) % 24)
-                }
+                accessibilityLabel={`Hatırlatma saati ${h}.00`}
+                accessibilityState={{ selected: active }}
+                style={[styles.hourChip, active && styles.hourChipActive]}
               >
-                <Text style={styles.stepperText}>−</Text>
+                <Text style={[styles.hourChipText, active && styles.hourChipTextActive]}>
+                  {String(h).padStart(2, '0')}
+                </Text>
               </Pressable>
-              <Text style={styles.stepperValue}>
-                {reminderHour == null ? '—' : reminderHour}
-              </Text>
-              <Pressable
-                style={styles.stepperButton}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="Hatirlatma saatini artir"
-                onPress={() =>
-                  setReminderHour(reminderHour == null ? 20 : (reminderHour + 1) % 24)
-                }
-              >
-                <Text style={styles.stepperText}>+</Text>
-              </Pressable>
-            </View>
-          }
-        />
-        <SettingRow
+            );
+          })}
+        </ScrollView>
+      </Card>
+      <View style={styles.group}>
+        <Row
+          name="notifications"
           label="Kapalıyken de hatırlatsın"
-          description={
+          desc={
             osNotify
-              ? `Uygulama kapalıyken ${String(reminderHour ?? 20).padStart(2, '0')}:00'de OS bildirimi gönderilir`
-              : 'Kapalı — açınca uygulama kapalıyken bile bildirim gelir'
+              ? `Uygulama kapalıyken ${String(reminderHour ?? 20).padStart(2, '0')}:00'de OS bildirimi gelir`
+              : 'Açınca uygulama kapalıyken bile bildirim gelir'
           }
           right={
             <Switch
@@ -351,12 +419,13 @@ export default function SettingsScreen() {
             />
           }
         />
-        <SettingRow
-          label="Bildirim"
-          description={
+        <Row
+          name="time"
+          label="Saatlik motivasyon"
+          desc={
             hourlyNotify
-              ? 'Her saat başı görev durumuna göre bildirim gönderilir (bekleyen görev → hatırlatma, yoksa → sürdürme)'
-              : 'Kapalı — açınca her saat başı bildirim gelir'
+              ? 'Her saat başı görev durumuna göre bildirim gönderilir'
+              : 'Açınca her saat başı bildirim gelir'
           }
           right={
             <Switch
@@ -367,169 +436,157 @@ export default function SettingsScreen() {
             />
           }
         />
-      </Section>
+      </View>
 
-      {/* Görünüm */}
-      <Section title="Görünüm">
-        <SettingRow
+      {/* ---------- GÖRÜNÜM ---------- */}
+      <SectionHeader title="Görünüm" />
+      <View style={styles.group}>
+        <Row
+          name="color-palette"
           label="Aktif tema"
-          description={`${currentTheme.name} — yeni temalar Dükkan'da satılır`}
-          right={<Text style={styles.themeEmoji}>{currentTheme.emoji}</Text>}
-        />
-      </Section>
-
-      {/* Sunucu */}
-      <Section title="Sunucu">
-        <SettingRow
-          label="Bağlantı durumu"
-          description={
-            syncStatus === 'online'
-              ? 'Çevrimiçi — Supabase bulut veritabanına bağlı'
-              : syncStatus === 'offline'
-                ? 'Çevrimdışı — internet veya bulut erişim sorunu'
-                : server.connected
-                  ? server.lastSync
-                    ? `Bağlı — son senkron: ${new Date(server.lastSync).toLocaleString('tr-TR')}`
-                    : 'Bağlı'
-                  : 'Çevrimdışı — arkadaşlık ve liderlik özellikleri önbellekten çalışır'
-          }
+          desc={`${currentTheme.name} — yeni temalar Dükkan'da satılır`}
+          onPress={() => navigation.navigate('Main', { screen: 'Shop' })}
           right={
-            <View style={styles.serverStatusRow}>
-              <View
-                style={[
-                  styles.serverDot,
-                  {
-                    backgroundColor:
-                      syncStatus === 'offline'
-                        ? C.danger
-                        : syncStatus === 'online' || server.connected
-                          ? C.accent
-                          : C.danger,
-                  },
-                ]}
-              />
-              <Pressable
-                style={[styles.primaryChip, busy === 'server' && styles.chipBusy]}
-                hitSlop={8}
-                onPress={handleSync}
-                disabled={busy !== ''}
-              >
-                <Text style={styles.primaryChipText}>
-                  {busy === 'server' ? '...' : 'Senkronla'}
-                </Text>
-              </Pressable>
+            <View style={styles.valueRow}>
+              <Text style={styles.valueEmoji}>{currentTheme.emoji}</Text>
+              <Icon name="chevron-forward" size={16} color={C.textMuted} />
             </View>
           }
         />
-        <SettingRow
-          label="Nasıl çalışır?"
-          description="Profilin, XP'n ve arkadaşlıkların bulut sunucusunda saklanır; cihaz değiştirsen bile aynı isimle devam edebilirsin."
+      </View>
+
+      {/* ---------- SUNUCU ---------- */}
+      <SectionHeader title="Sunucu" />
+      <View style={styles.group}>
+        <Row
+          name="cloud"
+          label="Bağlantı durumu"
+          desc={serverDesc}
+          right={
+            <View style={styles.valueRow}>
+              <View style={[styles.dot, { backgroundColor: serverDot }]} />
+              <Button
+                label={busy === 'server' ? '…' : 'Senkronla'}
+                size="sm"
+                variant="secondary"
+                loading={busy === 'server'}
+                disabled={busy !== ''}
+                onPress={handleSync}
+              />
+            </View>
+          }
         />
-      </Section>
+        <Row
+          name="information-circle"
+          label="Nasıl çalışır?"
+          desc="Profilin, XP'n ve arkadaşlıkların bulut sunucusunda saklanır; cihaz değiştirsen bile aynı isimle devam edebilirsin."
+        />
+      </View>
 
-      {/* Yönetici — yalnızca admin hesabıyla görünür */}
-      {authUser?.isAdmin ? (
-        <Section title="Yönetici">
-          <SettingRow
-            label="Yönetici Paneli"
-            description="Kullanıcı ara, yasakla, ceza/ödül ver, hediye gönder"
-            right={
-              <Pressable style={styles.primaryChip} hitSlop={8} onPress={openAdminPanel}>
-                <Text style={styles.primaryChipText}>Aç</Text>
-              </Pressable>
-            }
-          />
-          <SettingRow
-            label="Kayıtlı kullanıcı hesabı"
-            description="Silinirse cihazda yeni bir hesap açılabilir (admin oturumu sürer)"
-            right={
-              <Pressable
-                style={styles.dangerButton}
-                hitSlop={8}
-                onPress={() =>
-                  confirmDialog(
-                    'Kullanıcı hesabını sil',
-                    'Kayıtlı kullanıcı hesabı silinsin mi?',
-                    () => deleteAccount()
-                  )
-                }
-              >
-                <Text style={styles.dangerText}>Sil</Text>
-              </Pressable>
-            }
-          />
-        </Section>
-      ) : null}
-
-      {/* Veri */}
-      <Section title="Veri">
-        <SettingRow
+      {/* ---------- VERİ ---------- */}
+      <SectionHeader title="Veri" />
+      <View style={styles.group}>
+        <Row
+          name="cloud-download"
           label="Yedekle"
-          description={
+          desc={
             backupTs
               ? `Son yedek: ${new Date(backupTs).toLocaleString('tr-TR')}`
               : 'Verinin anlık kopyasını cihazına kaydet'
           }
           right={
-            <Pressable
-              style={[styles.primaryChip, busy === 'backup' && styles.chipBusy]}
-              hitSlop={8}
-              onPress={handleBackup}
+            <Button
+              label="Yedekle"
+              size="sm"
+              variant="secondary"
+              loading={busy === 'backup'}
               disabled={busy !== ''}
-            >
-              <Text style={styles.primaryChipText}>
-                {busy === 'backup' ? '...' : 'Yedekle'}
-              </Text>
-            </Pressable>
+              onPress={handleBackup}
+            />
           }
         />
-        <SettingRow
+        <Row
+          name="cloud-upload"
           label="Yedeği geri yükle"
-          description="Kaydedilen son yedeği getirir (mevcut veri değişir)"
+          desc="Kaydedilen son yedeği getirir (mevcut veri değişir)"
           right={
-            <Pressable
-              style={[styles.primaryChip, busy === 'restore' && styles.chipBusy]}
-              hitSlop={8}
-              onPress={handleRestore}
+            <Button
+              label="Geri Yükle"
+              size="sm"
+              variant="secondary"
+              loading={busy === 'restore'}
               disabled={busy !== '' || !backupTs}
-            >
-              <Text style={styles.primaryChipText}>
-                {busy === 'restore' ? '...' : 'Geri Yükle'}
-              </Text>
-            </Pressable>
+              onPress={handleRestore}
+            />
           }
         />
-        <SettingRow
+        <Row
+          name="trash"
           label="Tüm verileri sıfırla"
-          description="Alışkanlıklar, XP, seviye ve arkadaşlar kalıcı olarak silinir"
+          desc="Alışkanlıklar, XP, seviye ve arkadaşlar kalıcı olarak silinir"
+          danger
           right={
-            <Pressable
-              style={styles.dangerButton}
-                hitSlop={8}
+            <Button
+              label="Sıfırla"
+              variant="danger"
+              size="sm"
               onPress={() =>
-                confirmDialog('Verileri sıfırla', 'Tüm verilerin silinecek. Emin misin?', () =>
+                confirmDialog('Verileri sıfırla', 'Tüm verilerin silinecek. Emin misin?', 'Sıfırla', () =>
                   resetAll()
                 )
               }
-            >
-              <Text style={styles.dangerText}>Sıfırla</Text>
-            </Pressable>
+            />
           }
         />
-      </Section>
+      </View>
 
-      {/* Hakkında */}
-      <Section title="Hakkında">
-        <SettingRow label="Uygulama" description="HabiX — Oyunlaştırılmış Alışkanlık Takibi" />
-        <SettingRow label="Sürüm" description="1.1.0" />
-        <SettingRow
-          label="Teknoloji"
-          description="React Native + Expo SDK 57, veriler cihazında saklanır"
-        />
-      </Section>
+      {/* ---------- YÖNETİCİ (yalnız admin) ---------- */}
+      {authUser?.isAdmin ? (
+        <>
+          <SectionHeader title="Yönetici" />
+          <View style={styles.group}>
+            <Row
+              name="shield"
+              label="Yönetici Paneli"
+              desc="Kullanıcı ara, yasakla, ceza/ödül ver, hediye gönder"
+              onPress={() => navigation.navigate('Admin')}
+            />
+            <Row
+              name="person-remove"
+              label="Kayıtlı kullanıcı hesabını sil"
+              desc="Silinirse cihazda yeni bir hesap açılabilir (admin oturumu sürer)"
+              danger
+              right={
+                <Button
+                  label="Sil"
+                  variant="danger"
+                  size="sm"
+                  onPress={() =>
+                    confirmDialog(
+                      'Kullanıcı hesabını sil',
+                      'Kayıtlı kullanıcı hesabı silinsin mi?',
+                      'Sil',
+                      () => deleteAccount()
+                    )
+                  }
+                />
+              }
+            />
+          </View>
+        </>
+      ) : null}
 
-      {/* İsim / şifre değiştirme sayfaları */}
-      <EditSheet
+      {/* ---------- Hakkında ---------- */}
+      <View style={styles.aboutBox}>
+        <Text style={styles.aboutTitle}>HabiX</Text>
+        <Text style={styles.aboutText}>
+          Oyunlaştırılmış Alışkanlık Takibi · Sürüm 1.1.0{'\n'}
+          React Native + Expo SDK 57
+        </Text>
+      </View>
+
+      {/* İsim / şifre değiştirme modalları */}
+      <EditModal
         visible={editSheet === 'name'}
         title="İsim Değiştir"
         fields={['Yeni isim']}
@@ -537,7 +594,7 @@ export default function SettingsScreen() {
         onClose={() => setEditSheet(null)}
         onSubmit={([name]) => changeName(name)}
       />
-      <EditSheet
+      <EditModal
         visible={editSheet === 'password'}
         title="Şifre Değiştir"
         fields={['Eski şifre', 'Yeni şifre']}
@@ -549,175 +606,176 @@ export default function SettingsScreen() {
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: C.background,
     },
     content: {
       padding: 20,
-      gap: 18,
-      paddingBottom: 60,
-    },
-    screenTitle: {
-      color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
-    },
-    screenSub: {
-      color: C.textMuted,
-      fontSize: 13,
-    },
-    section: {
       gap: 10,
     },
-    sectionTitle: {
-      color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-      marginBottom: 2,
+    group: {
+      gap: 8,
+      marginBottom: 8,
     },
+
+    // ---- satır ----
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: C.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: C.border,
+      padding: 12,
+    },
+    rowPressed: {
+      opacity: 0.7,
+    },
+    rowText: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    rowLabel: {
+      ...type.bodyStrong,
+      color: C.text,
+      fontSize: 14,
+    },
+    rowDesc: {
+      ...type.micro,
+      color: C.textMuted,
+      lineHeight: 15,
+    },
+    valueRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    valueEmoji: {
+      fontSize: 20,
+    },
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: 6,
+    },
+
+    // ---- profil ----
     profileCard: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 14,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 16,
+      marginBottom: 2,
     },
     profileInfo: {
       flex: 1,
       gap: 3,
     },
     profileName: {
+      ...type.h3,
       color: C.text,
-      fontSize: 17,
-      fontWeight: '700',
     },
     profileSub: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 17,
     },
-    settingRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: C.border,
-      padding: 16,
+
+    // ---- saat şeridi ----
+    hourCard: {
       gap: 12,
     },
-    settingText: {
-      flex: 1,
-      gap: 3,
-    },
-    settingLabel: {
-      color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    settingDesc: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 17,
-    },
-    stepper: {
+    hourHead: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: 12,
     },
-    stepperButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: C.surfaceLight,
-      alignItems: 'center',
-      justifyContent: 'center',
+    hourStrip: {
+      gap: 6,
+      paddingVertical: 2,
     },
-    stepperText: {
-      color: C.primary,
-      fontSize: 22,
-      fontWeight: '700',
-      lineHeight: 24,
-    },
-    stepperValue: {
-      color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
-      minWidth: 30,
-      textAlign: 'center',
-    },
-    primaryChip: {
-      backgroundColor: C.primary + '22',
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      minHeight: 40,
-      justifyContent: 'center',
-    },
-    chipBusy: {
-      opacity: 0.5,
-    },
-    primaryChipText: {
-      color: C.primary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    dangerButton: {
-      backgroundColor: C.danger + '22',
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      minHeight: 40,
-      justifyContent: 'center',
-    },
-    serverStatusRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    serverDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 8,
-    },
-    dangerText: {
-      color: C.danger,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    themeEmoji: {
-      fontSize: 22,
-    },
-    input: {
-      height: 50,
-      borderRadius: 16,
+    hourChip: {
+      minWidth: 40,
+      height: 36,
+      borderRadius: 10,
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.border,
-      paddingHorizontal: 16,
-      color: C.text,
-      fontSize: 15,
-    },
-    error: {
-      color: C.danger,
-      fontSize: 13,
-      fontWeight: '600',
-    },
-    primaryButton: {
-      height: 50,
-      borderRadius: 16,
-      backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',
+      paddingHorizontal: 8,
     },
-    primaryButtonText: {
-      color: C.onPrimary,
-      fontSize: 15,
+    hourChipActive: {
+      backgroundColor: C.primary,
+      borderColor: C.primary,
+    },
+    hourChipOff: {
+      paddingHorizontal: 12,
+    },
+    hourChipOffActive: {
+      backgroundColor: C.danger + '22',
+      borderColor: C.danger,
+    },
+    hourChipText: {
+      ...type.micro,
+      color: C.textMuted,
       fontWeight: '700',
+      fontVariant: ['tabular-nums'],
+    },
+    hourChipOffText: {
+      ...type.micro,
+      color: C.textMuted,
+      fontWeight: '700',
+    },
+    hourChipTextActive: {
+      color: C.onPrimary,
+    },
+
+    // ---- modal ----
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    sheet: {
+      width: '100%',
+    },
+    sheetCard: {
+      gap: 12,
+      paddingVertical: 20,
+    },
+    sheetTitle: {
+      ...type.h3,
+      color: C.text,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    error: {
+      ...type.small,
+      color: C.danger,
+      fontWeight: '600',
+    },
+
+    // ---- hakkında ----
+    aboutBox: {
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 16,
+      marginTop: 6,
+    },
+    aboutTitle: {
+      ...type.bodyStrong,
+      color: C.textMuted,
+    },
+    aboutText: {
+      ...type.micro,
+      color: C.textMuted,
+      textAlign: 'center',
+      lineHeight: 16,
     },
   });
 }

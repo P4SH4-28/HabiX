@@ -1,31 +1,54 @@
 // ============================================================
-// AdminScreen — "Yönetici Paneli" sekmesi (yalnızca admin hesabı)
-// Kullanıcı ara → profil detayı gör → ban/unban, XP/altın ceza-ödül,
-// tema/avatar/çerçeve hediye et, şüpheli bayrağını kaldır.
-// Tüm işlemler admin-action Edge Function'ı üzerinden yürür ve
-// denetim günlüğüne yazılır (Katman 5).
+// AdminScreen — "Yönetici Paneli" (v3 design system, sıfırdan)
+//
+// BÖLÜMLER:
+//   1) İSTATİSTİKLER → canlı sunucu verisinden derlenen 4 sayaç +
+//      sistem durumu (bağlantı + son senkron + Yenile)
+//   2) KULLANICI ARAMA → sonuç listesi (durum rozetleri) · EmptyState
+//   3) SEÇİLİ KULLANICI → detay + hediye ver/al + şüpheli bayrağını kaldır
+//      + ödüll/ceza (normal bölge)
+//   4) TEHLİKELİ BÖLGE → yasakla/kaldır, ceza kes, para transferi (danger)
+//   5) DENETİM GÜNLÜĞÜ → son 30 işlem · EmptyState
+//
+// DataContext API: server (leaderboard/duels/connected/lastSync),
+//   refreshServer · AuthContext: user (adminName) ·
+//   adminAction: search_users | get_user | ban | unban | adjust |
+//   transfer | grant | revoke | unflag | logs.
+//
+// NOT: admin-action'da istatistik endpoint'i YOK → sayımlar mevcut
+//   `server` senkron verisinden hesaplanır (etiketler buna göre dürüst).
+//
+// SAFE AREA: STACK ekranı — AppHeader 'Yönetici Paneli', alt inset
+//   content'te (KeyboardAvoidingView ile).
+// KURALLAR: glow/gradient/blur/loop YOK · h1 yok · danger yalnız
+//   TEHLİKELİ BÖLGE'de · TextInput/Button/Card primitive'leri.
 // ============================================================
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import Icon from '../components/ui/icons';
+import Pill from '../components/ui/Pill';
+import SectionHeader from '../components/ui/SectionHeader';
+import SegmentedTabs from '../components/ui/SegmentedTabs';
+import TextInput from '../components/ui/TextInput';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { getShopItem, SHOP_ITEMS, FRAMES } from '../data/shop';
-import { THEMES } from '../theme';
+import { FRAMES, SHOP_ITEMS } from '../data/shop';
 import { adminAction } from '../services/adminService';
-import { useTheme } from '../theme';
-import Icon from '../components/ui/icons';
+import { THEMES, useTheme } from '../theme';
 
-// Hediye kategorileri (sıralı sekme).
+// Hediye kategorileri (SegmentedTabs).
 const GRANT_TABS = [
   { key: 'theme', label: 'Tema', items: () => THEMES.map((t) => ({ id: t.id, name: t.name, emoji: t.emoji })) },
   { key: 'avatar', label: 'Avatar', items: () => SHOP_ITEMS.map((i) => ({ id: i.id, name: i.name, emoji: i.emoji })) },
@@ -34,13 +57,16 @@ const GRANT_TABS = [
 
 export default function AdminScreen() {
   const { user: authUser } = useAuth();
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const insets = useSafeAreaInsets();
+  const { server, refreshServer } = useData();
 
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [results, setResults] = useState([]);
-  const [selected, setSelected] = useState(null); // seçili kullanıcı detayı
+  const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState(null); // { ok, text }
   const [xpInput, setXpInput] = useState('');
@@ -48,25 +74,41 @@ export default function AdminScreen() {
   const [banReason, setBanReason] = useState('');
   const [grantTab, setGrantTab] = useState('theme');
   const [logs, setLogs] = useState([]);
-  const [showLogs, setShowLogs] = useState(false);
-  // Para transferi: kaynak hesaptan hedef hesaba XP/altın aktarır.
+  const [logsLoaded, setLogsLoaded] = useState(false);
+  // Para transferi: kaynak → hedef XP/altın.
   const [transferFrom, setTransferFrom] = useState('');
   const [transferTo, setTransferTo] = useState('');
   const [transferXp, setTransferXp] = useState('');
   const [transferGold, setTransferGold] = useState('');
 
-  // Yönetici adı: transfer kaynak hesabını ön doldurmak için kullanılır.
-  // Kimlik doğrulama istemcide DEĞİL sunucuda yapılır (adminService token).
   const adminName = authUser?.name || '';
-
   const notify = (ok, text) => setMessage({ ok, text });
 
-  // Sonuç listesini tazele (admin panele arama).
+  // ---------- İstatistikler (server verisinden derleme) ----------
+  const board = server?.leaderboard || [];
+  const stats = useMemo(
+    () => ({
+      players: board.length,
+      totalXp: board.reduce((s, p) => s + (p.totalXp || 0), 0),
+      weekXp: board.reduce((s, p) => s + (p.xp7d || 0), 0),
+      duels: (server?.duels || []).length,
+    }),
+    [board, server]
+  );
+  const statsList = [
+    { key: 'players', label: 'OYUNCU (CANLI)', value: stats.players },
+    { key: 'xp', label: 'TOPLAM XP', value: stats.totalXp },
+    { key: 'week', label: '7 GÜNLÜK XP', value: stats.weekXp },
+    { key: 'duels', label: 'AÇIK DÜELLO', value: stats.duels },
+  ];
+
+  // ---------- Arama ----------
   const doSearch = async () => {
     const q = query.trim();
     if (!q) return notify(false, 'Arama için bir isim yaz');
     setSearching(true);
     setMessage(null);
+    setSearched(true);
     const r = await adminAction('search_users', { q });
     setSearching(false);
     if (!r.ok) return notify(false, r.error);
@@ -74,7 +116,6 @@ export default function AdminScreen() {
     if ((r.data.users || []).length === 0) notify(false, 'Sonuç bulunamadı');
   };
 
-  // Kullanıcı detayını çek + seç.
   const selectUser = async (username) => {
     setBusy('loading');
     setMessage(null);
@@ -83,7 +124,6 @@ export default function AdminScreen() {
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     setSelected(r.data.user);
-    // Transfer hedefini seçili kullanıcıya ön doldur (kaynak admin).
     setTransferFrom(adminName);
     setTransferTo(username);
   };
@@ -94,6 +134,7 @@ export default function AdminScreen() {
     if (r.ok) setSelected(r.data.user);
   };
 
+  // ---------- Yasaklama ----------
   const doBan = async () => {
     if (!selected) return;
     setBusy('ban');
@@ -115,7 +156,7 @@ export default function AdminScreen() {
     await refreshSelected();
   };
 
-  // Ödül (+) veya ceza (-) uygular.
+  // ---------- Ödül(+) / Ceza(-) ----------
   const doAdjust = async (sign) => {
     if (!selected) return;
     const xp = Number(xpInput);
@@ -137,7 +178,7 @@ export default function AdminScreen() {
     await refreshSelected();
   };
 
-  // XP/altın aktarımı: transferFrom hesabından transferTo hesabına.
+  // ---------- Para transferi ----------
   const doTransfer = async () => {
     const from = transferFrom.trim();
     const to = transferTo.trim();
@@ -149,27 +190,23 @@ export default function AdminScreen() {
       return notify(false, 'Geçerli XP/altın miktarı gir');
     }
     setBusy('transfer');
-    const r = await adminAction('transfer', {
-      source: from,
-      target: to,
-      xp,
-      coins: gold,
-    });
+    const r = await adminAction('transfer', { source: from, target: to, xp, coins: gold });
     setBusy('');
     if (!r.ok) {
-    if (r.error === 'insufficient_balance') {
-      return notify(false, `${from} hesabında yeterli bakiye yok (${r.balance?.xp ?? 0} XP / ${r.balance?.coins ?? 0} altın)`);
+      if (r.code === 'insufficient_balance') {
+        return notify(false, `${from} hesabında yeterli bakiye yok`);
+      }
+      return notify(false, r.error);
     }
-    return notify(false, r.error);
-  }
-  setTransferXp('');
-  setTransferGold('');
-  notify(true, `${from} → ${to}: ${xp} XP + ${gold} altın aktarıldı`);
+    setTransferXp('');
+    setTransferGold('');
+    notify(true, `${from} → ${to}: ${xp} XP + ${gold} altın aktarıldı`);
     if (selected && (selected.username === from || selected.username === to)) {
       await refreshSelected();
     }
   };
 
+  // ---------- Hediye ----------
   const doGrant = async (itemType, itemId) => {
     if (!selected) return;
     setBusy('grant');
@@ -200,16 +237,16 @@ export default function AdminScreen() {
     await refreshSelected();
   };
 
+  // ---------- Günlük ----------
   const loadLogs = async () => {
     setBusy('logs');
     const r = await adminAction('logs');
     setBusy('');
     if (!r.ok) return notify(false, r.error);
     setLogs(r.data.logs || []);
-    setShowLogs(true);
+    setLogsLoaded(true);
   };
 
-  // Seçili kullanıcının hediye envanteri (id kümesi).
   const grantedSet = useMemo(() => {
     const set = new Set();
     (selected?.granted_items || []).forEach((g) => {
@@ -220,456 +257,635 @@ export default function AdminScreen() {
 
   const tabDef = GRANT_TABS.find((t) => t.key === grantTab) || GRANT_TABS[0];
   const tabItems = tabDef.items();
+  const contentStyle = [styles.content, { paddingBottom: Math.max(24, insets.bottom + 24) }];
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: C.bg }}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+        contentContainerStyle={contentStyle}
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.titleRow}>
-          <Icon emoji="🛡️" size={18} color={C.primary} />
-          <Text style={styles.title}>Yönetici Paneli</Text>
+        {/* ---------- 1) İSTATİSTİKLER ---------- */}
+        <SectionHeader title="İstatistikler" />
+        <View style={styles.statGrid}>
+          {statsList.map((s) => (
+            <Card key={s.key} padding="sm" style={styles.statCard}>
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </Card>
+          ))}
         </View>
-        <Text style={styles.subtitle}>
-          Tüm işlemler sunucuda denetlenir ve kayda geçer. Dikkatli kullan!
-        </Text>
-
-        {/* ---------- Arama ---------- */}
-        <View style={styles.searchRow}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Kullanıcı adı ara…"
-            placeholderTextColor={C.textMuted}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            onSubmitEditing={doSearch}
+        <Card padding="sm" style={styles.systemCard}>
+          <View
+            style={[
+              styles.dot,
+              { backgroundColor: server?.connected ? C.success : C.danger },
+            ]}
           />
-          <Pressable style={[styles.primaryButton, searching && { opacity: 0.6 }]} onPress={doSearch} disabled={searching}>
-            {searching ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Ara</Text>}
-          </Pressable>
-        </View>
-
-        {/* ---------- Arama sonuçları ---------- */}
-        {results.length > 0 ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Sonuçlar ({results.length})</Text>
-            {results.map((u) => (
-              <Pressable
-                key={u.username}
-                style={[styles.resultRow, u.username === selected?.username && styles.resultRowActive]}
-                onPress={() => selectUser(u.username)}
-              >
-                <Text style={styles.resultName}>{u.username}</Text>
-                <View style={styles.resultMeta}>
-                  <Text style={styles.resultMetaText}>{u.xp} XP</Text>
-                  <Icon emoji="🪙" size={11} color={C.gold} />
-                  <Text style={styles.resultMetaText}>{u.coins}</Text>
-                  {u.banned ? (
-                    <View style={styles.resultBadge}>
-                      <Icon emoji="⛔" size={11} color={C.danger} />
-                      <Text style={[styles.resultMetaText, { color: C.danger }]}>BANLI</Text>
-                    </View>
-                  ) : null}
-                  {u.flagged ? (
-                    <View style={styles.resultBadge}>
-                      <Icon emoji="⚠️" size={11} color={C.xp} />
-                    </View>
-                  ) : null}
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
-
-        {/* ---------- İşlem geçmişi ---------- */}
-        <Pressable style={styles.linkRow} onPress={loadLogs}>
-          <View style={styles.linkContent}>
-            <Icon emoji="📜" size={13} color={C.primary} />
-            <Text style={styles.linkText}>
-              {showLogs ? 'Denetim günlüğü (son 30 işlem)' : 'Denetim günlüğünü getir'}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.systemTitle}>
+              {server?.connected ? 'Sistem çevrimiçi' : 'Sistem çevrimdışı'}
+            </Text>
+            <Text style={styles.systemSub}>
+              {server?.lastSync
+                ? `Son senkron: ${new Date(server.lastSync).toLocaleString('tr-TR')}`
+                : 'Henüz senkron yapılmadı'}
             </Text>
           </View>
-        </Pressable>
-        {showLogs && (
-          <View style={styles.card}>
-            {logs.length === 0 ? (
-              <Text style={styles.muted}>Henüz işlem yok</Text>
-            ) : (
-              logs.map((l) => (
-                <View key={l.id} style={styles.logRow}>
-                  <Text style={styles.logText}>
-                    {l.created_at?.slice(0, 16).replace('T', ' ')} • <Text style={styles.logAction}>{l.action}</Text>
-                    {l.target ? ` → ${l.target}` : ''}
-                  </Text>
-                  {l.detail ? <Text style={styles.logDetail}>{l.detail}</Text> : null}
-                </View>
-              ))
-            )}
-          </View>
-        )}
+          <Button label="Yenile" size="sm" variant="secondary" onPress={() => refreshServer()} />
+        </Card>
 
-        {/* ---------- Seçili kullanıcı ---------- */}
+        {/* ---------- 2) KULLANICI ARAMA ---------- */}
+        <SectionHeader title="Kullanıcı Ara" />
+        <View style={styles.searchRow}>
+          <View style={{ flex: 1 }}>
+            <TextInput
+              label="KULLANICI ADI"
+              value={query}
+              onChangeText={setQuery}
+              placeholder="kullanici_adi…"
+              autoCapitalize="none"
+              onSubmitEditing={doSearch}
+            />
+          </View>
+          <Button
+            label="Ara"
+            loading={searching}
+            onPress={doSearch}
+            style={styles.searchBtn}
+          />
+        </View>
+
+        {results.length > 0 ? (
+          <Card padding={0} style={styles.resultsCard}>
+            {results.map((u, i) => (
+              <Card
+                key={u.username}
+                padding="sm"
+                onPress={() => selectUser(u.username)}
+                style={[
+                  styles.resultRow,
+                  i > 0 && styles.resultRowBorder,
+                  u.username === selected?.username && styles.resultRowActive,
+                ]}
+                accessibilityLabel={`${u.username} profilini aç`}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.resultName}>{u.username}</Text>
+                  <Text style={styles.resultMeta}>
+                    {u.xp} XP · {u.coins} 🪙
+                  </Text>
+                </View>
+                <View style={styles.resultBadges}>
+                  {u.banned ? (
+                    <Pill size="sm" bg={C.danger + '22'} color={C.danger}>
+                      BANLI
+                    </Pill>
+                  ) : null}
+                  {u.flagged ? (
+                    <Pill size="sm" bg={C.xp + '22'} color={C.xp}>
+                      ŞÜPHELİ
+                    </Pill>
+                  ) : null}
+                </View>
+              </Card>
+            ))}
+          </Card>
+        ) : searched && !searching ? (
+          <EmptyState
+            compact
+            name="search"
+            title="Sonuç bulunamadı"
+            subtitle="Yazdığın isimle eşleşen bir kullanıcı yok — yazımı kontrol edip tekrar dene."
+          />
+        ) : null}
+
+        {/* ---------- 3) SEÇİLİ KULLANICI ---------- */}
+        <SectionHeader title="Kullanıcı Yönetimi" />
+        {!selected && busy !== 'loading' ? (
+          <EmptyState
+            compact
+            name="person"
+            title="Kullanıcı seçilmedi"
+            subtitle="Yukarıdan bir kullanıcı ara ve satırına dokun — detay, hediye ve işlem araçları burada açılır."
+          />
+        ) : null}
+        {busy === 'loading' ? (
+          <ActivityIndicator color={C.primary} style={{ marginVertical: 16 }} />
+        ) : null}
+
         {selected ? (
           <>
-            <View style={styles.card}>
-              <View style={styles.userHeader}>
+            <Card style={styles.userCard}>
+              <View style={styles.userHead}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.userName}>{selected.username}</Text>
-                  <View style={styles.userMeta}>
-                    <Text style={styles.userMetaText}>{selected.xp} XP</Text>
-                    <Icon emoji="🪙" size={11} color={C.gold} />
-                    <Text style={styles.userMetaText}>{selected.coins}</Text>
-                    {selected.xp7d ? (
-                      <Text style={styles.userMetaText}>{`  •  7 gün: +${selected.xp7d} XP`}</Text>
-                    ) : null}
-                  </View>
+                  <Text style={styles.userMeta}>
+                    {selected.xp} XP · {selected.coins} 🪙
+                    {selected.xp7d ? ` · 7g +${selected.xp7d}` : ''}
+                  </Text>
                 </View>
-                <View style={styles.userChips}>
+                <View style={styles.userPills}>
                   {selected.banned ? (
-                    <View style={[styles.chip, { backgroundColor: C.danger }]}>
-                      <Icon emoji="⛔" size={10} color="#fff" />
-                      <Text style={styles.chipText}>BANLI</Text>
-                    </View>
+                    <Pill size="sm" bg={C.danger} color="#fff">
+                      BANLI
+                    </Pill>
                   ) : (
-                    <View style={[styles.chip, { backgroundColor: '#2A3340' }]}>
-                      <Text style={styles.chipText}>Aktif</Text>
-                    </View>
+                    <Pill size="sm" bg={C.surfaceLight} color={C.textMuted}>
+                      AKTİF
+                    </Pill>
                   )}
                   {selected.flagged && !selected.banned ? (
-                    <View style={[styles.chip, { backgroundColor: C.xp }]}>
-                      <Icon emoji="⚠️" size={10} color="#fff" />
-                      <Text style={styles.chipText}>ŞÜPHELİ</Text>
-                    </View>
+                    <Pill size="sm" bg={C.xp} color="#fff">
+                      ŞÜPHELİ
+                    </Pill>
                   ) : null}
                 </View>
               </View>
               {selected.ban_reason ? (
-                <Text style={styles.banReason}>Gerekçe: {selected.ban_reason}</Text>
+                <Text style={styles.reasonText}>Gerekçe: {selected.ban_reason}</Text>
               ) : null}
               {selected.flagged_reason && !selected.banned ? (
-                <Text style={styles.banReason}>Bayrak nedeni: {selected.flagged_reason}</Text>
+                <Text style={styles.reasonText}>Bayrak nedeni: {selected.flagged_reason}</Text>
               ) : null}
-            </View>
+            </Card>
 
-            {busy === 'loading' ? (
-              <ActivityIndicator color={C.primary} style={{ marginVertical: 20 }} />
-            ) : null}
-
-            {/* ---------- Yasaklama ---------- */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Yasaklama</Text>
-              {!selected.banned ? (
-                <>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Yasak gerekçesi (opsiyonel)"
-                    placeholderTextColor={C.textMuted}
-                    value={banReason}
-                    onChangeText={setBanReason}
-                  />
-                  <Pressable style={[styles.dangerButton, busy === 'ban' && { opacity: 0.6 }]} onPress={doBan} disabled={busy !== ''}>
-                    <View style={styles.btnContent}>
-                      <Icon emoji="⛔" size={13} color={C.danger} />
-                      <Text style={styles.dangerText}>Kullanıcıyı Yasakla</Text>
-                    </View>
-                  </Pressable>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.muted}>Bu kullanıcı yasaklı — senkronu ve liderliği kapalı.</Text>
-                  <Pressable style={[styles.primaryButton, busy === 'unban' && { opacity: 0.6 }]} onPress={doUnban} disabled={busy !== ''}>
-                    <View style={styles.btnContent}>
-                      <Icon emoji="✅" size={13} color={C.onPrimary} />
-                      <Text style={styles.primaryButtonText}>Yasağı Kaldır</Text>
-                    </View>
-                  </Pressable>
-                </>
-              )}
-              {selected.flagged ? (
-                <Pressable style={[styles.secondaryButton, busy === 'unflag' && { opacity: 0.6 }]} onPress={doUnflag} disabled={busy !== ''}>
-                  <View style={styles.btnContent}>
-                    <Icon emoji="🧹" size={13} color={C.text} />
-                    <Text style={styles.secondaryText}>Şüpheli Bayrağını Kaldır</Text>
-                  </View>
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* ---------- Ödül / Ceza ---------- */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Ödül & Ceza (XP / altın)</Text>
-              <View style={styles.adjustRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="XP"
-                  placeholderTextColor={C.textMuted}
-                  value={xpInput}
-                  onChangeText={setXpInput}
-                  keyboardType="number-pad"
-                />
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="Altın"
-                  placeholderTextColor={C.textMuted}
-                  value={goldInput}
-                  onChangeText={setGoldInput}
-                  keyboardType="number-pad"
-                />
-              </View>
-              <View style={styles.adjustRow}>
-                <Pressable
-                  style={[styles.giveButton, busy === 'adjust' && { opacity: 0.6 }]}
-                  onPress={() => doAdjust(1)}
-                  disabled={busy !== ''}
-                >
-                  <Text style={styles.giveButtonText}>
-                    <Icon emoji="🎁" size={13} color={C.accent} /> Ödül Ver
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.takeButton, busy === 'adjust' && { opacity: 0.6 }]}
-                  onPress={() => doAdjust(-1)}
-                  disabled={busy !== ''}
-                >
-                  <Text style={styles.takeButtonText}>
-                    <Icon emoji="⚖️" size={13} color={C.danger} /> Ceza Kes
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* ---------- Para Transferi ---------- */}
-            <View style={styles.card}>
-              <View style={styles.cardTitleRow}>
-                <Icon emoji="💰" size={14} color={C.gold} />
-                <Text style={styles.cardTitle}>Para Transferi</Text>
-              </View>
-              <Text style={styles.muted}>
-                Kaynak hesaptan hedef hesaba XP ve altın aktarır (kaynak bakiyesi düşer).
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Kaynak kullanıcı adı (gönderen)"
-                placeholderTextColor={C.textMuted}
-                value={transferFrom}
-                onChangeText={setTransferFrom}
-                autoCapitalize="none"
+            {/* Hediye et */}
+            <Card style={styles.blockCard}>
+              <Text style={styles.blockTitle}>Hediye Et</Text>
+              <SegmentedTabs
+                options={GRANT_TABS.map((t) => ({ key: t.key, label: t.label }))}
+                value={grantTab}
+                onChange={setGrantTab}
               />
-              <View style={{ height: 8 }} />
-              <TextInput
-                style={styles.input}
-                placeholder="Hedef kullanıcı adı (alan)"
-                placeholderTextColor={C.textMuted}
-                value={transferTo}
-                onChangeText={setTransferTo}
-                autoCapitalize="none"
-              />
-              <View style={styles.adjustRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="XP"
-                  placeholderTextColor={C.textMuted}
-                  value={transferXp}
-                  onChangeText={setTransferXp}
-                  keyboardType="number-pad"
-                />
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  placeholder="Altın"
-                  placeholderTextColor={C.textMuted}
-                  value={transferGold}
-                  onChangeText={setTransferGold}
-                  keyboardType="number-pad"
-                />
-              </View>
-              <Pressable
-                style={[styles.giveButton, busy === 'transfer' && { opacity: 0.6 }]}
-                onPress={doTransfer}
-                disabled={busy !== ''}
-              >
-                <Text style={styles.giveButtonText}>
-                  <Icon emoji="↔️" size={13} color={C.accent} /> Aktar
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* ---------- Hediye ---------- */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Hediye Et</Text>
-              <View style={styles.tabRow}>
-                {GRANT_TABS.map((t) => (
-                  <Pressable
-                    key={t.key}
-                    style={[styles.tab, grantTab === t.key && styles.tabActive]}
-                    onPress={() => setGrantTab(t.key)}
-                  >
-                    <Text style={[styles.tabText, grantTab === t.key && styles.tabTextActive]}>{t.label}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <View style={styles.itemGrid}>
+              <View style={styles.grantGrid}>
                 {tabItems.map((item) => {
                   const granted = grantedSet.has(`${grantTab}:${item.id}`);
                   return (
-                    <View key={item.id} style={styles.itemCell}>
-                      <Text style={styles.itemEmoji}>{item.emoji}</Text>
-                      <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                    <Card key={item.id} padding="sm" style={styles.grantCell}>
+                      <Text style={styles.grantEmoji}>{item.emoji}</Text>
+                      <Text style={styles.grantName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
                       {granted ? (
-                        <Pressable
-                          style={[styles.revokeBtn, busy === 'revoke' && { opacity: 0.6 }]}
+                        <Button
+                          label="Geri Al"
+                          size="sm"
+                          variant="ghost"
+                          loading={busy === 'revoke'}
+                          disabled={busy !== ''}
                           onPress={() => doRevoke(grantTab, item.id)}
-                          disabled={busy !== ''}
-                        >
-                          <Text style={styles.revokeText}>Geri Al</Text>
-                        </Pressable>
+                        />
                       ) : (
-                        <Pressable
-                          style={[styles.grantBtn, busy === 'grant' && { opacity: 0.6 }]}
-                          onPress={() => doGrant(grantTab, item.id)}
+                        <Button
+                          label="Ver"
+                          size="sm"
+                          loading={busy === 'grant'}
                           disabled={busy !== ''}
-                        >
-                          <Text style={styles.grantText}>Ver</Text>
-                        </Pressable>
+                          onPress={() => doGrant(grantTab, item.id)}
+                        />
                       )}
-                    </View>
+                    </Card>
                   );
                 })}
               </View>
-            </View>
+            </Card>
+
+            {/* Ödül (normal bölge) */}
+            <Card style={styles.blockCard}>
+              <Text style={styles.blockTitle}>Ödül Ver (XP / altın)</Text>
+              <View style={styles.inputRow}>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="XP"
+                    value={xpInput}
+                    onChangeText={setXpInput}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="ALTIN"
+                    value={goldInput}
+                    onChangeText={setGoldInput}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+              </View>
+              <Button
+                label="Ödül Ver"
+                fullWidth
+                icon={<Icon emoji="🎁" size={13} color={C.onPrimary} />}
+                loading={busy === 'adjust'}
+                disabled={busy !== ''}
+                onPress={() => doAdjust(1)}
+              />
+              {selected.flagged ? (
+                <Button
+                  label="Şüpheli Bayrağını Kaldır"
+                  variant="secondary"
+                  fullWidth
+                  loading={busy === 'unflag'}
+                  disabled={busy !== ''}
+                  onPress={doUnflag}
+                />
+              ) : null}
+            </Card>
+
+            {/* ---------- 4) TEHLİKELİ BÖLGE ---------- */}
+            <SectionHeader title="Tehlikeli Bölge" />
+            <Card style={styles.dangerCard}>
+              <View style={styles.dangerHead}>
+                <Icon emoji="⚠️" size={14} color={C.danger} />
+                <Text style={styles.dangerTitle}>Bu işlemler geri alınamayabilir</Text>
+              </View>
+
+              {/* Yasaklama */}
+              {!selected.banned ? (
+                <>
+                  <TextInput
+                    label="YASAK GEREKÇESİ"
+                    value={banReason}
+                    onChangeText={setBanReason}
+                    placeholder="Opsiyonel"
+                    hint="Kullanıcı senkron alamaz ve liderlikten düşer."
+                  />
+                  <Button
+                    label="Kullanıcıyı Yasakla"
+                    variant="danger"
+                    fullWidth
+                    loading={busy === 'ban'}
+                    disabled={busy !== ''}
+                    onPress={doBan}
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.dangerNote}>
+                    Bu kullanıcı yasaklı — senkronu ve liderliği kapalı.
+                  </Text>
+                  <Button
+                    label="Yasağı Kaldır"
+                    fullWidth
+                    loading={busy === 'unban'}
+                    disabled={busy !== ''}
+                    onPress={doUnban}
+                  />
+                </>
+              )}
+
+              {/* Ceza */}
+              <View style={styles.dangerDivider} />
+              <Text style={styles.dangerSubTitle}>Ceza Kes (−XP / −altın)</Text>
+              <View style={styles.inputRow}>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="XP"
+                    value={xpInput}
+                    onChangeText={setXpInput}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="ALTIN"
+                    value={goldInput}
+                    onChangeText={setGoldInput}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+              </View>
+              <Button
+                label="Ceza Kes"
+                variant="danger"
+                fullWidth
+                loading={busy === 'adjust'}
+                disabled={busy !== ''}
+                onPress={() => doAdjust(-1)}
+              />
+
+              {/* Para transferi */}
+              <View style={styles.dangerDivider} />
+              <Text style={styles.dangerSubTitle}>Para Transferi</Text>
+              <Text style={styles.dangerNote}>
+                Kaynak hesaptan hedefe XP/altın aktarılır (kaynak bakiyesi düşer).
+              </Text>
+              <TextInput
+                label="GÖNDEREN"
+                value={transferFrom}
+                onChangeText={setTransferFrom}
+                placeholder="kullanici_adi"
+                autoCapitalize="none"
+              />
+              <TextInput
+                label="ALAN"
+                value={transferTo}
+                onChangeText={setTransferTo}
+                placeholder="kullanici_adi"
+                autoCapitalize="none"
+              />
+              <View style={styles.inputRow}>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="XP"
+                    value={transferXp}
+                    onChangeText={setTransferXp}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+                <View style={styles.inputFlex}>
+                  <TextInput
+                    label="ALTIN"
+                    value={transferGold}
+                    onChangeText={setTransferGold}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                  />
+                </View>
+              </View>
+              <Button
+                label="Aktar"
+                variant="danger"
+                fullWidth
+                loading={busy === 'transfer'}
+                disabled={busy !== ''}
+                onPress={doTransfer}
+              />
+            </Card>
           </>
         ) : null}
 
-        {/* ---------- Durum mesajı ---------- */}
+        {/* ---------- 5) DENETİM GÜNLÜĞÜ ---------- */}
+        <SectionHeader
+          title="Denetim Günlüğü"
+          actionLabel={logsLoaded ? 'Yenile' : 'Getir'}
+          onAction={loadLogs}
+        />
+        {busy === 'logs' ? (
+          <ActivityIndicator color={C.primary} style={{ marginVertical: 12 }} />
+        ) : logsLoaded ? (
+          logs.length === 0 ? (
+            <EmptyState compact name="list" title="Henüz işlem yok" subtitle="İlk yönetici işlemi burada listelenecek." />
+          ) : (
+            <Card style={styles.logsCard}>
+              {logs.map((l) => (
+                <View key={l.id} style={styles.logRow}>
+                  <Text style={styles.logText}>
+                    {l.created_at?.slice(0, 16).replace('T', ' ')} ·{' '}
+                    <Text style={styles.logAction}>{l.action}</Text>
+                    {l.target ? ` → ${l.target}` : ''}
+                  </Text>
+                  {l.detail ? <Text style={styles.logDetail}>{l.detail}</Text> : null}
+                </View>
+              ))}
+            </Card>
+          )
+        ) : null}
+
+        {/* ---------- durum mesajı ---------- */}
         {message ? (
-          <Text style={[styles.message, { color: message.ok ? C.accent : C.danger }]}>{message.text}</Text>
+          <Pill
+            size="sm"
+            bg={(message.ok ? C.success : C.danger) + '22'}
+            color={message.ok ? C.success : C.danger}
+          >
+            {message.text}
+          </Pill>
         ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const makeStyles = (C) =>
-  StyleSheet.create({
-    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-    title: { fontSize: 22, fontWeight: '700', color: C.text },
-    subtitle: { fontSize: 13, color: C.textMuted, marginBottom: 16 },
-    btnContent: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
-    cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-    linkContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    searchRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-    input: {
-      backgroundColor: C.surface,
-      borderColor: C.border,
-      borderWidth: 1,
-      borderRadius: 12,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
+function makeStyles(C, type) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: C.background,
+    },
+    content: {
+      padding: 20,
+      gap: 10,
+    },
+
+    // ---- istatistik ----
+    statGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+    statCard: {
+      width: '48%',
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 14,
+    },
+    statValue: {
+      ...type.stat,
+      color: C.primary,
+    },
+    statLabel: {
+      ...type.micro,
+      color: C.textMuted,
+      textAlign: 'center',
+    },
+    systemCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: 6,
+    },
+    systemTitle: {
+      ...type.bodyStrong,
       color: C.text,
-      fontSize: 15,
+      fontSize: 14,
     },
-    primaryButton: {
-      backgroundColor: C.primary,
-      borderRadius: 12,
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
+    systemSub: {
+      ...type.micro,
+      color: C.textMuted,
+      marginTop: 2,
+      fontVariant: ['tabular-nums'],
     },
-    primaryButtonText: { color: C.onPrimary, fontWeight: '700', fontSize: 15 },
-    secondaryButton: {
-      backgroundColor: C.surfaceLight,
-      borderRadius: 12,
-      paddingVertical: 12,
-      alignItems: 'center',
-      marginTop: 10,
+
+    // ---- arama ----
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 10,
     },
-    secondaryText: { color: C.text, fontWeight: '600', fontSize: 15 },
-    dangerButton: {
-      backgroundColor: 'rgba(240,67,110,0.15)',
-      borderRadius: 12,
-      paddingVertical: 12,
-      alignItems: 'center',
-      marginTop: 10,
+    searchBtn: {
+      marginBottom: 2,
     },
-    dangerText: { color: C.danger, fontWeight: '700', fontSize: 15 },
-    card: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-      marginBottom: 14,
+    resultsCard: {
+      paddingVertical: 4,
     },
-    cardTitle: { fontSize: 15, fontWeight: '700', color: C.text, marginBottom: 10 },
-    muted: { fontSize: 13, color: C.textMuted, marginBottom: 8 },
     resultRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      gap: 10,
+      borderWidth: 0,
+      backgroundColor: 'transparent',
+    },
+    resultRowBorder: {
+      borderTopWidth: 1,
+      borderTopColor: C.border,
+    },
+    resultRowActive: {
+      backgroundColor: C.primary + '0F',
+      borderRadius: 12,
+    },
+    resultName: {
+      ...type.bodyStrong,
+      color: C.text,
+    },
+    resultMeta: {
+      ...type.micro,
+      color: C.textMuted,
+      marginTop: 2,
+      fontVariant: ['tabular-nums'],
+    },
+    resultBadges: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+
+    // ---- seçili kullanıcı ----
+    userCard: {
+      gap: 8,
+    },
+    userHead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    userName: {
+      ...type.h3,
+      color: C.text,
+    },
+    userMeta: {
+      ...type.micro,
+      color: C.textMuted,
+      marginTop: 3,
+      fontVariant: ['tabular-nums'],
+    },
+    userPills: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    reasonText: {
+      ...type.small,
+      color: C.xp,
+    },
+    blockCard: {
+      gap: 12,
+    },
+    blockTitle: {
+      ...type.bodyStrong,
+      color: C.text,
+      fontSize: 14,
+    },
+
+    // ---- hediye ----
+    grantGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    grantCell: {
+      width: '31%',
+      alignItems: 'center',
+      gap: 6,
       paddingVertical: 10,
+    },
+    grantEmoji: {
+      fontSize: 22,
+    },
+    grantName: {
+      ...type.micro,
+      color: C.textMuted,
+      textAlign: 'center',
+    },
+
+    // ---- form ----
+    inputRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    inputFlex: {
+      flex: 1,
+    },
+
+    // ---- tehlikeli bölge ----
+    dangerCard: {
+      gap: 12,
+      borderColor: C.danger + '66',
+      borderWidth: 1,
+      backgroundColor: C.surface,
+    },
+    dangerHead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    dangerTitle: {
+      ...type.bodyStrong,
+      color: C.danger,
+      fontSize: 14,
+    },
+    dangerSubTitle: {
+      ...type.small,
+      color: C.danger,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    dangerNote: {
+      ...type.small,
+      color: C.textMuted,
+      lineHeight: 18,
+    },
+    dangerDivider: {
+      height: 1,
+      backgroundColor: C.border,
+      marginVertical: 2,
+    },
+
+    // ---- günlük ----
+    logsCard: {
+      gap: 0,
+      paddingVertical: 6,
+    },
+    logRow: {
+      paddingVertical: 8,
       borderBottomWidth: 1,
       borderBottomColor: C.border,
     },
-    resultRowActive: { backgroundColor: 'rgba(124,92,255,0.12)', borderRadius: 8, paddingHorizontal: 8 },
-    resultName: { fontSize: 15, fontWeight: '700', color: C.text },
-    resultMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-    resultMetaText: { fontSize: 13, color: C.textMuted },
-    resultBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 4 },
-    linkRow: { marginBottom: 12 },
-    linkText: { color: C.primary, fontWeight: '600', fontSize: 13 },
-    logRow: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: C.border },
-    logText: { fontSize: 13, color: C.textMuted },
-    logAction: { fontWeight: '700', color: C.text },
-    logDetail: { fontSize: 13, color: C.textMuted, marginTop: 2 },
-    userHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    userName: { fontSize: 17, fontWeight: '700', color: C.text },
-    userMeta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-    userMetaText: { fontSize: 13, color: C.textMuted },
-    userChips: { flexDirection: 'row', gap: 6 },
-    chip: {
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
+    logText: {
+      ...type.micro,
+      color: C.textMuted,
+      lineHeight: 16,
     },
-    chipText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-    banReason: { fontSize: 13, color: C.xp, marginTop: 8 },
-    adjustRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-    giveButton: { flex: 1, backgroundColor: 'rgba(34,211,165,0.15)', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-    giveButtonText: { color: C.accent, fontWeight: '700', fontSize: 15 },
-    takeButton: { flex: 1, backgroundColor: 'rgba(240,67,110,0.15)', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-    takeButtonText: { color: C.danger, fontWeight: '700', fontSize: 15 },
-    tabRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-    tab: {
-      flex: 1,
-      backgroundColor: C.surfaceLight,
-      borderRadius: 8,
-      paddingVertical: 8,
-      alignItems: 'center',
+    logAction: {
+      color: C.text,
+      fontWeight: '700',
     },
-    tabActive: { backgroundColor: C.primary },
-    tabText: { color: C.textMuted, fontWeight: '600', fontSize: 13 },
-    tabTextActive: { color: C.onPrimary },
-    itemGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-    itemCell: {
-      width: '30.5%',
-      backgroundColor: C.surfaceLight,
-      borderRadius: 12,
-      paddingVertical: 10,
-      paddingHorizontal: 6,
-      alignItems: 'center',
+    logDetail: {
+      ...type.micro,
+      color: C.textMuted,
+      marginTop: 2,
     },
-    itemEmoji: { fontSize: 22, marginBottom: 4 },
-    itemName: { fontSize: 11, color: C.textMuted, marginBottom: 6 },
-    grantBtn: { backgroundColor: C.primary, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 5 },
-    grantText: { color: C.onPrimary, fontSize: 13, fontWeight: '700' },
-    revokeBtn: { backgroundColor: 'rgba(240,67,110,0.2)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-    revokeText: { color: C.danger, fontSize: 13, fontWeight: '700' },
-    message: { fontSize: 13, fontWeight: '600', marginTop: 6 },
   });
+}

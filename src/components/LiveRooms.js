@@ -26,6 +26,7 @@ import {
 } from '../services/socialService';
 import { serverNow } from '../services/serverClock';
 import { useTheme } from '../theme';
+import EmptyState from './ui/EmptyState';
 
 function timeAgo(iso) {
   const diff = Math.max(0, (serverNow() - Date.parse(iso)) / 1000);
@@ -242,13 +243,12 @@ export default function LiveRooms() {
           loading ? (
             <ActivityIndicator style={styles.emptyLoad} size="large" color={C.primary} />
           ) : (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyEmoji}>🍅</Text>
-              <Text style={styles.emptyTitle}>Şu an aktif oda yok</Text>
-              <Text style={styles.emptyText}>
-                İlk odayı sen kur — arkadaşların katılıp birlikte odaklanabilsin!
-              </Text>
-            </View>
+            <EmptyState
+              emoji="🍅"
+              title="Şu an aktif oda yok"
+              subtitle="İlk odayı sen kur — arkadaşların katılıp birlikte odaklanabilsin!"
+              compact
+            />
           )
         }
       />
@@ -411,27 +411,6 @@ function makeStyles(C) {
     },
     emptyLoad: {
       marginTop: 40,
-    },
-    emptyBox: {
-      alignItems: 'center',
-      paddingVertical: 40,
-      paddingHorizontal: 24,
-    },
-    emptyEmoji: {
-      fontSize: 44,
-      marginBottom: 12,
-    },
-    emptyTitle: {
-      color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
-      marginBottom: 6,
-    },
-    emptyText: {
-      color: C.textMuted,
-      fontSize: 13,
-      textAlign: 'center',
-      lineHeight: 20,
     },
   });
 }

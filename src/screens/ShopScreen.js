@@ -1,25 +1,36 @@
 // ============================================================
-// ShopScreen — "Dükkan" sekmesi
-// Altın (🪙) ile yeni avatar/profil fotoğrafları satın alırsın.
-// - Altın: alışkanlık tamamla (+5), odak seansı bitir (+15),
-//   başarım aç (+25..250) ile kazanılır.
-// - Satın alınan avatarlar "Sahip" listesine eklenir; "Seç" ile
-//   aktif profil fotoğrafın olur (Bugün ekranı ve liderlikte görünür).
-// GUI modernizasyonu (Faz B):
-//   - Sekmeli yapı: Eşyalar · Avatarlar · Çerçeveler · Temalar
-//   - Sahip olduğun ürünlerde "✓" rozeti
-//   - Tema kartına dokununca CANLI önizleme paneli (mini ekran mock'u)
-//   - Satın alımda toast + haptic geri bildirim
-//   - Balance bakiyesi animasyonlu sayaçta
+// ShopScreen — "Dükkan" sekmesi (v3 design system, sıfırdan)
+//
+// YAPI:
+//   1) Üst     → altın bakiyesi (AnimatedCounter) + aktif avatar kartı
+//      (profil fotoğrafı yükle/kaldır işlemleri korunur)
+//   2) Tabs    → Temalar / Avatarlar / Çerçeveler / Eşyalar (SegmentedTabs)
+//   3) Filtre  → Tümü / Uygun fiyatlı / Sahip olduklarım (kategori filtresi)
+//   4) Grid    → her ürün: preview + isim + fiyat + Satın Al;
+//      sahip: "Seç/Uygula", seçili: "Seçili" + ✓ rozet
+//   5) EmptyState → filtre sonuç yoksa
+//
+// DataContext API (değişmedi): data, buyAvatar, selectAvatar, buyTheme,
+//   selectTheme, buyFrame, selectFrame, buyItem, vipActive,
+//   setProfilePhoto, pushToast · avatarService: pickProfilePhoto,
+//   uploadProfilePhoto, removeProfilePhoto · sfx.success.
+//
+// SAFE AREA: TAB ekranı — AppHeader 'Dükkan', alt PillTabBar'da.
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (primitive) ·
+//   h1 yok · Lottie çerçeveler statik gösterilir (loop YOK).
 // ============================================================
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AnimatedCounter from '../components/AnimatedCounter';
 import AvatarCircle, { FrameDecor } from '../components/AvatarCircle';
 import MemoizedAvatarCircle from '../components/memoizedAvatarCircle';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import Icon from '../components/ui/icons';
 import PressableFX from '../components/PressableFX';
+import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { FRAMES, getShopItem, SHOP_ITEMS } from '../data/shop';
@@ -27,19 +38,23 @@ import { ITEMS } from '../data/items';
 import { pickProfilePhoto, removeProfilePhoto, uploadProfilePhoto } from '../services/avatarService';
 import { success } from '../services/sfx';
 import { THEMES, useTheme } from '../theme';
-import Icon from '../components/ui/icons';
-import IconTile from '../components/ui/IconTile';
 
 const TABS = [
-  { key: 'items', icon: '🎒', label: 'Eşyalar' },
-  { key: 'avatars', icon: '🧑‍🎤', label: 'Avatarlar' },
-  { key: 'frames', icon: '💍', label: 'Çerçeveler' },
-  { key: 'themes', icon: '🎨', label: 'Temalar' },
+  { key: 'themes', label: 'Temalar' },
+  { key: 'avatars', label: 'Avatarlar' },
+  { key: 'frames', label: 'Çerçeveler' },
+  { key: 'items', label: 'Eşyalar' },
+];
+
+const FILTERS = [
+  { key: 'all', label: 'Tümü' },
+  { key: 'affordable', label: 'Uygun fiyatlı' },
+  { key: 'owned', label: 'Sahip olduklarım' },
 ];
 
 export default function ShopScreen() {
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
   const navigation = useNavigation();
   const { user: authUser } = useAuth();
   const {
@@ -55,9 +70,10 @@ export default function ShopScreen() {
     setProfilePhoto,
     pushToast,
   } = useData();
+
+  const [tab, setTab] = useState('themes');
+  const [filter, setFilter] = useState('all');
   const [photoBusy, setPhotoBusy] = useState(false);
-  const [tab, setTab] = useState('items');
-  const [previewThemeId, setPreviewThemeId] = useState(data.settings.themeId || 'dark');
 
   const gold = data.stats.gold || 0;
   const ownedAvatars = data.ownedAvatars || [];
@@ -70,13 +86,10 @@ export default function ShopScreen() {
   const currentFrameId = data.settings.frameId || null;
   const photoUrl = data.settings.photoUrl || null;
   const username = data.settings.username || authUser?.name || 'kullanici';
-  // VIP çerçeveler yalnızca aktif VIP kullanıcılara gösterilir.
+  // VIP çerçeveler yalnız aktif VIP kullanıcılara görünür.
   const shopFrames = FRAMES.filter((f) => !f.vip || vipActive);
-  // Canlı önizlenen tema (varsayılan: aktif tema).
-  const activeTheme =
-    THEMES.find((t) => t.id === previewThemeId) || THEMES.find((t) => t.id === currentThemeId) || THEMES[0];
 
-  // Satın alma bildirimi: toast + haptic geri bildirim.
+  // Satın alma bildirimi: sfx + toast.
   const notifyBuy = useCallback(
     (name) => {
       success();
@@ -111,486 +124,307 @@ export default function ShopScreen() {
     setProfilePhoto(null);
   };
 
+  // ---------- kategori + filtre ----------
+  const list = useMemo(() => {
+    if (tab === 'themes') {
+      return THEMES.map((t) => ({
+        id: t.id,
+        name: t.name,
+        price: t.price,
+        owned: ownedThemes.includes(t.id),
+        selected: currentThemeId === t.id,
+        theme: t,
+      }));
+    }
+    if (tab === 'avatars') {
+      return SHOP_ITEMS.map((a) => ({
+        id: a.id,
+        name: a.name,
+        price: a.price,
+        owned: ownedAvatars.includes(a.id),
+        selected: currentAvatar === a.id,
+        avatar: a,
+      }));
+    }
+    if (tab === 'frames') {
+      return shopFrames.map((f) => ({
+        id: f.id,
+        name: f.name,
+        price: f.price,
+        owned: ownedFrames.includes(f.id),
+        selected: currentFrameId === f.id,
+        frame: f,
+        vip: !!f.vip,
+      }));
+    }
+    return ITEMS.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      desc: i.desc,
+      count: inventory[i.id] || 0,
+      item: i,
+    }));
+  }, [tab, ownedThemes, ownedAvatars, shopFrames, inventory, currentThemeId, currentAvatar, currentFrameId]);
+
+  const visible = useMemo(() => {
+    if (filter === 'all') return list;
+    if (tab === 'items') {
+      return filter === 'owned' ? list.filter((e) => e.count > 0) : list.filter((e) => gold >= e.price);
+    }
+    return filter === 'owned'
+      ? list.filter((e) => e.owned)
+      : list.filter((e) => !e.owned && gold >= e.price);
+  }, [list, filter, tab, gold]);
+
+  const buyDisabled = (price) => gold < price;
+
+  // ---------- ürün kartı (ortak) ----------
+  const renderProduct = (entry) => {
+    if (tab === 'items') {
+      const afford = !buyDisabled(entry.price);
+      return (
+        <Card key={entry.id} style={styles.card}>
+          <Icon emoji={entry.item.emoji} size={30} color={C.text} />
+          <Text style={styles.cardName} numberOfLines={1}>
+            {entry.name}
+          </Text>
+          <Text style={styles.cardDesc} numberOfLines={3}>
+            {entry.desc}
+          </Text>
+          <Button
+            label={`Satın Al · ${entry.price}`}
+            size="sm"
+            variant="secondary"
+            fullWidth
+            disabled={!afford}
+            icon={<Icon emoji="🪙" size={12} color={C.gold} />}
+            onPress={() => {
+              buyItem(entry.id);
+              notifyBuy(entry.name);
+            }}
+          />
+          <Text style={styles.cardSub}>{entry.count} adetin var</Text>
+        </Card>
+      );
+    }
+
+    const isItemsTheme = tab === 'themes';
+    const afford = !buyDisabled(entry.price);
+    return (
+      <Card key={entry.id} style={[styles.card, entry.selected && styles.cardSelected]}>
+        {entry.selected ? (
+          <View style={styles.ownedBadge}>
+            <Icon name="checkmark" size={12} color={C.onPrimary} />
+          </View>
+        ) : null}
+
+        {isItemsTheme ? (
+          <View style={[styles.themeSwatch, { backgroundColor: entry.theme.colors.background }]}>
+            <View style={[styles.swatchBand, { backgroundColor: entry.theme.colors.surface }]}>
+              <View style={[styles.swatchDot, { backgroundColor: entry.theme.colors.primary }]} />
+              <View style={[styles.swatchDot, { backgroundColor: entry.theme.colors.accent }]} />
+            </View>
+            <Text style={styles.swatchEmoji}>{entry.theme.emoji}</Text>
+          </View>
+        ) : tab === 'avatars' ? (
+          <MemoizedAvatarCircle
+            avatarId={entry.id}
+            size={60}
+            ringColor={entry.selected ? C.gold : C.border}
+          />
+        ) : entry.frame.lottie ? (
+          <MemoizedAvatarCircle
+            avatarId={currentAvatar}
+            frameId={entry.id}
+            size={60}
+            ringColor={entry.selected ? C.gold : C.border}
+          />
+        ) : (
+          <FrameDecor ring={entry.frame.emoji} size={60}>
+            <View style={styles.frameAvatar}>
+              <Text style={styles.frameAvatarEmoji}>{currentItem?.emoji || '😀'}</Text>
+            </View>
+          </FrameDecor>
+        )}
+
+        <View style={styles.cardNameRow}>
+          {entry.vip ? <Icon emoji="👑" size={11} color={C.gold} /> : null}
+          <Text style={styles.cardName} numberOfLines={1}>
+            {isItemsTheme ? entry.theme.emoji : ''}
+            {isItemsTheme ? ' ' : ''}
+            {entry.name}
+          </Text>
+        </View>
+
+        {entry.selected ? (
+          <View style={styles.stateChip}>
+            <Icon name="checkmark-circle" size={13} color={C.gold} />
+            <Text style={styles.stateChipText}>Seçili</Text>
+          </View>
+        ) : entry.owned ? (
+          <Button
+            label={isItemsTheme ? 'Uygula' : 'Seç'}
+            size="sm"
+            variant="secondary"
+            fullWidth
+            onPress={() => (isItemsTheme ? selectTheme(entry.id) : tab === 'avatars' ? selectAvatar(entry.id) : selectFrame(entry.id))}
+          />
+        ) : (
+          <Button
+            label={entry.vip && entry.price === 0 ? 'VIP Hediye' : `Satın Al · ${entry.price}`}
+            size="sm"
+            fullWidth
+            disabled={!afford}
+            icon={
+              entry.vip && entry.price === 0 ? (
+                <Icon emoji="👑" size={12} color={C.gold} />
+              ) : (
+                <Icon emoji="🪙" size={12} color={C.gold} />
+              )
+            }
+            onPress={() => {
+              if (isItemsTheme) {
+                buyTheme(entry.id);
+                notifyBuy(entry.name);
+              } else if (tab === 'avatars') {
+                buyAvatar(entry.id);
+                notifyBuy(entry.name);
+              } else {
+                buyFrame(entry.id);
+                notifyBuy(entry.name);
+              }
+            }}
+          />
+        )}
+        {entry.owned && !entry.selected ? <Text style={styles.cardSub}>Sahip Olunan</Text> : null}
+      </Card>
+    );
+  };
+
+  const emptyTitle =
+    filter === 'owned' ? 'Sahip olduğun ürün yok' : 'Uygun fiyatlı ürün yok';
+  const emptySub =
+    filter === 'owned'
+      ? 'Bu kategoriden henüz satın alma yapmadın — altın kazanıp ilk ürünü alabilirsin.'
+      : `Bakiyen ${gold} 🪙 — alışkanlık tamamlayıp görevleri bitirerek altın kazanabilirsin.`;
+
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.titleRow}>
+      {/* ---------- ÜST: bakiye + aktif avatar ---------- */}
+      <View style={styles.topRow}>
         <View>
-          <Text style={styles.screenTitle}>Dükkan</Text>
-          <Text style={styles.screenSub}>Eşyalar, avatarlar, çerçeveler ve temalar</Text>
+          <Text style={styles.topLabel}>ALTIN BAKİYESİ</Text>
+          <View style={styles.balanceChip}>
+            <Icon emoji="🪙" size={16} color={C.gold} />
+            <AnimatedCounter value={gold} style={styles.balanceText} />
+          </View>
         </View>
-        {/* Altın bakiyesi */}
-        <View style={styles.balanceChip}>
-          <Icon emoji="🪙" size={14} color={C.gold} />
-          <AnimatedCounter value={gold} style={styles.balanceText} />
-        </View>
-      </View>
-
-      {/* Sekme çubuğu */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBar}>
-        {TABS.map((t) => {
-          const active = tab === t.key;
-          return (
-            <PressableFX
-              key={t.key}
-              style={[styles.tabChip, active && { backgroundColor: C.primary }]}
-              haptic
-              onPress={() => setTab(t.key)}
-            >
-              <View style={styles.tabChipContent}>
-                <Icon emoji={t.icon} size={14} color={active ? C.onPrimary : C.textMuted} />
-                <Text style={[styles.tabChipText, active && styles.tabChipTextActive]}>{t.label}</Text>
-              </View>
-            </PressableFX>
-          );
-        })}
-      </ScrollView>
-
-      {/* Aktif profil fotoğrafı */}
-      <View style={styles.currentCard}>
         <AvatarCircle
           avatarId={currentAvatar}
           frameId={currentFrameId}
           photo={photoUrl}
-          size={84}
+          size={56}
           ringColor={C.gold}
         />
-        <View style={styles.currentInfo}>
-          <Text style={styles.currentLabel}>AKTİF PROFİL FOTOĞRAFIN</Text>
-          <Text style={styles.currentName}>{currentItem?.name || 'Avatar'}</Text>
-          <Text style={styles.currentHint}>
+      </View>
+
+      <Card style={styles.profileCard}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.profileName}>{currentItem?.name || 'Avatar'}</Text>
+          <Text style={styles.profileHint}>
             Bugün ekranında ve liderlikte bu avatar görünür.
           </Text>
         </View>
-      </View>
-
-      {/* Profil fotoğrafı eylemleri */}
-      <View style={styles.photoRow}>
-        <PressableFX
-          style={[styles.photoBtn, { backgroundColor: C.primary }]}
-          onPress={pickAndUpload}
-          disabled={photoBusy}
-        >
-          <View style={styles.photoBtnContent}>
-            <Icon emoji={photoBusy ? '⏳' : '📷'} size={14} color={C.onPrimary} />
-            <Text style={styles.photoBtnText}>
-              {photoBusy ? 'Yükleniyor…' : photoUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}
-            </Text>
-          </View>
-        </PressableFX>
-        {photoUrl ? (
-          <PressableFX style={[styles.photoBtn, { backgroundColor: C.surfaceLight }]} onPress={removePhoto}>
-            <Text style={styles.photoBtnMuted}>Kaldır</Text>
-          </PressableFX>
-        ) : (
-          <PressableFX
-            style={[styles.photoBtn, { backgroundColor: C.surfaceLight }]}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <Text style={styles.photoBtnMuted}>Profili Düzenle</Text>
-          </PressableFX>
-        )}
-      </View>
-
-      {/* ---------- EŞYALAR SEKMESİ ---------- */}
-      {tab === 'items' && (
-        <>
-          {/* Nasıl altın kazanılır? */}
-          <View style={styles.howCard}>
-            <View style={styles.howTitleRow}>
-              <Icon emoji="🪙" size={15} color={C.gold} />
-              <Text style={styles.howTitle}>Altın nasıl kazanılır?</Text>
-            </View>
-            <View style={styles.howGrid}>
-              <View style={styles.howRow}>
-                <Icon emoji="✅" size={12} color={C.accent} />
-                <Text style={styles.howItem}>Alışkanlık tamamla +5</Text>
-              </View>
-              <View style={styles.howRow}>
-                <Icon emoji="🍅" size={12} color={C.accent} />
-                <Text style={styles.howItem}>Odak seansı bitir +15</Text>
-              </View>
-              <View style={styles.howRow}>
-                <Icon emoji="🏆" size={12} color={C.gold} />
-                <Text style={styles.howItem}>Başarım aç +25..250</Text>
-              </View>
-              <View style={styles.howRow}>
-                <Icon emoji="🎯" size={12} color={C.primary} />
-                <Text style={styles.howItem}>Günlük görevler +20..150</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>Eşyalar</Text>
-          <View style={styles.grid}>
-            {ITEMS.map((item) => {
-              const count = inventory[item.id] || 0;
-              const affordable = gold >= item.price;
-              return (
-                <View key={item.id} style={styles.itemCard}>
-                  <Text style={styles.itemEmoji}>{item.emoji}</Text>
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <Text style={styles.itemDesc} numberOfLines={3}>
-                    {item.desc}
-                  </Text>
-                  <PressableFX
-                    style={[styles.itemBtn, styles.btnBuy, !affordable && styles.btnDisabled]}
-                    disabled={!affordable}
-                    onPress={() => {
-                      buyItem(item.id);
-                      notifyBuy(item.name);
-                    }}
-                  >
-                    <View style={styles.priceRow}>
-                      <Icon emoji="🪙" size={12} color={C.gold} />
-                      <Text style={[styles.btnBuyText, !affordable && styles.btnDisabledText]}>
-                        {item.price}
-                      </Text>
-                    </View>
-                  </PressableFX>
-                  <Text style={styles.ownedCount}>{count} adetin var</Text>
-                </View>
-              );
-            })}
-          </View>
-
-          <View style={styles.noteBox}>
-            <Icon emoji="💡" size={13} color={C.primary} style={styles.noteIcon} />
-            <Text style={styles.noteText}>
-              İpucu: Tamamladığın alışkanlıklar da altın kazandırır — dükkanda hemen
-              yeni avatar, çerçeve ve temalar açabilirsin!
-            </Text>
-          </View>
-        </>
-      )}
-
-      {/* ---------- AVATARLAR SEKMESİ ---------- */}
-      {tab === 'avatars' && (
-        <>
-          <Text style={styles.sectionTitle}>Profil Avatarları</Text>
-          <View style={styles.grid}>
-            {SHOP_ITEMS.map((item) => {
-              const isOwned = ownedAvatars.includes(item.id);
-              const isSelected = currentAvatar === item.id;
-              const affordable = gold >= item.price;
-              return (
-                <View style={styles.itemCard} key={item.id}>
-                  <MemoizedAvatarCircle
-                    avatarId={item.id}
-                    size={64}
-                    ringColor={isSelected ? C.gold : C.border}
-                  />
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  {isSelected ? (
-                    <View style={[styles.itemBtn, styles.btnSelected]}>
-                      <View style={styles.btnCheckRow}>
-                        <Icon emoji="✅" size={11} color={C.gold} />
-                        <Text style={styles.btnSelectedText}>Seçili</Text>
-                      </View>
-                    </View>
-                  ) : isOwned ? (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnOwned]}
-                      onPress={() => selectAvatar(item.id)}
-                    >
-                      <Text style={styles.btnOwnedText}>Seç</Text>
-                    </PressableFX>
-                  ) : (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnBuy, !affordable && styles.btnDisabled]}
-                      disabled={!affordable}
-                      onPress={() => {
-                        buyAvatar(item.id);
-                        notifyBuy(item.name);
-                      }}
-                    >
-                      <View style={styles.priceRow}>
-                        <Icon emoji="🪙" size={11} color={C.gold} />
-                        <Text style={[styles.btnBuyText, !affordable && styles.btnDisabledText]}>
-                          {item.price}
-                        </Text>
-                      </View>
-                    </PressableFX>
-                  )}
-                  {isOwned && !isSelected && <OwnedBadge />}
-                </View>
-              );
-            })}
-          </View>
-        </>
-      )}
-
-      {/* ---------- ÇERÇEVELER SEKMESİ ---------- */}
-      {tab === 'frames' && (
-        <>
-          <Text style={styles.sectionTitle}>Avatar Çerçeveleri</Text>
-          <View style={styles.grid}>
-            {shopFrames.map((frame) => {
-              const isOwned = ownedFrames.includes(frame.id);
-              const isSelected = currentFrameId === frame.id;
-              const affordable = gold >= frame.price;
-              return (
-                <View key={frame.id} style={styles.itemCard}>
-                  {frame.lottie ? (
-                    // Lottie çerçeve: canlı animasyonlu aura önizlemesi
-                    <MemoizedAvatarCircle
-                      avatarId={currentAvatar}
-                      frameId={frame.id}
-                      size={64}
-                      ringColor={isSelected ? C.gold : C.border}
-                    />
-                  ) : (
-                    <FrameDecor ring={frame.emoji} size={64}>
-                      <View style={styles.frameAvatar}>
-                        <Text style={styles.frameAvatarEmoji}>{currentItem?.emoji || '😀'}</Text>
-                      </View>
-                    </FrameDecor>
-                  )}
-                  <View style={styles.itemNameRow}>
-                    {frame.vip ? <Icon emoji="👑" size={12} color={C.gold} /> : null}
-                    <Text style={styles.itemName} numberOfLines={1}>{frame.name}</Text>
-                  </View>
-                  {isSelected ? (
-                    <View style={[styles.itemBtn, styles.btnSelected]}>
-                      <View style={styles.btnCheckRow}>
-                        <Icon emoji="✅" size={11} color={C.gold} />
-                        <Text style={styles.btnSelectedText}>Seçili</Text>
-                      </View>
-                    </View>
-                  ) : isOwned ? (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnOwned]}
-                      onPress={() => selectFrame(frame.id)}
-                    >
-                      <Text style={styles.btnOwnedText}>Seç</Text>
-                    </PressableFX>
-                  ) : (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnBuy, !affordable && styles.btnDisabled]}
-                      disabled={!affordable}
-                      onPress={() => {
-                        buyFrame(frame.id);
-                        notifyBuy(frame.name);
-                      }}
-                    >
-                      {frame.price > 0 ? (
-                        <View style={styles.priceRow}>
-                          <Icon emoji="🪙" size={11} color={C.gold} />
-                          <Text style={[styles.btnBuyText, !affordable && styles.btnDisabledText]}>
-                            {frame.price}
-                          </Text>
-                        </View>
-                      ) : (
-                        <View style={styles.priceRow}>
-                          <Icon emoji="👑" size={11} color={C.gold} />
-                          <Text style={styles.btnBuyText}>VIP</Text>
-                        </View>
-                      )}
-                    </PressableFX>
-                  )}
-                  {isOwned && !isSelected && <OwnedBadge />}
-                </View>
-              );
-            })}
-          </View>
-          {!vipActive && (
-            <View style={styles.vipHint}>
-              <View style={styles.vipHintRow}>
-                <Icon emoji="👑" size={13} color={C.gold} />
-                <Text style={styles.vipHintText}>
-                  Aurora çerçeveler Season Pass'te seni bekliyor — VIP olarak hepsini
-                  açabilirsin!
-                </Text>
-              </View>
-            </View>
-          )}
-        </>
-      )}
-
-      {/* ---------- TEMALAR SEKMESİ ---------- */}
-      {tab === 'themes' && (
-        <>
-          <Text style={styles.sectionTitle}>Temalar</Text>
-
-          {/* Canlı önizleme paneli: karttaki renk örneğine dokununca güncellenir */}
-          {activeTheme && (
-            <ThemePreview
-              C={C}
-              styles={styles}
-              theme={activeTheme}
-              isSelected={currentThemeId === activeTheme.id}
-              isOwned={ownedThemes.includes(activeTheme.id)}
-              affordable={gold >= activeTheme.price}
-              gold={gold}
-              onSelect={() => selectTheme(activeTheme.id)}
-              onBuy={() => {
-                buyTheme(activeTheme.id);
-                notifyBuy(activeTheme.name);
-              }}
+        <View style={styles.photoActions}>
+          <Button
+            label={photoBusy ? 'Yükleniyor…' : photoUrl ? 'Değiştir' : 'Fotoğraf Yükle'}
+            size="sm"
+            loading={photoBusy}
+            onPress={pickAndUpload}
+          />
+          {photoUrl ? (
+            <Button label="Kaldır" size="sm" variant="ghost" onPress={removePhoto} />
+          ) : (
+            <Button
+              label="Profili Aç"
+              size="sm"
+              variant="ghost"
+              onPress={() => navigation.navigate('Profile')}
             />
           )}
+        </View>
+      </Card>
 
-          <View style={styles.grid}>
-            {THEMES.map((theme) => {
-              const isOwned = ownedThemes.includes(theme.id);
-              const isSelected = currentThemeId === theme.id;
-              const active = previewThemeId === theme.id;
-              return (
-                <View
-                  key={theme.id}
-                  style={[
-                    styles.itemCard,
-                    active && { borderColor: C.primary, borderWidth: 2 },
-                  ]}
-                >
-                  <PressableFX
-                    style={[styles.themePreview, { backgroundColor: theme.colors.background }]}
-                    haptic
-                    onPress={() => setPreviewThemeId(theme.id)}
-                  >
-                    <View
-                      style={[styles.themeSwatch, { backgroundColor: theme.colors.surface }]}
-                    >
-                      <View style={[styles.themeDot, { backgroundColor: theme.colors.primary }]} />
-                      <View style={[styles.themeDot, { backgroundColor: theme.colors.accent }]} />
-                    </View>
-                    <Text style={styles.themePattern}>{theme.pattern || theme.emoji}</Text>
-                  </PressableFX>
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {theme.emoji} {theme.name}
-                  </Text>
-                  <View style={styles.previewHintRow}>
-                    <Icon emoji="👁" size={10} color={active ? C.primary : C.textMuted} />
-                    <Text style={styles.previewHint}>{active ? 'önizleniyor' : 'dokun → önizle'}</Text>
-                  </View>
-                  {isSelected ? (
-                    <View style={[styles.itemBtn, styles.btnSelected]}>
-                      <View style={styles.btnCheckRow}>
-                        <Icon emoji="✅" size={11} color={C.gold} />
-                        <Text style={styles.btnSelectedText}>Seçili</Text>
-                      </View>
-                    </View>
-                  ) : isOwned ? (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnOwned]}
-                      onPress={() => selectTheme(theme.id)}
-                    >
-                      <Text style={styles.btnOwnedText}>Uygula</Text>
-                    </PressableFX>
-                  ) : (
-                    <PressableFX
-                      style={[styles.itemBtn, styles.btnBuy, !(gold >= theme.price) && styles.btnDisabled]}
-                      disabled={!(gold >= theme.price)}
-                      onPress={() => {
-                        buyTheme(theme.id);
-                        notifyBuy(theme.name);
-                      }}
-                    >
-                      <View style={styles.priceRow}>
-                        <Icon emoji="🪙" size={11} color={C.gold} />
-                        <Text
-                          style={[
-                            styles.btnBuyText,
-                            !(gold >= theme.price) && styles.btnDisabledText,
-                          ]}
-                        >
-                          {theme.price}
-                        </Text>
-                      </View>
-                    </PressableFX>
-                  )}
-                  {isOwned && !isSelected && <OwnedBadge />}
-                </View>
-              );
-            })}
+      {/* ---------- TABS ---------- */}
+      <SegmentedTabs options={TABS} value={tab} onChange={(k) => { setTab(k); setFilter('all'); }} />
+
+      {/* ---------- kategori filtreleri ---------- */}
+      <View style={styles.filterRow}>
+        {FILTERS.map((f) => {
+          const active = filter === f.key;
+          return (
+            <PressableFX
+              key={f.key}
+              haptic
+              onPress={() => setFilter(f.key)}
+              style={[styles.filterChip, active && styles.filterChipActive]}
+            >
+              <Text style={[styles.filterText, active && styles.filterTextActive]}>{f.label}</Text>
+            </PressableFX>
+          );
+        })}
+      </View>
+
+      {/* ---------- altın nasıl kazanılır (eşyalar) ---------- */}
+      {tab === 'items' ? (
+        <Card style={styles.howCard}>
+          <View style={styles.howHead}>
+            <Icon emoji="🪙" size={14} color={C.gold} />
+            <Text style={styles.howTitle}>Altın nasıl kazanılır?</Text>
           </View>
-        </>
+          <View style={styles.howGrid}>
+            <Text style={styles.howItem}>✅ Alışkanlık +5</Text>
+            <Text style={styles.howItem}>🍅 Odak +15</Text>
+            <Text style={styles.howItem}>🏆 Başarım +25..250</Text>
+            <Text style={styles.howItem}>🎯 Görev +20..150</Text>
+          </View>
+        </Card>
+      ) : null}
+
+      {/* ---------- GRID / EMPTY ---------- */}
+      {visible.length > 0 ? (
+        <View style={styles.grid}>{visible.map(renderProduct)}</View>
+      ) : (
+        <EmptyState
+          name="cart"
+          emoji="🛒"
+          title={emptyTitle}
+          subtitle={emptySub}
+          actionLabel={filter === 'all' ? undefined : 'Filtreyi Temizle'}
+          onAction={filter === 'all' ? undefined : () => setFilter('all')}
+        />
       )}
+
+      {/* ---------- VIP ipucu (çerçeveler) ---------- */}
+      {tab === 'frames' && !vipActive ? (
+        <View style={styles.vipHint}>
+          <Icon emoji="👑" size={13} color={C.gold} />
+          <Text style={styles.vipHintText}>
+            VIP çerçeveler Season Pass'te seni bekliyor — VIP olarak hepsini
+            açabilirsin!
+          </Text>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
-// Küçük "sahip" rozeti: kartın sağ üst köşesine yerleştirilir.
-function OwnedBadge() {
-  const { colors: C } = useTheme();
-  return (
-    <View style={[stylesConf.ownedBadge, { backgroundColor: C.primary }]}>
-      <Text style={stylesConf.ownedBadgeText}>✓</Text>
-    </View>
-  );
-}
-
-// Canlı tema önizleme paneli: seçilen temanın renkleriyle mini bir
-// "ana ekran" mock'u çizer; uygula/satın al işlemleri de buradan yapılır.
-function ThemePreview({ C, styles, theme, isSelected, isOwned, affordable, onSelect, onBuy }) {
-  const t = { ...C, ...theme.colors };
-  return (
-    <View
-      style={[
-        styles.previewPanel,
-        { backgroundColor: t.background, borderWidth: 1, borderColor: t.primary + '55' },
-      ]}
-    >
-      <View style={[styles.previewTop, { backgroundColor: t.surface }]}>
-        <View style={styles.previewTopText}>
-          <Text style={[styles.previewTitle, { color: t.text }]}>
-            {theme.emoji} {theme.name}
-          </Text>
-          <Text style={[styles.previewSub, { color: t.textMuted }]}>Canlı önizleme</Text>
-        </View>
-        <View style={[styles.previewAvatar, { backgroundColor: t.surfaceLight, borderColor: t.primary }]}>
-          <Text style={styles.previewAvatarEmoji}>😀</Text>
-        </View>
-      </View>
-      <View style={[styles.previewRow, { backgroundColor: t.surfaceLight }]}>
-        <View style={[styles.previewDot, { backgroundColor: t.primary }]} />
-        <Text style={[styles.previewRowText, { color: t.text }]}>Alışkanlık adı</Text>
-        <View style={[styles.previewCheck, { backgroundColor: t.accent }]}>
-          <Text style={styles.previewCheckText}>✓</Text>
-        </View>
-      </View>
-      <View style={[styles.previewBtn, { backgroundColor: t.primary }]}>
-        <Text style={[styles.previewBtnText, { color: t.onPrimary }]}>Tamamla +XP</Text>
-      </View>
-      <View style={styles.previewActions}>
-        {isSelected ? (
-          <View style={[styles.previewAction, styles.btnSelected]}>
-            <View style={styles.btnCheckRow}>
-              <Icon emoji="✅" size={11} color={C.gold} />
-              <Text style={styles.btnSelectedText}>Şu an kullanımda</Text>
-            </View>
-          </View>
-        ) : isOwned ? (
-          <PressableFX style={[styles.previewAction, styles.btnOwned]} onPress={onSelect}>
-            <Text style={styles.btnOwnedText}>Bu temayı uygula</Text>
-          </PressableFX>
-        ) : (
-          <PressableFX
-            style={[styles.previewAction, styles.btnBuy, !affordable && styles.btnDisabled]}
-            disabled={!affordable}
-            onPress={onBuy}
-          >
-            <View style={styles.priceRow}>
-              <Icon emoji="🪙" size={11} color={C.gold} />
-              <Text style={[styles.btnBuyText, !affordable && styles.btnDisabledText]}>
-                {theme.price} ile satın al
-              </Text>
-            </View>
-          </PressableFX>
-        )}
-      </View>
-    </View>
-  );
-}
-
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -598,414 +432,230 @@ function makeStyles(C) {
     },
     content: {
       padding: 20,
-      gap: 14,
-      paddingBottom: 60,
+      gap: 12,
+      paddingBottom: 24,
     },
-    titleRow: {
+
+    // ---- üst ----
+    topRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      justifyContent: 'space-between',
     },
-    screenTitle: {
-      color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
-    },
-    screenSub: {
+    topLabel: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
-      marginTop: 2,
+      marginBottom: 4,
     },
     balanceChip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
+      gap: 7,
     },
     balanceText: {
       color: C.gold,
-      fontSize: 15,
+      fontSize: 26,
       fontWeight: '700',
+      fontVariant: ['tabular-nums'],
     },
-    tabBar: {
+    profileCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    profileName: {
+      ...type.bodyStrong,
+      color: C.text,
+      fontSize: 16,
+    },
+    profileHint: {
+      ...type.micro,
+      color: C.textMuted,
+      marginTop: 3,
+      lineHeight: 15,
+    },
+    photoActions: {
+      gap: 6,
+      alignItems: 'stretch',
+    },
+
+    // ---- filtre ----
+    filterRow: {
       flexDirection: 'row',
       gap: 8,
-      paddingVertical: 2,
     },
-    tabChip: {
-      borderRadius: 16,
+    filterChip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
       backgroundColor: C.surface,
-      paddingHorizontal: 14,
-      paddingVertical: 9,
+      borderWidth: 1,
+      borderColor: C.border,
     },
-    tabChipContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
+    filterChipActive: {
+      backgroundColor: C.primary + '22',
+      borderColor: C.primary,
     },
-    tabChipText: {
+    filterText: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
       fontWeight: '700',
     },
-    tabChipTextActive: {
-      color: C.onPrimary,
+    filterTextActive: {
+      color: C.primary,
     },
-    currentCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 14,
-      backgroundColor: C.surface,
-      borderRadius: 20,
-      padding: 16,
-    },
-    currentInfo: {
-      flex: 1,
-      gap: 4,
-    },
-    currentLabel: {
-      color: C.gold,
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 1,
-    },
-    currentName: {
-      color: C.text,
-      fontSize: 17,
-      fontWeight: '700',
-    },
-    currentHint: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 17,
-    },
-    photoRow: {
-      flexDirection: 'row',
-      gap: 10,
-    },
-    photoBtn: {
-      flex: 1,
-      borderRadius: 12,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    photoBtnContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    photoBtnText: {
-      color: C.onPrimary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    photoBtnMuted: {
-      color: C.text,
-      fontSize: 13,
-      fontWeight: '700',
-    },
+
+    // ---- nasıl ----
     howCard: {
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-      gap: 10,
+      gap: 8,
     },
-    howTitleRow: {
+    howHead: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
     },
     howTitle: {
+      ...type.small,
       color: C.text,
-      fontSize: 13,
       fontWeight: '700',
     },
     howGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
     },
-    howRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      backgroundColor: C.background,
+    howItem: {
+      ...type.micro,
+      color: C.textMuted,
+      backgroundColor: C.surfaceLight,
       borderRadius: 8,
       paddingHorizontal: 8,
       paddingVertical: 4,
     },
-    howItem: {
-      color: C.textMuted,
-      fontSize: 11,
-    },
-    sectionTitle: {
-      color: C.textMuted,
-      fontSize: 13,
-      fontWeight: '700',
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-      marginTop: 6,
-    },
+
+    // ---- grid ----
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 10,
     },
-    itemCard: {
+    card: {
       width: '48%',
-      backgroundColor: C.surface,
-      borderRadius: 16,
       alignItems: 'center',
-      padding: 14,
       gap: 8,
+      position: 'relative',
     },
-    themePreview: {
-      width: 72,
-      height: 72,
-      borderRadius: 16,
+    cardSelected: {
+      borderColor: C.gold,
+    },
+    ownedBadge: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: C.primary,
       alignItems: 'center',
       justifyContent: 'center',
+      zIndex: 1,
     },
-    themeSwatch: {
-      flexDirection: 'row',
-      gap: 5,
-      borderRadius: 8,
-      padding: 5,
-    },
-    themeDot: {
-      width: 12,
-      height: 12,
-      borderRadius: 8,
-    },
-    themePattern: {
-      fontSize: 15,
-      marginTop: 4,
-    },
-    previewHint: {
-      color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '600',
-    },
-    previewHintRow: {
+    cardNameRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
     },
-    frameAvatar: {
+    cardName: {
+      ...type.small,
+      color: C.text,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    cardDesc: {
+      ...type.micro,
+      color: C.textMuted,
+      textAlign: 'center',
+      lineHeight: 15,
+      minHeight: 44,
+    },
+    cardSub: {
+      ...type.micro,
+      color: C.textMuted,
+    },
+    stateChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      backgroundColor: C.gold + '22',
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      width: '100%',
+      justifyContent: 'center',
+    },
+    stateChipText: {
+      ...type.small,
+      color: C.gold,
+      fontWeight: '700',
+    },
+
+    // ---- tema swatch ----
+    themeSwatch: {
       width: 64,
       height: 64,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    swatchBand: {
+      position: 'absolute',
+      top: 6,
+      left: 6,
+      right: 6,
+      height: 14,
+      borderRadius: 7,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 5,
+    },
+    swatchDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+    },
+    swatchEmoji: {
+      fontSize: 22,
+      marginTop: 8,
+    },
+    frameAvatar: {
+      width: 60,
+      height: 60,
       borderRadius: 999,
       backgroundColor: C.surfaceLight,
       alignItems: 'center',
       justifyContent: 'center',
     },
     frameAvatarEmoji: {
-      fontSize: 30,
+      fontSize: 28,
     },
-    itemName: {
-      color: C.text,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    itemNameRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    itemDesc: {
-      color: C.textMuted,
-      fontSize: 11,
-      lineHeight: 15,
-      minHeight: 45,
-    },
-    itemEmoji: {
-      fontSize: 34,
-    },
-    ownedCount: {
-      color: C.textMuted,
-      fontSize: 11,
-    },
-    itemBtn: {
-      width: '100%',
-      borderRadius: 12,
-      paddingVertical: 8,
-      alignItems: 'center',
-    },
-    btnCheckRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-    },
-    priceRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    btnSelected: {
-      backgroundColor: C.gold + '22',
-    },
-    btnSelectedText: {
-      color: C.gold,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    btnOwned: {
-      backgroundColor: C.primary + '22',
-    },
-    btnOwnedText: {
-      color: C.primary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    btnBuy: {
-      backgroundColor: C.surfaceLight,
-    },
-    btnBuyText: {
-      color: C.gold,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    btnDisabled: {
-      opacity: 0.4,
-    },
-    btnDisabledText: {
-      color: C.textMuted,
-    },
-    previewPanel: {
-      borderRadius: 20,
-      padding: 14,
-      gap: 10,
-    },
-    previewTop: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderRadius: 12,
-      padding: 12,
-    },
-    previewTopText: {
-      gap: 2,
-    },
-    previewTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    previewSub: {
-      fontSize: 11,
-    },
-    previewAvatar: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      borderWidth: 2,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    previewAvatarEmoji: {
-      fontSize: 22,
-    },
-    previewRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      borderRadius: 12,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
-    },
-    previewDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 8,
-    },
-    previewRowText: {
-      flex: 1,
-      fontSize: 13,
-      fontWeight: '600',
-    },
-    previewCheck: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    previewCheckText: {
-      color: '#fff',
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    previewBtn: {
-      borderRadius: 12,
-      alignItems: 'center',
-      paddingVertical: 11,
-    },
-    previewBtnText: {
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    previewActions: {
-      marginTop: 2,
-    },
-    previewAction: {
-      width: '100%',
-      borderRadius: 12,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    noteBox: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-    },
-    noteIcon: {
-      marginTop: 2,
-    },
-    noteText: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
-      flex: 1,
-    },
+
+    // ---- vip ----
     vipHint: {
-      backgroundColor: C.gold + '1a',
+      flexDirection: 'row',
+      gap: 8,
+      backgroundColor: C.gold + '1A',
       borderRadius: 16,
       padding: 14,
-    },
-    vipHintRow: {
-      flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 8,
     },
     vipHintText: {
+      ...type.small,
       color: C.text,
-      fontSize: 13,
-      lineHeight: 18,
       flex: 1,
+      lineHeight: 18,
     },
   });
 }
-
-// OwnedBadge stil tanımı (useTheme ile renk kullandığı için ayrı sabit).
-const stylesConf = StyleSheet.create({
-  ownedBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 22,
-    height: 22,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ownedBadgeText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
