@@ -1,27 +1,29 @@
 // ============================================================
-// theme/index.js — Design System v2 girişi
+// theme/index.js — Design System v3 girişi
 // (Apple Fitness/Headspace zemini + Linear tipografi disiplini)
 //
 // Token dosyaları:
 //   colors.js      → C.background / C.primary / ...  (4 nötr + 3 anlamsal + yardımcı)
-//   typography.js  → type.h1/title/body/small/micro/stat (5 ölçek, 3 weight)
-//   spacing.js     → space.xs..3xl  (sıkı grid, adımlar arası ≤8)
-//   radius.js      → radius.sm/md/lg/xl/full (5 değer + semantic alias)
-//   shadows.js     → SHADOWS.card (boş) · SHADOWS.elevated (modal) · glow() no-op
-//   animations.js  → DURATION / EASE / MOTION / LOOP (200-300ms bandı)
+//   typography.js  → type.micro/small/body/h3/h1     (5 ölçek, 3 weight, 1.4x line)
+//   spacing.js     → space.xs..5xl  (4-8-12-16-20-24-32-40-48 grid)
+//   radius.js      → radius.sm/md/lg/xl/full (4 + full, semantic alias)
+//   shadows.js     → SHADOWS.card (tek gölge, elevated) · glow() no-op
+//   animations.js  → DURATION(fast/normal/slow) / EASE / MOTION · LOOP = null
 //
 // ---------- DIŞ YÜZEY (DEĞİŞMEZ — 59 import eden dosya) ----------
 //   export { COLORS, SPACE, TYPE, RADIUS, SHADOWS, glow,
 //            DURATION, EASE, MOTION, LOOP, TOUCH, tint,
 //            EMOJIS, HABIT_COLORS, THEMES,
-//            getTheme, resolveTheme, ThemeProvider, useTheme }
-//   useTheme() → { colors, radius, space, type, motion, touch, glow }
+//            getTheme, resolveTheme, ThemeProvider, useTheme, useAnimation }
+//   useTheme()     → { colors, radius, space, type, motion, touch, glow }
+//   useAnimation() → { duration, ease }   (süre + easing token'ları)
 //
-// ---------- YENİ (v2) — yalnız design tooling, mevcut kod kullanmaz ----------
+// ---------- YENİ (v3) — design tooling ----------
 //   export { COLOR_GROUPS, FONT_WEIGHTS, SPACE_STEPS, CARD_PADDING }
 //
-// THEMES: Dükkan'da satılan tema tanımları. v2 kimliği: TÜM temalarda
-// zemin saf siyah; tema rengi yalnızca yüzey tonu + primary/accent'te yaşar.
+// THEMES: Dükkan'da satılan tema tanımları. v3 kimliği: TÜM temalarda
+// zemin ortak (background token'ı — tema override'ı YOK); tema rengi yalnızca
+// yüzey tonu + primary/accent'te yaşar.
 // ============================================================
 import { createContext, useContext } from 'react';
 import { COLORS, COLOR_GROUPS } from './colors';
@@ -42,7 +44,7 @@ export {
   EASE,
   MOTION,
   LOOP,
-  // v2 design tooling (mevcut kod bunları kullanmaz)
+  // v3 design tooling
   COLOR_GROUPS,
   FONT_WEIGHTS,
   SPACE_STEPS,
@@ -73,8 +75,8 @@ export const HABIT_COLORS = [
 ];
 
 // Tema tanımları. "colors" yalnızca COLORS'tan farklı olanları içerir.
-// v2 hizalama: background HEP #000000; surface/surfaceLight/border tema
-// tonunu korur ama Apple zemin merdivenine (≈%10.5 / %16.5) oturtulur.
+// v3 hizalama: background TEMADA OVERRIDE EDİLMEZ → tüm temalar
+// colors.background (#0A0A0F) kullanır; tema yalnızca yüzey tonu + primary'dir.
 // primary/primaryDark/accent/text* tema kimliğidir — DOKUNULMAZ.
 export const THEMES = [
   {
@@ -94,7 +96,6 @@ export const THEMES = [
     desc: 'Sade ve şık monokrom',
     pattern: null,
     colors: {
-      background: '#000000',
       surface: '#19191D',
       surfaceLight: '#28282D',
       border: '#28282C',
@@ -118,7 +119,6 @@ export const THEMES = [
     desc: 'Sevimli kalp deseni',
     pattern: '❤️',
     colors: {
-      background: '#000000',
       surface: '#23121E',
       surfaceLight: '#381C2D',
       border: '#381C2E',
@@ -135,7 +135,6 @@ export const THEMES = [
     desc: 'Yeşilin huzuru',
     pattern: '🌲',
     colors: {
-      background: '#000000',
       surface: '#142118',
       surfaceLight: '#213327',
       border: '#223226',
@@ -152,7 +151,6 @@ export const THEMES = [
     desc: 'Derin mavi dalgalar',
     pattern: '🌊',
     colors: {
-      background: '#000000',
       surface: '#101F25',
       surfaceLight: '#19303B',
       border: '#192E3B',
@@ -169,7 +167,6 @@ export const THEMES = [
     desc: 'Yumuşak mor tonlar',
     pattern: '💜',
     colors: {
-      background: '#000000',
       surface: '#181125',
       surfaceLight: '#261B39',
       border: '#261C38',
@@ -186,7 +183,6 @@ export const THEMES = [
     desc: 'Turuncu-pembe ufuk',
     pattern: '🌅',
     colors: {
-      background: '#000000',
       surface: '#241611',
       surfaceLight: '#3A231A',
       border: '#3A241A',
@@ -203,7 +199,6 @@ export const THEMES = [
     desc: 'Yıldız tozu deseni',
     pattern: '✨',
     colors: {
-      background: '#000000',
       surface: '#101325',
       surfaceLight: '#191D3B',
       border: '#1A1E3A',
@@ -220,7 +215,6 @@ export const THEMES = [
     desc: 'Tatlı pembe-mor',
     pattern: '🍬',
     colors: {
-      background: '#000000',
       surface: '#191125',
       surfaceLight: '#251B39',
       border: '#261B39',
@@ -237,7 +231,6 @@ export const THEMES = [
     desc: 'Kırmızı-pembe kiraz',
     pattern: '🍒',
     colors: {
-      background: '#000000',
       surface: '#241221',
       surfaceLight: '#361E32',
       border: '#351F34',
@@ -254,7 +247,6 @@ export const THEMES = [
     desc: 'Neon yeşil-mor',
     pattern: '🤖',
     colors: {
-      background: '#000000',
       surface: '#101A25',
       surfaceLight: '#1A2A3A',
       border: '#1B2B39',
@@ -272,7 +264,6 @@ export const THEMES = [
     desc: 'Altın ve mor ihtişam',
     pattern: '👑',
     colors: {
-      background: '#000000',
       surface: '#161025',
       surfaceLight: '#22193B',
       border: '#22193B',
@@ -289,7 +280,6 @@ export const THEMES = [
     desc: 'Ateşli kırmızı-amber',
     pattern: '🐲',
     colors: {
-      background: '#000000',
       surface: '#151124',
       surfaceLight: '#221B39',
       border: '#241D37',
@@ -306,9 +296,15 @@ export function getTheme(id) {
 }
 
 // Tema id'si için TAM renk sözlüğünü üretir (temel + tema farkları + desen).
+// success ↔ accent alias'ı tema genelinde senkron kalır (accent'i override
+// eden tema, success'i de aynı renge çeker).
 export function resolveTheme(themeId) {
   const theme = getTheme(themeId);
-  return { ...COLORS, ...theme.colors, pattern: theme.pattern || null };
+  const colors = { ...COLORS, ...theme.colors, pattern: theme.pattern || null };
+  if (theme.colors.accent && !theme.colors.success) {
+    colors.success = theme.colors.accent;
+  }
+  return colors;
 }
 
 // ---------- Tema Context ----------
@@ -318,7 +314,7 @@ export const ThemeProvider = ThemeContext.Provider;
 
 // Bileşenler useTheme() ile renk paletine + yapısal token'lara tek yerden erişir:
 //   const { colors: C, radius, space, type, motion, glow } = useTheme();
-// NOT: Dönüş yüzeyi DEĞİŞMEZ (v1 uyumluluğu).
+// NOT: Dönüş yüzeyi DEĞİŞMEZ (geriye dönük uyum).
 export function useTheme() {
   const ctx = useContext(ThemeContext);
   return {
@@ -329,5 +325,15 @@ export function useTheme() {
     motion: MOTION,
     touch: TOUCH,
     glow,
+  };
+}
+
+// Hareket token'larına tek yerden erişim:
+//   const { duration, ease } = useAnimation();
+//   withTiming(x, { duration: duration.fast, easing: Easing.bezier(...ease.out) })
+export function useAnimation() {
+  return {
+    duration: DURATION,
+    ease: EASE,
   };
 }

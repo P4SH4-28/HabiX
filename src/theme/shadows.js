@@ -1,44 +1,36 @@
 // ============================================================
-// shadows.js — v2 minimal: GÖLGE NEREYSE YOK, yalnız modal.
+// shadows.js — v3: TEK gölge (card). Ağır gölgeler ve glow KALDIRILDI.
 //
-// v1 kimliği: her kartta SHADOWS.card + 15 renkli glow → görsel gürültü.
-// v2 kimliği: yüzey ayrımı RENK KATMANI ile yapılır (background →
-// surface → surfaceLight), gölge/glow DEĞİL. Bu yüzden:
+// v1 kimliği: her kartta gölge + 15 renkli glow → görsel gürültü.
+// v3 kimliği: yüzey ayrımı RENK KATMANI ile yapılır (background →
+// surface → surfaceLight). Gölge yalnız "yüzen" yüzeyde (elevated).
 //
 // ---------- NE ZAMAN KULLANILIR ----------
-// SHADOWS.card     → ARTIK BOŞ {}. Kartlar gölgesiz; zemin/surface
-//                    kontrastı ayırımı sağlar. `flat` prop'u anlamsızlaştı
-//                    (zararsız, Parça 2'de kaldırılır).
-// SHADOWS.elevated → YALNIZ modal / sheet / tab bar gibi "yüzen" yüzey.
-//                    Ekran başına en fazla 1.
-// glow()           → NO-OP ({}). v2'de renkli ışıma YOKTUR.
-//                    15 çağrı KOD KIRILMADAN görsel olarak kalkar;
-//                    Parça 2'de tek tek silinecek.
+// SHADOWS.card → Yalnız Card variant="elevated".
+//                iOS: 0 4 12 rgba(0,0,0,0.15) · Android: elevation 2.
+//                Ekran başına en fazla 1-2 adet.
+// glow()       → NO-OP ({}). v3'te renkli ışıma YOKTUR (GLOW YASAK).
+//                Çağrı imzası korunur; yeni kodda KULLANMA.
 // ============================================================
 import { Platform } from 'react-native';
 
-const ios = (height, radius, opacity) => ({
+const ios = {
   shadowColor: '#000000',
-  shadowOpacity: opacity,
-  shadowRadius: radius,
-  shadowOffset: { width: 0, height },
-});
+  shadowOpacity: 0.15,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+};
 
 export const SHADOWS = {
-  // Kart gölgesi yok — yüzey kontrastı yeterli.
-  card: {},
-
-  // Yüzen yüzey (modal/sheet): tek gölge tanımı.
-  elevated: Platform.select({
-    ios: ios(12, 32, 0.45),
-    android: { elevation: 8 },
-    default: ios(12, 32, 0.45),
+  card: Platform.select({
+    ios,
+    android: { elevation: 2 },
+    default: ios,
   }),
 };
 
-// DEPRECATED (v2): renkli dış ışıma kaldırıldı.
+// DEPRECATED (v3): renkli dış ışıma kaldırıldı.
 // Geriye dönük uyum için çağrı imzası korunur, boş nesne döner.
-// Yeni kodda KULLANMA; Parça 2'de tüm çağrılar silinecek.
 export function glow(/* color, opts */) {
   return {};
 }
