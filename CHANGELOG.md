@@ -88,7 +88,10 @@ Ekran içi `h1` kaldırıldı — başlık ortak `AppHeader` (TopBar) içinde te
 ### 🔧 Kod Temizliği
 
 - 5 kullanılmayan import silindi (`DataContext` ×4, `App.js` ×1).
-- 2 kullanılmayan dosya silindi: `components/ui/Enter.js`, `components/ui/index.js`.
+- 1 kullanılmayan dosya silindi: `components/ui/Enter.js`.
+  ⚠️ `components/ui/index.js` **silinmedi** — `PomodoroTimer.js` bu klasöre
+  barrel import (`from './ui'`) yapıyor; kaldırılınca Android release derlemesi
+  kırılıyordu (CI run #36/#37). Geri alındı ve doğrulandı.
 - 20 yerdeki token dışı `borderRadius` değeri `RADIUS.*` ile değiştirildi.
 - `console.log` yok (yalnızca bilinçli `console.warn`); `TODO` yalnızca config notu.
 
