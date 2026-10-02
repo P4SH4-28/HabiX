@@ -2,9 +2,13 @@
 // Progress.js — Animasyonlu ilerleme çubuğu (ortak primitive).
 // Değer değişince yumuşakça kayar; reduce-motion'da anında gider.
 // Performans: transform:scaleX + transformOrigin:left (GPU dostu);
-// köşe yuvarlatmaları track'in overflow:hidden ile kırpmasıyla
-// bozulmadan korunur (fill'de radius yok → deformasyon yok).
+//   köşe yuvarlatmaları track'in overflow:hidden ile kırpmasıyla
+//   bozulmadan korunur (fill'de radius yok → deformasyon yok).
 //   <Progress value={0.42} colors={[C.accent, C.primary]} />
+//
+// DİKKAT: colors TEK elemanlı olamaz. expo-linear-gradient →
+// android.graphics.LinearGradient iki renkten azıyla native crash verir
+// (bkz. gradientColors.js). Tek renk verilirse düz dolguya çevrilir.
 // ============================================================
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -16,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
 import useReducedMotion from '../../hooks/useReducedMotion';
+import normalizeGradientColors from './gradientColors';
 
 const clamp01 = (v) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
 
@@ -44,7 +49,7 @@ export default function Progress({
     transform: [{ scaleX: p.value }],
   }));
 
-  const grad = colors || [C.accent, C.primary];
+  const grad = normalizeGradientColors(colors, [C.accent, C.primary]);
 
   return (
     <View

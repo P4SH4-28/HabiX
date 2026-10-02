@@ -52,6 +52,15 @@ Ekran içi `h1` kaldırıldı — başlık ortak `AppHeader` (TopBar) içinde te
 
 ### 🐛 Bug Fixes (doğrulanmış)
 
+- **KRİTİK — QuestBoard / League / SeasonPass ekranları Android'de native crash
+  veriyordu.** Üç ekran da `<Progress colors={[tekRenk]} />` veriyordu
+  (`QuestBoardScreen.js:119`, `SeasonPassScreen.js:205`, `LeagueScreen.js:174`).
+  `expo-linear-gradient` → `android.graphics.LinearGradient` **iki renkten az**
+  renk dizisini kabul etmez (`@throws IllegalArgumentException if there are less
+  than two colors`) ve bu hata JS'te yakalanmadığı için uygulama sessizce çöküyordu.
+  Artık `Progress` dolgu listesini her zaman ≥ 2 geçerli renge normalize ediyor
+  (tek renk → düz dolgu) — `src/components/ui/gradientColors.js`. Aynı tuzak
+  Leaderboard kilit ekranında ve TeamScreen'de de vardı; ikisi de düzeltildi.
 - **SeasonPass:** eski ekran `passLevelFromXp().curXp` alanı yokken onu kullanıyordu
   (`undefined` → NaN ilerleme). Artık `curXp = totalXp - pass.cumXp`
   (`src/screens/SeasonPassScreen.js:95`).
