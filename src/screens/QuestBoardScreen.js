@@ -1,26 +1,36 @@
 // ============================================================
-// QuestBoardScreen — "Günün Görevleri" ekranı (yeni nesil)
-// Günde 4 TEMEL görev: Isınma / Zor I / Zor II / İmkansız.
-// VIP kullanıcılar +4 EKSTRA VIP görev görür (toplam 8) ve temel
-// görevlerde ×1.5 ödül çarpanı kazanır.
-// Görevler her gün sıfırlanır (gün anahtarı SUNUCU saatinden gelir);
-// tüm görevler otomatik sayaçlarla ölçülür — "Yaptım" yoktur.
-// Ödüller sunucu onayıyla verilir (hileci duvarı).
+// QuestBoardScreen — "Günün Görevleri" (v3 design system, sıfırdan)
+//
+// YAPI:
+//   1) Özet satırı     → bugün kaç görev tamamlandı + çevrimdışı uyarısı
+//   2) Sekmeler        → Günlük · Haftalık · Aylık (SegmentedTabs)
+//   3) Günlük          → 4 temel görev (Isınma/Zor I/Zor II/İmkansız)
+//                         + VIP bölümü (aktifse) veya VIP tanıtım kartı
+//   4) Haftalık/Aylık  → veri yok → EmptyState ("yakında")
+//
+// DataContext API (değişmedi): claimQuest(id) async · server.connected ·
+//   refreshServer/refreshing · vipActive · data.questClaims · data.stats.day
+//
+// ZAMANLAMA: gün anahtarı sunucu saatinden (today) → 1s tick GEREKMEZ.
+// SAFE AREA: üst başlık Stack header (STACK_TITLES), alt inset burada.
+//
+// KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (primitive'ler) ·
+//   4 vurgu rengi (primary/altın/success/danger) · emoji → Icon/ICON_MAP ·
+//   5 tipografi ölçeği (h1 yok — başlık header'da).
 // ============================================================
-import { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import Icon from '../components/ui/icons';
+import Pill from '../components/ui/Pill';
 import Progress from '../components/ui/Progress';
-import { serverNow } from '../services/serverClock';
+import SectionHeader from '../components/ui/SectionHeader';
+import SegmentedTabs from '../components/ui/SegmentedTabs';
 import {
   getDailyQuests,
   questClaimedToday,
@@ -30,134 +40,120 @@ import {
   QUEST_DIFFICULTY_ORDER,
 } from '../data/quests';
 import { useTheme } from '../theme';
-import Icon from '../components/ui/icons';
+
+const TABS = [
+  { key: 'daily', label: 'Günlük', icon: '📅' },
+  { key: 'weekly', label: 'Haftalık', icon: '📆' },
+  { key: 'monthly', label: 'Aylık', icon: '🗓' },
+];
 
 export default function QuestBoardScreen() {
-  const { data, today, claimQuest, server, refreshServer, refreshing, vipActive } = useData();
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
   const navigation = useNavigation();
+  const { data, today, claimQuest, server, refreshServer, refreshing, vipActive } = useData();
 
-  // İlerleme çubuklarının güncel kalması için ortak "şimdi" zamanı.
-  const [now, setNow] = useState(() => serverNow());
-  useEffect(() => {
-    const interval = setInterval(() => setNow(serverNow()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Ödül alırken buton kilitlenir (sunucu onayı beklenir).
+  const [tab, setTab] = useState('daily');
   const [claimingId, setClaimingId] = useState(null);
-  const handleClaim = async (questId) => {
-    if (claimingId) return;
-    setClaimingId(questId);
-    await claimQuest(questId);
-    setClaimingId(null);
-  };
-  // Çevrimdışıysa ödüller zaten verilmez — kullanıcı bilgilendirilir.
-  const offline = server.connected === false;
 
   const claims = data.questClaims || {};
   const dayStats = data.stats.day;
+  const offline = server.connected === false;
 
-  // Bugünün görevleri: havuzdan güne göre seçilir (rotasyon).
   const { base: todayQuests, vip: todayVipQuests } = getDailyQuests(today);
-  const allToday = [...todayQuests, ...todayVipQuests];
-
-  // Bugün tamamlanan görev sayısı (özet).
+  const allToday = [...todayQuests, ...(vipActive ? todayVipQuests : [])];
   const doneToday = allToday.filter((q) => questClaimedToday(q, claims, today)).length;
-  const totalToday = todayQuests.length + (vipActive ? todayVipQuests.length : 0);
-  const vipDaysLeft = Math.max(0, Math.ceil(((data.settings.vipUntil || 0) - now) / 86400000));
+  const vipDaysLeft = Math.max(
+    0,
+    Math.ceil(((data.settings.vipUntil || 0) - Date.now()) / 86400000)
+  );
 
-  // Tek görev kartı (temel + VIP ortak bileşen).
-  const renderQuest = (quest, accent, isVip) => {
+  const handleClaim = useCallback(
+    async (questId) => {
+      if (claimingId || offline) return;
+      setClaimingId(questId);
+      try {
+        await claimQuest(questId);
+      } finally {
+        setClaimingId(null);
+      }
+    },
+    [claimingId, offline, claimQuest]
+  );
+
+  // ---------- ortak görev kartı (temel + VIP) ----------
+  const renderQuest = (quest) => {
     const diff = QUEST_DIFFICULTIES[quest.difficulty];
     const progress = questProgress(quest, dayStats, claims, today, data.habits);
     const claimed = questClaimedToday(quest, claims, today);
     const ready = !claimed && progress >= quest.target;
     const pct = Math.min(100, (progress / quest.target) * 100);
     const reward = questReward(quest, vipActive);
+    const busy = claimingId === quest.id;
     return (
-      <View key={quest.id} style={[styles.quest, { borderWidth: 1, borderColor: accent + '44' }]}>
-        <View style={styles.questTop}>
-          <Icon emoji={quest.emoji} size={26} color={accent} />
-          <View style={styles.questInfo}>
-            <View style={styles.questTitleRow}>
-              <Text style={styles.questTitle} numberOfLines={1}>
-                {quest.title}
-              </Text>
-              {isVip && (
-                <View style={styles.vipChipRow}>
-                  <Icon emoji="👑" size={11} color={C.gold} />
-                  <Text style={[styles.vipChipText, { color: C.gold }]}>VIP</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.questDesc} numberOfLines={1}>
-              {quest.desc}
-            </Text>
-            <View style={styles.rewardRow}>
-              <View style={[styles.rewardChip, { backgroundColor: C.xp + '22' }]}>
-                <Text style={[styles.rewardText, { color: C.xp }]}>+{reward.xp} XP</Text>
-              </View>
-              <View style={[styles.rewardChip, { backgroundColor: C.gold + '22' }]}>
-                <Icon emoji="🪙" size={10} color={C.gold} />
-                <Text style={[styles.rewardText, { color: C.gold }]}>+{reward.gold}</Text>
-              </View>
-              {isVip && (
-                <Text style={[styles.multiplierNote, { color: C.gold }]}>×1.5 dahil</Text>
-              )}
-            </View>
-          </View>
+      <Card key={quest.id} padding="sm" style={styles.questCard}>
+        <View style={styles.questHead}>
+          <Icon emoji={quest.emoji} size={18} color={C.primary} />
+          <Text style={styles.questTitle} numberOfLines={1}>
+            {quest.title}
+          </Text>
+          <Pill size="sm">{diff.emoji} {diff.label}</Pill>
         </View>
-
+        <Text style={styles.questDesc} numberOfLines={2}>
+          {quest.desc}
+        </Text>
+        <View style={styles.rewardRow}>
+          <Pill size="sm" icon="⚡" bg={C.primary + '1A'} color={C.primary}>
+            +{reward.xp} XP
+          </Pill>
+          <Pill size="sm" icon="🪙" bg={C.gold + '1A'} color={C.gold}>
+            +{reward.gold}
+          </Pill>
+          {quest.id.startsWith('vip_') ? (
+            <Pill size="sm" bg={C.gold + '1A'} color={C.gold}>
+              VIP ÖDÜL
+            </Pill>
+          ) : null}
+        </View>
         <Progress
           value={pct / 100}
           height={6}
-          trackColor={C.surface}
-          colors={[accent, accent]}
-          accessibilityLabel={`Görev ilerlemesi yüzde ${Math.round(pct)}`}
+          colors={[C.primary]}
+          accessibilityLabel={`${quest.title} ilerlemesi yüzde ${Math.round(pct)}`}
         />
-        <View style={styles.questBottom}>
-          <Text style={[styles.progressText, { color: C.textMuted }]}>
+        <View style={styles.questFoot}>
+          <Text style={styles.progressText}>
             {progress}/{quest.target}
-            {claimed ? ' • bugün tamamlandı ✓' : ready ? ' • ödül hazır!' : ''}
+            {ready ? ' · ödül hazır!' : ''}
           </Text>
-            {claimed ? (
-            <View style={[styles.doneChip, { backgroundColor: C.accent + '22' }]}>
-              <Icon emoji="✅" size={12} color={C.accent} />
-              <Text style={[styles.doneChipText, { color: C.accent }]}>Tamamlandı</Text>
-            </View>
+          {claimed ? (
+            <Pill size="sm" icon="✅" bg={C.success + '1A'} color={C.success}>
+              Tamamlandı
+            </Pill>
           ) : (
-            <Pressable
-              style={[
-                styles.claimBtn,
-                { backgroundColor: accent },
-                (!ready || claimingId || offline) && styles.claimBtnDisabled,
-              ]}
+            <Button
+              label={ready ? 'Ödülü Al' : 'Devam Et'}
+              size="sm"
+              variant={ready ? 'primary' : 'secondary'}
+              disabled={!ready || offline}
+              loading={busy}
               onPress={() => handleClaim(quest.id)}
-              disabled={!ready || !!claimingId || offline}
-              accessibilityRole="button"
-              accessibilityLabel={ready ? `${quest.title} ödülünü al` : `${quest.title} devam ediyor`}
-              accessibilityState={{ disabled: !ready || !!claimingId || offline, busy: claimingId === quest.id }}
-            >
-              {claimingId === quest.id ? (
-                <ActivityIndicator size="small" color={C.background} />
-              ) : (
-                <Text style={[styles.claimBtnText, { color: C.background }]}>
-                  {ready ? 'Ödülü Al' : 'Devam Et'}
-                </Text>
-              )}
-            </Pressable>
+              accessibilityLabel={`${quest.title} — ${ready ? 'ödül al' : 'devam ediyor'}`}
+            />
           )}
         </View>
-      </View>
+      </Card>
     );
   };
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(24, insets.bottom + 24) },
+      ]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -169,329 +165,209 @@ export default function QuestBoardScreen() {
         />
       }
     >
-      <View style={styles.screenTitleRow}>
-        <Icon emoji="🎯" size={20} color={C.primary} />
-        <Text style={styles.screenTitle}>Günün Görevleri</Text>
-      </View>
-      <Text style={styles.screenSub}>
-        Görevler her gece yarısı yenilenir ve her gün havuzdan farklı görevler
-        seçilir. Bugün {doneToday}/{totalToday} görev tamamladın.
+      {/* ---------- ÖZET ---------- */}
+      <Text style={styles.summary}>
+        Görevler her gece yarısı yenilenir. Bugün{' '}
+        <Text style={styles.summaryStrong}>
+          {doneToday}/{allToday.length}
+        </Text>{' '}
+        görev tamamladın.
       </Text>
 
-      {offline && (
+      {offline ? (
         <View style={styles.offlineBox}>
-          <View style={styles.offlineRow}>
-            <Icon emoji="📡" size={14} color={C.danger} />
-            <Text style={styles.offlineText}>
-              Sunucuya bağlanılamıyor — ödüller sunucu onayı gerektirdiği için
-              şu an görev tamamlayamazsın. Bağlantı gelince yeniden dene.
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* VIP tanıtım bandı */}
-      {!vipActive ? (
-        <Pressable style={styles.vipBanner} onPress={() => navigation.navigate('SeasonPass')}>
-          <View style={styles.vipBannerTop}>
-            <Icon emoji="👑" size={20} color={C.gold} />
-            <Text style={styles.vipBannerTitle}>VIP ol, 8 görev kazan</Text>
-          </View>
-          <Text style={styles.vipBannerText}>
-            +4 ekstra VIP görev, temel görevlerde ×1.5 ödül çarpanı ve Season Pass VIP
-            ödülleri. Altınla satın alınır →
+          <Icon emoji="📡" size={14} color={C.danger} />
+          <Text style={styles.offlineText}>
+            Sunucuya bağlanılamıyor — ödüller sunucu onayı gerektirdiği için şu an
+            alınamaz. Bağlantı gelince yeniden dene.
           </Text>
-        </Pressable>
-      ) : (
-        <View style={[styles.vipActiveBox, { borderWidth: 1, borderColor: C.gold + '55' }]}>
-          <View style={styles.vipActiveRow}>
-            <Icon emoji="👑" size={15} color={C.gold} />
-            <Text style={[styles.vipActiveText, { color: C.gold }]}>
-              VIP aktif — {vipDaysLeft} gün kaldı. Ekstra görevler ve ×1.5 çarpan açık!
-            </Text>
-          </View>
         </View>
-      )}
+      ) : null}
 
-      {/* Temel 4 görev (bugünün seçimi) */}
-      {QUEST_DIFFICULTY_ORDER.map((difficulty) => {
-        const quest = todayQuests.find((q) => q.difficulty === difficulty);
-        if (!quest) return null;
-        const diff = QUEST_DIFFICULTIES[difficulty];
-        return (
-          <View key={quest.id} style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: C[diff.colorKey] + '22' }]}>
-                <Text style={styles.sectionIconText}>{diff.emoji}</Text>
-              </View>
-              <View style={styles.sectionTitles}>
-                <Text style={[styles.sectionTitle, { color: C[diff.colorKey] }]}>{diff.label}</Text>
-                <Text style={styles.sectionDesc}>Temel görev — her gün açık</Text>
-              </View>
-            </View>
-            {renderQuest(quest, C[diff.colorKey], false)}
-          </View>
-        );
-      })}
+      {/* ---------- SEKMELER ---------- */}
+      <SegmentedTabs options={TABS} value={tab} onChange={setTab} />
 
-      {/* VIP ekstra 4 görev (bugünün seçimi) */}
-      {vipActive && (
-        <View style={[styles.section, styles.vipSection]}>
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionIcon, { backgroundColor: C.gold + '22' }]}>
-              <Icon emoji="👑" size={18} color={C.gold} />
+      {/* ---------- GÜNLÜK ---------- */}
+      {tab === 'daily' ? (
+        <View style={styles.section}>
+          <SectionHeader title="Temel Görevler" actionLabel={`${doneToday}/${allToday.length}`} />
+          {QUEST_DIFFICULTY_ORDER.map((d) => {
+            const quest = todayQuests.find((q) => q.difficulty === d);
+            return quest ? renderQuest(quest) : null;
+          })}
+
+          {/* VIP bölümü */}
+          {vipActive ? (
+            <View style={styles.vipWrap}>
+              <SectionHeader title="VIP Ekstra Görevler" />
+              <View style={styles.vipBadgeRow}>
+                <Icon emoji="👑" size={13} color={C.gold} />
+                <Text style={styles.vipBadgeText}>
+                  VIP aktif · {vipDaysLeft} gün kaldı · temel görevlerde ×1.5 ödül
+                </Text>
+              </View>
+              {todayVipQuests.map((q) => renderQuest(q))}
             </View>
-            <View style={styles.sectionTitles}>
-              <Text style={[styles.sectionTitle, { color: C.gold }]}>VIP Ekstra Görevler</Text>
-              <Text style={styles.sectionDesc}>Yalnızca Pass sahiplerine — 4 görev daha</Text>
-            </View>
-          </View>
-          {todayVipQuests.map((quest) => renderQuest(quest, C.gold, true))}
+          ) : (
+            <Card style={styles.vipPromo}>
+              <View style={styles.vipPromoHead}>
+                <Icon emoji="👑" size={20} color={C.gold} />
+                <Text style={styles.vipPromoTitle}>VIP ol, +4 görev kazan</Text>
+              </View>
+              <Text style={styles.vipPromoText}>
+                +4 ekstra VIP görev, temel görevlerde ×1.5 ödül çarpanı ve Season Pass
+                VIP ödülleri. Altınla satın alınır.
+              </Text>
+              <Button
+                label="VIP üyeliği incele"
+                size="md"
+                variant="secondary"
+                icon="👑"
+                fullWidth
+                onPress={() => navigation.navigate('SeasonPass')}
+              />
+            </Card>
+          )}
+
+          <Text style={styles.note}>
+            Tüm görevler otomatik sayaçlarla ölçülür (Yaptım yoktur); ödüller
+            sunucu onayıyla verilir ve günde bir kez alınır.
+          </Text>
         </View>
-      )}
+      ) : null}
 
-      <View style={styles.noteBox}>
-                <Text style={styles.noteText}>
-          <Icon emoji="💡" size={13} color={C.primary} style={styles.noteIcon} />{' '}
-          Görevler her gece yarısı otomatik yenilenir, günde bir kez alınır ve
-          her gün havuzdan farklı görevler seçilir. Tüm görevler uygulamanın kendi
-          sayaçlarıyla ölçülür; ödüller sunucu onayıyla verilir.
-        </Text>
-      </View>
+      {/* ---------- HAFTALIK / AYLIK ---------- */}
+      {tab !== 'daily' ? (
+        <Card>
+          <EmptyState
+            compact
+            name="calendar"
+            title={tab === 'weekly' ? 'Haftalık görevler yakında' : 'Aylık görevler yakında'}
+            subtitle="Şu an yalnızca günlük görevler açık. Yeni görev türleri sonraki güncellemelerde burada listelenecek."
+          />
+        </Card>
+      ) : null}
     </ScrollView>
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: C.background,
     },
     content: {
       padding: 20,
       gap: 14,
-      paddingBottom: 60,
     },
-    screenTitle: {
+
+    // ---- özet ----
+    summary: {
+      ...type.small,
+      color: C.textMuted,
+    },
+    summaryStrong: {
       color: C.text,
-      fontSize: 22,
       fontWeight: '700',
     },
-    screenTitleRow: {
+    offlineBox: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+      backgroundColor: C.danger + '14',
+      borderRadius: 16,
+      padding: 12,
+    },
+    offlineText: {
+      ...type.small,
+      color: C.text,
+      flex: 1,
+      fontWeight: '600',
+    },
+
+    section: {
+      gap: 10,
+    },
+
+    // ---- görev kartı ----
+    questCard: {
+      gap: 10,
+    },
+    questHead: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
     },
-    screenSub: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 19,
-      marginBottom: 4,
-    },
-    section: {
-      backgroundColor: C.surface,
-      borderRadius: 20,
-      padding: 16,
-      gap: 12,
-    },
-    vipSection: {
-      borderWidth: 1,
-      borderColor: C.gold + '44',
-    },
-    sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    sectionIcon: {
-      width: 36,
-      height: 36,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    sectionTitles: {
-      flex: 1,
-      gap: 1,
-    },
-    sectionTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    sectionDesc: {
-      color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '600',
-    },
-    quest: {
-      backgroundColor: C.surfaceLight,
-      borderRadius: 16,
-      padding: 14,
-      gap: 10,
-    },
-    questTop: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    questInfo: {
-      flex: 1,
-      gap: 3,
-    },
-    questTitleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
     questTitle: {
+      ...type.bodyStrong,
       color: C.text,
-      fontSize: 13,
-      fontWeight: '700',
-      flexShrink: 1,
-    },
-    vipChipRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-      backgroundColor: C.gold + '22',
-      borderRadius: 8,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-    },
-    vipChipText: {
-      fontSize: 11,
-      fontWeight: '700',
+      flex: 1,
+      minWidth: 0,
     },
     questDesc: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 11,
     },
     rewardRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
+      flexWrap: 'wrap',
     },
-    rewardChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      borderRadius: 8,
-      paddingHorizontal: 7,
-      paddingVertical: 2,
-    },
-    rewardText: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    multiplierNote: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    questBottom: {
+    questFoot: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      gap: 10,
     },
     progressText: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    claimBtn: {
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 7,
-      minHeight: 32,
-      justifyContent: 'center',
-    },
-    claimBtnDisabled: {
-      opacity: 0.5,
-    },
-    claimBtnText: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    doneChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      borderRadius: 8,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-    },
-    doneChipText: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    vipBanner: {
-      backgroundColor: C.gold + '18',
-      borderRadius: 20,
-      padding: 16,
-      gap: 6,
-    },
-    vipBannerTop: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    vipBannerTitle: {
-      color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    vipBannerText: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
+      fontVariant: ['tabular-nums'],
     },
-    vipActiveBox: {
-      backgroundColor: C.gold + '12',
+
+    // ---- VIP ----
+    vipWrap: {
+      gap: 10,
+      backgroundColor: C.gold + '0D',
       borderRadius: 16,
+      borderWidth: 1,
+      borderColor: C.gold + '33',
       padding: 12,
     },
-    vipActiveRow: {
+    vipBadgeRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
     },
-    vipActiveText: {
-      flex: 1,
-      fontSize: 13,
-      fontWeight: '700',
-      lineHeight: 18,
+    vipBadgeText: {
+      ...type.micro,
+      color: C.gold,
     },
-    offlineRow: {
+    vipPromo: {
+      gap: 10,
+      backgroundColor: C.gold + '0D',
+      borderColor: C.gold + '33',
+      borderWidth: 1,
+    },
+    vipPromoHead: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: 8,
     },
-    offlineText: {
-      flex: 1,
+    vipPromoTitle: {
+      ...type.h3,
       color: C.text,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '600',
     },
-    offlineBox: {
-      backgroundColor: C.danger + '18',
-      borderRadius: 16,
-      padding: 12,
-    },
-    noteBox: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-    },
-    noteIcon: {
-      marginTop: 2,
-    },
-    noteText: {
+    vipPromoText: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
+    },
+
+    note: {
+      ...type.small,
+      color: C.textMuted,
     },
   });
 }

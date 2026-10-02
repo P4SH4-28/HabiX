@@ -1,24 +1,36 @@
 // ============================================================
-// SeasonPassScreen — Battle Pass (Season Pass)
-// Pass seviyesi toplam XP'den türetilir (uygulama seviyesiyle aynı
-// eğri, üst sınır 20). Her seviyede iki ödül kutusu vardır:
-//   Free → herkese açık (altın paketleri, temalar, avatar, çerçeve)
-//   VIP  → yalnızca aktif VIP üyelere (Lottie animasyonlu çerçeveler,
-//          özel temalar, nadir rozetler)
-// VIP satın alma altınla yapılır (sunucu onaylı, bkz. vip-action).
+// SeasonPassScreen — Battle Pass (v3 design system, sıfırdan)
+//
+// YAPI:
+//   1) Sezon başlığı    → PASS_NAME + "süresiz" + bitirmeye kalan XP
+//   2) Büyük tier barı  → seviye / PASS_MAX_LEVEL (tier ilerlemesi)
+//   3) VIP kartı        → aktifse durum kartı, değilse 5.000 🪙 satın alma
+//   4) Sütun başlıkları → FREE · VIP
+//   5) Tier listesi     → her seviyede 2 kutu (Free/VIP):
+//                          kilitli (seviye/VIP) · alınabilir (Al) · alındı
+//
+// DataContext API (değişmedi): claimPassReward(level, track) → {ok, error}
+//   (başarı toast'ı DataContext verir) · buyVip() async → {ok, error}
+//   (başarı toast'ı DataContext verir) · vipActive · pushToast
+//
+// DÜZELTME: eski ekran passLevelFromXp().curXp alanı yokken onu kullanıyordu
+//   (undefined → NaN ilerleme). Doğrusu: curXp = totalXp - cumXp.
+//
+// KURALLAR: glow/gradient/blur/loop YOK → LottieView KULLANILMAZ
+//   (animasyonlu çerçeve ödülleri statik ✨ gösterilir) · animasyon ≤300ms ·
+//   4 vurgu rengi (primary/altın/success/danger) · 5 tipografi ölçeği.
+// SAFE AREA: üst başlık Stack header, alt inset burada.
 // ============================================================
 import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import LottieView from 'lottie-react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Icon from '../components/ui/icons';
+import Pill from '../components/ui/Pill';
 import Progress from '../components/ui/Progress';
+import SectionHeader from '../components/ui/SectionHeader';
 import {
   BADGES,
   PASS_LEVELS,
@@ -29,148 +41,134 @@ import {
   rewardLabel,
 } from '../data/seasonPass';
 import { VIP_PRICE_GOLD } from '../data/quests';
-import { getLottieSource } from '../components/AvatarCircle';
 import { getFrame } from '../data/shop';
 import { serverNow } from '../services/serverClock';
 import { useTheme } from '../theme';
-import Icon from '../components/ui/icons';
+
+// seasonPass.js: 1-10. seviyeler 100, ... 41-50 → 500 XP (toplam 14.500).
+const SEASON_TOTAL_XP = 14500;
+
+// buyVip hata kodları → Türkçe mesaj (sunucu cümlesi ise olduğu gibi göster).
+const VIP_ERR = {
+  banned: 'Hesabın kısıtlı — VIP satın alınamadı',
+  insufficient_balance: 'Yetersiz altın',
+  not_enough_gold: 'Yetersiz altın',
+};
+
+// Ödül tipinin önizleme ikonu (lottieFrame dahil — statik, loop YOK).
+function rewardEmoji(reward) {
+  if (!reward) return '?';
+  switch (reward.type) {
+    case 'gold':
+      return '🪙';
+    case 'badge':
+      return BADGES[reward.badgeId]?.emoji || '🎖';
+    case 'theme':
+      return '🎨';
+    case 'avatar':
+      return '🖼';
+    case 'frame':
+    case 'lottieFrame':
+      return (reward.type === 'frame' && getFrame(reward.frameId)?.emoji) || '✨';
+    default:
+      return '🎁';
+  }
+}
+
+// Ödül kutusunun kısa metni (altında tekrarlanan ikonu temizlemek için).
+function rewardText(reward) {
+  if (!reward) return '—';
+  if (reward.type === 'gold') return String(reward.amount);
+  return rewardLabel(reward);
+}
 
 export default function SeasonPassScreen() {
-  const { data, claimPassReward, buyVip, vipActive } = useData();
-  const { colors: C } = useTheme();
-  const styles = useMemo(() => makeStyles(C), [C]);
+  const { colors: C, type } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => makeStyles(C, type), [C, type]);
+  const { data, claimPassReward, buyVip, vipActive, pushToast } = useData();
 
   const [buying, setBuying] = useState(false);
-  const [claimingKey, setClaimingKey] = useState(null);
 
-  const pass = passLevelFromXp(data.stats.totalXp);
+  const totalXp = data.stats.totalXp || 0;
+  const pass = passLevelFromXp(totalXp);
+  const curXp = totalXp - pass.cumXp;
   const claims = data.passClaims || {};
   const gold = data.stats.gold || 0;
-  const vipDaysLeft = Math.max(0, Math.ceil(((data.settings.vipUntil || 0) - serverNow()) / 86400000));
+  const vipDaysLeft = Math.max(
+    0,
+    Math.ceil(((data.settings.vipUntil || 0) - serverNow()) / 86400000)
+  );
+  const seasonXpLeft = Math.max(0, SEASON_TOTAL_XP - totalXp);
 
+  // ---------- eylemler ----------
   const handleBuyVip = async () => {
     if (buying) return;
     setBuying(true);
-    await buyVip();
-    setBuying(false);
+    try {
+      const r = await buyVip();
+      if (r && r.ok === false) {
+        const raw = r.error;
+        const title =
+          VIP_ERR[raw] || (typeof raw === 'string' && raw.includes(' ') ? raw : 'Satın alınamadı');
+        pushToast({ icon: '⚠️', title, color: C.danger });
+      }
+    } finally {
+      setBuying(false);
+    }
   };
 
   const handleClaim = (level, track) => {
-    const key = `${level}_${track}`;
-    if (claimingKey) return;
-    setClaimingKey(key);
-    claimPassReward(level, track);
-    setClaimingKey(null);
+    const r = claimPassReward(level, track);
+    if (r && r.ok === false) {
+      pushToast({ icon: '⚠️', title: r.error || 'Ödül alınamadı', color: C.danger });
+    }
   };
 
-  // Ödül kutusu görünümü (her iki track için ortak).
+  // ---------- ödül kutusu (Free/VIP ortak) ----------
   const renderBox = (level, track) => {
     const lvl = PASS_LEVELS.find((l) => l.level === level);
     const reward = lvl ? (track === 'vip' ? lvl.vip : lvl.free) : null;
+    if (!reward) return <View key={`${level}_${track}`} style={[styles.box, styles.boxEmpty]} />;
+    const isVip = track === 'vip';
     const claimed = passRewardClaimed(claims, level, track);
     const reachable = pass.level >= level;
-    const isVip = track === 'vip';
-    const lockLabel =
-      !reachable
-        ? 'Seviye açılınca'
-        : isVip && !vipActive
-          ? 'VIP gerekli'
-          : null;
-    const accent = isVip ? C.gold : C.accent;
-    const key = `${level}_${track}`;
-
-    let preview = null;
-    if (reward) {
-      if (reward.type === 'gold') {
-        preview = (
-          <View style={styles.previewCoinRow}>
-            <Icon emoji="🪙" size={20} color={C.gold} />
-            <Text style={styles.previewGold}>{reward.amount}</Text>
-          </View>
-        );
-      } else if (reward.type === 'badge') {
-        const badge = BADGES[reward.badgeId];
-        preview = badge ? <Icon emoji={badge.emoji} size={30} color={C.gold} /> : null;
-      } else if (reward.type === 'theme') {
-        preview = (
-          <View style={styles.previewTextRow}>
-            <Icon emoji="🎨" size={14} color={C.text} />
-            <Text style={styles.previewTheme}>Tema</Text>
-          </View>
-        );
-      } else if (reward.type === 'avatar') {
-        preview = (
-          <View style={styles.previewTextRow}>
-            <Icon emoji="🖼️" size={14} color={C.text} />
-            <Text style={styles.previewAvatar}>Avatar</Text>
-          </View>
-        );
-      } else if (reward.type === 'lottieFrame') {
-        const frame = getFrame(reward.frameId);
-        const source = getLottieSource(reward.frameId);
-        preview = source ? (
-          <LottieView
-            source={source}
-            autoPlay
-            loop
-            style={{ width: 56, height: 56 }}
-          />
-        ) : (
-          <Text style={styles.previewBadge}>✨</Text>
-        );
-      } else if (reward.type === 'frame') {
-        const frame = getFrame(reward.frameId);
-        preview = frame ? (
-          <View style={styles.previewTextRow}>
-            <Icon emoji={frame.emoji} size={14} color={C.text} />
-            <Text style={styles.previewTheme}>Çerçeve</Text>
-          </View>
-        ) : null;
-      }
-    }
-
+    const vipLocked = isVip && !vipActive;
+    const accent = isVip ? C.gold : C.primary;
     return (
       <View
-        key={key}
+        key={`${level}_${track}`}
         style={[
           styles.box,
-          isVip ? styles.vipBox : styles.freeBox,
+          isVip ? styles.boxVip : styles.boxFree,
           claimed && styles.boxClaimed,
         ]}
       >
-        <View style={styles.boxPreview}>{preview || <Text style={styles.previewEmpty}>?</Text>}</View>
-        <View style={styles.boxInfo}>
-          <Text style={[styles.boxTrack, { color: accent }]}>
-            {isVip ? (
-              <Icon emoji="👑" size={11} color={accent} style={styles.inlineIcon} />
-            ) : null}
-            {isVip ? ' VIP' : 'Free'}
-          </Text>
-          <Text style={styles.boxReward} numberOfLines={2}>
-            {reward ? rewardLabel(reward) : '—'}
-          </Text>
-        </View>
+        <Icon emoji={rewardEmoji(reward)} size={22} color={claimed ? C.textMuted : accent} />
+        <Text style={styles.boxReward} numberOfLines={2}>
+          {rewardText(reward)}
+        </Text>
         {claimed ? (
-          <View style={styles.claimedChip}>
-            <Text style={styles.claimedChipText}>Alındı ✓</Text>
-          </View>
-        ) : lockLabel ? (
-          <View style={styles.lockChip}>
-            <Icon emoji="🔒" size={11} color={C.textMuted} />
-            <Text style={styles.lockChipText}>{lockLabel}</Text>
-          </View>
+          <Pill size="sm" icon="✓" bg={C.success + '1A'} color={C.success}>
+            Alındı
+          </Pill>
+        ) : !reachable ? (
+          <Pill size="sm" icon="🔒">
+            Seviye {level}
+          </Pill>
+        ) : vipLocked ? (
+          <Pill size="sm" icon="👑" bg={C.gold + '1A'} color={C.gold}>
+            VIP gerekli
+          </Pill>
         ) : (
-          <Pressable
-            style={[styles.claimBtn, { backgroundColor: accent }]}
+          <Button
+            label="Al"
+            size="sm"
+            variant={isVip ? 'primary' : 'secondary'}
+            fullWidth
             onPress={() => handleClaim(level, track)}
-            disabled={!!claimingKey}
-          >
-            {claimingKey === key ? (
-              <ActivityIndicator size="small" color={C.background} />
-            ) : (
-              <Text style={[styles.claimBtnText, { color: C.background }]}>Al</Text>
-            )}
-          </Pressable>
+            accessibilityLabel={`${level}. seviye ${isVip ? 'VIP' : 'Free'} ödülünü al`}
+          />
         )}
       </View>
     );
@@ -179,426 +177,368 @@ export default function SeasonPassScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: Math.max(24, insets.bottom + 24) },
+      ]}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.screenTitleRow}>
-        <Icon emoji="🎖️" size={20} color={C.gold} />
-        <Text style={styles.screenTitle}>Season Pass</Text>
-      </View>
-      <Text style={styles.screenSub}>{PASS_NAME}</Text>
+      {/* ---------- 1) SEZON BAŞLIĞI + 2) TIER BARI ---------- */}
+      <Card style={styles.seasonCard}>
+        <View style={styles.seasonHead}>
+          <View style={styles.seasonTitleWrap}>
+            <Text style={styles.seasonName}>{PASS_NAME}</Text>
+            <Text style={styles.seasonSub}>
+              Sezonu bitirmeye kalan: {seasonXpLeft} XP
+            </Text>
+          </View>
+          <Pill size="sm" icon="⏳">
+            Süresiz
+          </Pill>
+        </View>
 
-      {/* Seviye ilerleme kartı */}
-      <View style={styles.progressCard}>
-        <View style={styles.progressTop}>
+        <View style={styles.tierRow}>
           <View style={styles.levelCircle}>
             <Text style={styles.levelText}>{pass.level}</Text>
           </View>
-          <View style={styles.progressInfo}>
-            <Text style={styles.progressTitle}>
-              Pass Seviyesi {pass.level}
-              {pass.level >= PASS_MAX_LEVEL ? ' (Maksimum)' : ''}
-            </Text>
+          <View style={styles.tierInfo}>
             <Progress
-              value={
-                pass.level >= PASS_MAX_LEVEL
-                  ? 1
-                  : Math.min(1, pass.curXp / pass.nextThreshold)
-              }
-              height={8}
-              colors={[C.primary, C.accent]}
-              accessibilityLabel={`Pass seviyesi ilerlemesi`}
+              value={pass.level >= PASS_MAX_LEVEL ? 1 : pass.level / PASS_MAX_LEVEL}
+              height={14}
+              colors={[C.primary]}
+              accessibilityLabel={`Tier ilerlemesi seviye ${pass.level} / ${PASS_MAX_LEVEL}`}
             />
-            <Text style={styles.progressHint}>
-              {pass.level >= PASS_MAX_LEVEL
-                ? 'Tüm seviyeler tamamlandı!'
-                : `Bir sonraki seviye için ${pass.nextThreshold - pass.curXp} XP kaldı`}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* VIP durum / satın alma kartı */}
-      {vipActive ? (
-        <View style={[styles.vipActiveCard, { borderWidth: 1, borderColor: C.gold + '55' }]}>
-          <Icon emoji="👑" size={30} color={C.gold} />
-          <View style={styles.vipActiveInfo}>
-            <Text style={[styles.vipActiveTitle, { color: C.gold }]}>VIP aktif</Text>
-            <Text style={styles.vipActiveText}>
-              {vipDaysLeft} gün kaldı — VIP ödül kutuları ve ekstra görevler açık.
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <Pressable
-          style={[styles.buyVipCard, { borderWidth: 1, borderColor: C.gold + '55' }]}
-          onPress={handleBuyVip}
-          disabled={buying}
-        >
-          <Icon emoji="👑" size={34} color={C.gold} />
-          <View style={styles.buyVipInfo}>
-            <Text style={styles.buyVipTitle}>VIP üyeliği al</Text>
-            <Text style={styles.buyVipText}>
-              30 gün boyunca: +4 ekstra günlük görev, temel görevlerde ×1.5 çarpan ve
-              Season Pass VIP ödüllerine erişim.
-            </Text>
-            <View style={styles.buyVipBottom}>
-              <View style={styles.buyVipPriceRow}>
-                <Icon emoji="🪙" size={13} color={C.gold} />
-                <Text style={[styles.buyVipPrice, { color: C.gold }]}>{VIP_PRICE_GOLD}</Text>
-              </View>
-              {buying ? (
-                <ActivityIndicator size="small" color={C.gold} />
-              ) : (
-                <View style={[styles.buyVipBtn, { backgroundColor: C.gold }]}>
-                  <Text style={styles.buyVipBtnText}>Satın Al</Text>
-                </View>
-              )}
+            <View style={styles.tierLabels}>
+              <Text style={styles.tierLabelStrong}>
+                TIER {pass.level}/{PASS_MAX_LEVEL}
+              </Text>
+              <Text style={styles.tierLabel}>
+                {pass.level >= PASS_MAX_LEVEL
+                  ? 'Sezon tamamlandı!'
+                  : `Sonraki seviye: ${pass.nextThreshold - curXp} XP`}
+              </Text>
             </View>
-            {gold < VIP_PRICE_GOLD && (
-              <View style={styles.buyVipWarnRow}>
-                <Icon emoji="🪙" size={11} color={C.danger} />
-                <Text style={styles.buyVipWarn}>
-                  {VIP_PRICE_GOLD - gold} daha lazım (bakiyen: {gold})
-                </Text>
-              </View>
-            )}
           </View>
-        </Pressable>
+        </View>
+      </Card>
+
+      {/* ---------- 3) VIP DURUM / SATIN ALMA ---------- */}
+      {vipActive ? (
+        <Card style={styles.vipActiveCard}>
+          <Icon emoji="👑" size={26} color={C.gold} />
+          <View style={styles.vipInfo}>
+            <Text style={styles.vipActiveTitle}>VIP aktif</Text>
+            <Text style={styles.vipText}>
+              {vipDaysLeft} gün kaldı — VIP ödül kutuları, +4 görev ve ×1.5 çarpan açık.
+            </Text>
+          </View>
+        </Card>
+      ) : (
+        <Card style={styles.vipBuyCard}>
+          <View style={styles.vipHead}>
+            <Icon emoji="👑" size={26} color={C.gold} />
+            <View style={styles.vipInfo}>
+              <Text style={styles.vipBuyTitle}>VIP üyeliği al</Text>
+              <Text style={styles.vipText}>
+                30 gün: +4 ekstra günlük görev, ×1.5 ödül çarpanı, Season Pass VIP
+                kutuları.
+              </Text>
+            </View>
+          </View>
+          <View style={styles.vipBuyFoot}>
+            <View style={styles.priceRow}>
+              <Icon emoji="🪙" size={15} color={C.gold} />
+              <Text style={styles.priceText}>{VIP_PRICE_GOLD}</Text>
+            </View>
+            <Button
+              label="Satın Al"
+              size="md"
+              variant="primary"
+              loading={buying}
+              onPress={handleBuyVip}
+            />
+          </View>
+          {gold < VIP_PRICE_GOLD ? (
+            <View style={styles.warnRow}>
+              <Icon emoji="⚠" size={12} color={C.danger} />
+              <Text style={styles.warnText}>
+                {VIP_PRICE_GOLD - gold} altın daha lazım (bakiyen: {gold})
+              </Text>
+            </View>
+          ) : null}
+        </Card>
       )}
 
-      {/* Seviye ödül listesi */}
-      <View style={styles.levelList}>
-        {PASS_LEVELS.map((lvl) => (
-          <View key={lvl.level} style={[styles.levelRow, pass.level >= lvl.level && styles.levelReached]}>
-            <View style={styles.levelNumWrap}>
-              <Text
-                style={[
-                  styles.levelNum,
-                  { color: pass.level >= lvl.level ? C.text : C.textMuted },
-                ]}
-              >
-                {lvl.level}
-              </Text>
-              {pass.level === lvl.level && (
-                <View style={[styles.currentDot, { backgroundColor: C.primary }]} />
-              )}
-            </View>
-            <View style={styles.levelBoxes}>
-              {renderBox(lvl.level, 'free')}
-              {renderBox(lvl.level, 'vip')}
-            </View>
-          </View>
-        ))}
+      {/* ---------- 4) SÜTUN BAŞLIKLARI + 5) TIER LİSTESİ ---------- */}
+      <SectionHeader title="Sezon Ödülleri" />
+      <View style={styles.colHead}>
+        <View style={styles.colNumSpacer} />
+        <Text style={[styles.colLabel, { color: C.primary }]}>FREE</Text>
+        <Text style={[styles.colLabel, styles.colLabelVip]}>VIP</Text>
       </View>
 
-      <View style={styles.noteBox}>
-        <Icon emoji="💡" size={13} color={C.primary} style={styles.noteIcon} />
-        <Text style={styles.noteText}>
-          Pass seviyen toplam XP'nle otomatik yükselir. Ödül kutuları seviyeye
-          ulaştığında açılır; VIP kutuları yalnızca aktif VIP üyelere verilir.
-        </Text>
+      <View style={styles.tierList}>
+        {PASS_LEVELS.map((lvl) => {
+          const isCurrent = pass.level === lvl.level;
+          const reached = pass.level >= lvl.level;
+          return (
+            <View key={lvl.level} style={styles.tierItem}>
+              <View style={styles.tierNumCol}>
+                <Text
+                  style={[
+                    styles.tierNum,
+                    { color: reached ? C.text : C.textMuted },
+                    isCurrent && styles.tierNumCurrent,
+                  ]}
+                >
+                  {lvl.level}
+                </Text>
+                {isCurrent ? <View style={styles.currentDot} /> : null}
+              </View>
+              <View style={styles.boxes}>
+                {renderBox(lvl.level, 'free')}
+                {renderBox(lvl.level, 'vip')}
+              </View>
+            </View>
+          );
+        })}
       </View>
+
+      <Text style={styles.note}>
+        Pass seviyen toplam XP'nle otomatik yükselir. Kutular seviyeye ulaşınca
+        açılır; VIP kutuları yalnızca aktif VIP üyelere verilir.
+      </Text>
     </ScrollView>
   );
 }
 
-function makeStyles(C) {
+function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: C.background,
     },
     content: {
       padding: 20,
       gap: 14,
-      paddingBottom: 60,
     },
-    screenTitle: {
-      color: C.text,
-      fontSize: 22,
-      fontWeight: '700',
+
+    // ---- sezon başlığı + tier ----
+    seasonCard: {
+      gap: 16,
     },
-    screenTitleRow: {
+    seasonHead: {
       flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 10,
     },
-    screenSub: {
+    seasonTitleWrap: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    seasonName: {
+      ...type.h3,
+      color: C.text,
+    },
+    seasonSub: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 19,
+      fontVariant: ['tabular-nums'],
     },
-    progressCard: {
-      backgroundColor: C.surface,
-      borderRadius: 20,
-      padding: 16,
-    },
-    progressTop: {
+    tierRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 14,
     },
     levelCircle: {
-      width: 54,
-      height: 54,
+      width: 56,
+      height: 56,
       borderRadius: 999,
-      backgroundColor: C.primary + '22',
+      backgroundColor: C.primary + '1A',
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 2,
       borderColor: C.primary,
     },
     levelText: {
+      ...type.stat,
       color: C.primary,
-      fontSize: 22,
-      fontWeight: '700',
     },
-    progressInfo: {
+    tierInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 6,
     },
-    progressTitle: {
+    tierLabels: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    tierLabelStrong: {
+      ...type.micro,
       color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
     },
-    progressHint: {
+    tierLabel: {
+      ...type.micro,
       color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '600',
+      fontVariant: ['tabular-nums'],
     },
+
+    // ---- VIP ----
     vipActiveCard: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      backgroundColor: C.gold + '12',
-      borderRadius: 20,
-      padding: 16,
+      backgroundColor: C.gold + '0D',
+      borderColor: C.gold + '33',
+      borderWidth: 1,
     },
-    vipActiveInfo: {
+    vipBuyCard: {
+      gap: 12,
+      backgroundColor: C.gold + '0D',
+      borderColor: C.gold + '33',
+      borderWidth: 1,
+    },
+    vipHead: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    vipInfo: {
       flex: 1,
-      gap: 3,
+      minWidth: 0,
+      gap: 2,
     },
     vipActiveTitle: {
-      fontSize: 15,
-      fontWeight: '700',
+      ...type.h3,
+      color: C.gold,
     },
-    vipActiveText: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
-    },
-    buyVipCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      backgroundColor: C.gold + '12',
-      borderRadius: 20,
-      padding: 16,
-    },
-    buyVipInfo: {
-      flex: 1,
-      gap: 4,
-    },
-    buyVipTitle: {
+    vipBuyTitle: {
+      ...type.h3,
       color: C.text,
-      fontSize: 15,
-      fontWeight: '700',
     },
-    buyVipText: {
+    vipText: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
     },
-    buyVipBottom: {
+    vipBuyFoot: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginTop: 4,
+      gap: 10,
     },
-    buyVipPriceRow: {
+    priceRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 5,
     },
-    buyVipPrice: {
-      fontSize: 15,
-      fontWeight: '700',
+    priceText: {
+      ...type.h3,
+      color: C.gold,
+      fontVariant: ['tabular-nums'],
     },
-    buyVipBtn: {
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
-    buyVipBtnText: {
-      color: C.background,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    buyVipWarnRow: {
+    warnRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
-      marginTop: 4,
+      gap: 5,
     },
-    buyVipWarn: {
+    warnText: {
+      ...type.micro,
       color: C.danger,
-      fontSize: 11,
-      fontWeight: '700',
     },
-    levelList: {
-      gap: 8,
-    },
-    levelRow: {
+
+    // ---- sütun başlıkları ----
+    colHead: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
     },
-    levelReached: {
-      opacity: 1,
+    colNumSpacer: {
+      width: 34,
     },
-    levelNumWrap: {
+    colLabel: {
+      ...type.micro,
+      flex: 1,
+      textAlign: 'center',
+    },
+    colLabelVip: {
+      color: C.gold,
+    },
+
+    // ---- tier listesi ----
+    tierList: {
+      gap: 8,
+    },
+    tierItem: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      gap: 10,
+    },
+    tierNumCol: {
       width: 34,
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 2,
     },
-    levelNum: {
-      fontSize: 15,
-      fontWeight: '700',
+    tierNum: {
+      ...type.bodyStrong,
       fontVariant: ['tabular-nums'],
+    },
+    tierNumCurrent: {
+      color: C.primary,
     },
     currentDot: {
       width: 6,
       height: 6,
-      borderRadius: 8,
-      marginTop: 2,
+      borderRadius: 3,
+      backgroundColor: C.primary,
     },
-    levelBoxes: {
+    boxes: {
       flex: 1,
       flexDirection: 'row',
       gap: 8,
     },
     box: {
       flex: 1,
+      minHeight: 104,
       borderRadius: 16,
+      borderWidth: 1,
       padding: 10,
       gap: 6,
-      minHeight: 96,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    freeBox: {
+    boxFree: {
       backgroundColor: C.surface,
+      borderColor: C.border,
     },
-    vipBox: {
-      backgroundColor: C.gold + '0F',
-      borderWidth: 1,
-      borderColor: C.gold + '44',
+    boxVip: {
+      backgroundColor: C.gold + '0D',
+      borderColor: C.gold + '33',
+    },
+    boxEmpty: {
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      borderWidth: 0,
     },
     boxClaimed: {
-      opacity: 0.55,
-    },
-    boxPreview: {
-      height: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    previewGold: {
-      fontSize: 22,
-      fontWeight: '700',
-    },
-    previewCoinRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-    },
-    previewBadge: {
-      fontSize: 30,
-    },
-    previewTextRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    previewTheme: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    previewAvatar: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    previewEmpty: {
-      color: C.textMuted,
-      fontSize: 15,
-    },
-    boxInfo: {
-      gap: 2,
-    },
-    boxTrack: {
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 0.5,
+      opacity: 0.6,
     },
     boxReward: {
+      ...type.micro,
       color: C.text,
-      fontSize: 11,
-      fontWeight: '700',
-      lineHeight: 15,
+      textAlign: 'center',
+      textTransform: 'none',
+      letterSpacing: 0,
+      fontWeight: '600',
     },
-    claimBtn: {
-      borderRadius: 8,
-      paddingVertical: 6,
-      alignItems: 'center',
-      minHeight: 28,
-      justifyContent: 'center',
-    },
-    claimBtnText: {
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    claimedChip: {
-      borderRadius: 8,
-      backgroundColor: C.accent + '22',
-      paddingVertical: 6,
-      alignItems: 'center',
-    },
-    claimedChipText: {
-      color: C.accent,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    lockChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 4,
-      borderRadius: 8,
-      backgroundColor: C.surfaceLight,
-      paddingVertical: 6,
-    },
-    lockChipText: {
+
+    note: {
+      ...type.small,
       color: C.textMuted,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    inlineIcon: {
-      // gap handles spacing between icon and label
-    },
-    noteBox: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 14,
-    },
-    noteIcon: {
-      marginTop: 2,
-    },
-    noteText: {
-      color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
     },
   });
 }
