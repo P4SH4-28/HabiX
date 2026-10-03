@@ -31,9 +31,9 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
+  View
 } from 'react-native';
+import Text from '../components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -175,10 +175,10 @@ export default function HomeScreen() {
         {/* ---------- 1) HEADER ---------- */}
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
-            <Text style={styles.greeting} numberOfLines={1}>
+            <Text variant="h1" style={styles.greeting} numberOfLines={1}>
               {greeting}
             </Text>
-            <Text style={styles.dateText} numberOfLines={1}>
+            <Text variant="small" style={styles.dateText} numberOfLines={1}>
               {dateLabel}
             </Text>
           </View>
@@ -200,8 +200,8 @@ export default function HomeScreen() {
         {/* ---------- 2) BUGÜNKÜ İLERLEME ---------- */}
         <Card>
           <View style={styles.rowBetween}>
-            <Text style={styles.h3}>Bugünkü İlerleme</Text>
-            <Text style={styles.pctValue}>{Math.round(pct * 100)}%</Text>
+            <Text variant="h3" style={styles.h3}>Bugünkü İlerleme</Text>
+            <Text variant="stat" style={styles.pctValue}>{Math.round(pct * 100)}%</Text>
           </View>
           <Progress
             value={pct}
@@ -212,23 +212,23 @@ export default function HomeScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statCol}>
               <Icon emoji="🔥" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>En uzun seri</Text>
+              <Text variant="micro" style={styles.statLabel}>En uzun seri</Text>
               <AnimatedCounter value={bestStreakValue} style={styles.statValue} />
             </View>
             <View style={styles.statCol}>
               <Icon emoji="⚡" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>Bugün XP</Text>
+              <Text variant="micro" style={styles.statLabel}>Bugün XP</Text>
               <AnimatedCounter value={todayXp} style={styles.statValue} />
             </View>
             <View style={styles.statCol}>
               <Ionicons name="checkmark-circle" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>Tamamlanan</Text>
-              <Text style={styles.statValue}>
+              <Text variant="micro" style={styles.statLabel}>Tamamlanan</Text>
+              <Text variant="h3" style={styles.statValue}>
                 <AnimatedCounter value={doneToday} style={styles.statValue} />/{total}
               </Text>
             </View>
           </View>
-          <Text style={styles.hint}>
+          <Text variant="small" style={styles.hint}>
             Alışkanlık başına +{settings.xpPerHabit} XP kazanırsın
           </Text>
         </Card>
@@ -237,12 +237,12 @@ export default function HomeScreen() {
         <Card variant="elevated">
           <View style={styles.levelRow}>
             <View style={styles.levelCircle}>
-              <Text style={styles.levelNum}>{levelInfo.level}</Text>
-              <Text style={styles.levelLabel}>SEVİYE</Text>
+              <Text variant="stat" style={styles.levelNum}>{levelInfo.level}</Text>
+              <Text variant="micro" style={styles.levelLabel}>SEVİYE</Text>
             </View>
             <View style={styles.levelInfo}>
-              <Text style={styles.h3}>Deneyim</Text>
-              <Text style={styles.xpText}>
+              <Text variant="h3" style={styles.h3}>Deneyim</Text>
+              <Text variant="small" style={styles.xpText}>
                 {levelInfo.curXp} / {levelInfo.nextThreshold} XP
               </Text>
               <Progress
@@ -251,7 +251,7 @@ export default function HomeScreen() {
                 colors={[C.primary, C.primary]}
                 accessibilityLabel={`Seviye ilerlemesi yüzde ${Math.round(levelPct * 100)}`}
               />
-              <Text style={styles.hint}>Sonraki seviyeye {xpLeft} XP kaldı</Text>
+              <Text variant="small" style={styles.hint}>Sonraki seviyeye {xpLeft} XP kaldı</Text>
             </View>
           </View>
         </Card>
@@ -261,10 +261,10 @@ export default function HomeScreen() {
           <View style={styles.rowBetween}>
             <View style={styles.titleRow}>
               <Icon emoji="🎯" size={16} color={C.primary} />
-              <Text style={styles.h3}>Günün Görevleri</Text>
+              <Text variant="h3" style={styles.h3}>Günün Görevleri</Text>
             </View>
             <View style={styles.statusRow}>
-              <Text
+              <Text variant="micro"
                 style={[
                   styles.status,
                   { color: questSummary.readyCount > 0 ? C.success : C.warning },
@@ -277,7 +277,7 @@ export default function HomeScreen() {
               <Ionicons name="chevron-forward" size={16} color={C.textMuted} />
             </View>
           </View>
-          <Text style={styles.hint}>
+          <Text variant="small" style={styles.hint}>
             {questSummary.doneCount > 0
               ? `Bugün ${questSummary.doneCount}/${questSummary.total} görev tamamladın`
               : 'Henüz görev bitirmedin'}{' '}
@@ -418,7 +418,7 @@ export function HabitSwipeRow({ habit, done, streak, onToggle, onDelete }) {
         accessibilityLabel={`Sil: ${habit.name}`}
       >
         <Ionicons name="trash" size={18} color={C.onPrimary} />
-        <Text style={styles.deleteLabel}>Sil</Text>
+        <Text variant="small" style={styles.deleteLabel}>Sil</Text>
       </Pressable>
 
       <Animated.View
@@ -436,10 +436,10 @@ export function HabitSwipeRow({ habit, done, streak, onToggle, onDelete }) {
             <View style={styles.habitRow}>
               <IconTile emoji={habit.emoji} tint={habit.color} size={40} />
               <View style={styles.habitInfo}>
-                <Text style={styles.habitName} numberOfLines={1}>
+                <Text variant="h3" style={styles.habitName} numberOfLines={1}>
                   {habit.name}
                 </Text>
-                <Text style={styles.habitStreak}>
+                <Text variant="small" style={styles.habitStreak}>
                   {streak > 0 ? `🔥 ${streak} gün seri` : 'Bugün başla'}
                 </Text>
               </View>
@@ -461,8 +461,8 @@ function EmptySuggestions({ onQuickAdd }) {
   return (
     <View style={styles.emptyBox}>
       <IconTile name="leaf" tint={C.success} size={64} />
-      <Text style={styles.h3}>İlk alışkanlığını ekle</Text>
-      <Text style={styles.emptyText}>Hazır bir başlangıç seç veya + butonuna dokun</Text>
+      <Text variant="h3" style={styles.h3}>İlk alışkanlığını ekle</Text>
+      <Text variant="small" style={styles.emptyText}>Hazır bir başlangıç seç veya + butonuna dokun</Text>
       <View style={styles.chipGrid}>
         {STARTER_HABITS.map((h) => (
           <Card
@@ -475,7 +475,7 @@ function EmptySuggestions({ onQuickAdd }) {
           >
             <View style={styles.chipRow}>
               <Text style={styles.chipEmoji}>{h.emoji}</Text>
-              <Text style={styles.chipText} numberOfLines={1}>
+              <Text variant="small" style={styles.chipText} numberOfLines={1}>
                 {h.name}
               </Text>
             </View>
@@ -490,6 +490,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -513,10 +514,12 @@ function makeStyles(C, type) {
     greeting: {
       ...type.h1,
       color: C.text,
+      lineHeight: 30,
     },
     dateText: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     headerActions: {
       flexDirection: 'row',
@@ -540,16 +543,19 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- bugünkü ilerleme ----
     pctValue: {
       ...type.stat,
       color: C.success,
+      lineHeight: 30,
     },
     statsRow: {
       flexDirection: 'row',
@@ -560,16 +566,19 @@ function makeStyles(C, type) {
       alignItems: 'center',
       gap: 4,
       flex: 1,
+      minWidth: 0,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
     statValue: {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
 
     // ---- seviye ----
@@ -589,11 +598,13 @@ function makeStyles(C, type) {
     levelNum: {
       ...type.stat,
       color: C.onPrimary,
+      lineHeight: 30,
     },
     levelLabel: {
       ...type.micro,
       color: C.onPrimary,
       opacity: 0.85,
+      lineHeight: 14,
     },
     levelInfo: {
       flex: 1,
@@ -604,6 +615,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.gold,
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     // ---- görev ----
@@ -614,6 +626,7 @@ function makeStyles(C, type) {
     },
     status: {
       ...type.micro,
+      lineHeight: 14,
     },
 
     // ---- alışkanlık satırı (swipe) ----
@@ -636,6 +649,7 @@ function makeStyles(C, type) {
       ...type.small,
       fontWeight: '600',
       color: C.onPrimary,
+      lineHeight: 18,
     },
     slide: {
       // translateX Reanimated shared value ile sürülür
@@ -653,10 +667,12 @@ function makeStyles(C, type) {
     habitName: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     habitStreak: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     checkbox: {
       width: 26,
@@ -683,6 +699,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 18,
     },
     chipGrid: {
       flexDirection: 'row',
@@ -700,12 +717,14 @@ function makeStyles(C, type) {
       gap: 8,
     },
     chipEmoji: {
-      fontSize: 16,
+      fontSize: 17,
+      lineHeight: 24,
     },
     chipText: {
       ...type.small,
       color: C.text,
       flexShrink: 1,
+      lineHeight: 18,
     },
 
     // ---- FAB ----

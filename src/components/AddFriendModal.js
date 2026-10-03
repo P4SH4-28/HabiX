@@ -6,10 +6,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
+import Text from './ui/Text';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { searchProfiles, sendFriendRequest } from '../services/friendService';
@@ -192,13 +192,14 @@ function makeStyles(C) {
       paddingHorizontal: 16,
       color: C.text,
       fontSize: 15,
+      lineHeight: 21,
     },
     hint: {
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 18,
+      fontSize: 13,
       marginTop: 8,
       marginBottom: 4,
+      lineHeight: 18,
     },
     list: {
       maxHeight: 320,
@@ -214,16 +215,19 @@ function makeStyles(C) {
     },
     rowInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     rowName: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     rowMeta: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     sendButton: {
       backgroundColor: C.primary,
@@ -240,6 +244,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     tag: {
       borderRadius: 12,
@@ -253,6 +258,7 @@ function makeStyles(C) {
       color: C.accent,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     centerBox: {
       alignItems: 'center',
@@ -262,13 +268,14 @@ function makeStyles(C) {
     centerText: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     centerSub: {
       color: C.textMuted,
       fontSize: 13,
-      textAlign: 'center',
-      lineHeight: 18,
+      textAlign: 'center',
       paddingHorizontal: 16,
+      lineHeight: 18,
     },
     feedbackBox: {
       marginTop: 10,
@@ -285,6 +292,8 @@ function makeStyles(C) {
       fontWeight: '700',
       textAlign: 'center',
       flex: 1,
+      minWidth: 0,
+      lineHeight: 18,
     },
   });
 }

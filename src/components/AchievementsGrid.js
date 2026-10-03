@@ -4,7 +4,8 @@
 // Açılmış olanlar renkli ve ikonlu; açılmamışlar karartılmış ve 🔒.
 // ============================================================
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { useTheme } from '../theme';
 
@@ -67,11 +68,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     counter: {
       color: C.gold,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     grid: {
       flexDirection: 'row',
@@ -103,6 +106,7 @@ function makeStyles(C) {
     },
     icon: {
       fontSize: 22,
+      lineHeight: 30,
     },
     iconLocked: {
       opacity: 0.8,
@@ -112,6 +116,7 @@ function makeStyles(C) {
       fontSize: 11,
       fontWeight: '700',
       textAlign: 'center',
+      lineHeight: 14,
     },
     badgeTitleLocked: {
       color: C.textMuted,
@@ -121,12 +126,14 @@ function makeStyles(C) {
       fontSize: 11,
       textAlign: 'center',
       marginTop: 2,
+      lineHeight: 14,
     },
     badgeReward: {
       color: C.gold,
       fontSize: 11,
       fontWeight: '700',
       marginTop: 3,
+      lineHeight: 14,
     },
   });
 }

@@ -6,7 +6,8 @@
 // ============================================================
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import BackgroundPattern from './BackgroundPattern';
 import GradientButton from './GradientButton';
 import SoftButton from './ui/SoftButton';
@@ -135,11 +136,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
+    lineHeight: 30,
   },
   text: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 15,
     textAlign: 'center',
+    lineHeight: 21,
   },
   dots: {
     flexDirection: 'row',

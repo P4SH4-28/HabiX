@@ -40,7 +40,7 @@ export function PomodoroWidget({ snapshot }) {
       >
         <TextWidget
           text="Pomodoro Başlat"
-          style={{ fontSize: 13, fontWeight: '900', color: BOX_TEXT }}
+          style={{ fontSize: 13, lineHeight: 18, fontWeight: '800', color: BOX_TEXT }}
         />
       </FlexWidget>
 
@@ -71,7 +71,7 @@ export function PomodoroWidget({ snapshot }) {
       </FlexWidget>
 
       {running ? (
-        <TextWidget text="çalışıyor…" style={{ fontSize: 10, color: MUTED, marginTop: 8 }} />
+        <TextWidget text="çalışıyor…" style={{ fontSize: 11, lineHeight: 14, color: MUTED, marginTop: 8 }} />
       ) : null}
     </FlexWidget>
   );

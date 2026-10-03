@@ -3,7 +3,8 @@
 // Card tabanlı: tutarlı köşe/kenarlık, dokunulabilir satırlarda
 // hafif baskı geri bildirimi + chevron.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme';
 import Card from '../Card';
@@ -51,11 +52,14 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
+    minWidth: 0,
     fontSize: 15,
     fontWeight: '700',
+    lineHeight: 21,
   },
   subtitle: {
     fontSize: 13,
+    lineHeight: 18,
   },
   rightSlot: {
     marginLeft: 'auto',

@@ -5,7 +5,8 @@
 // gösterilir (her biri 4 saniye ekranda kalır, sonra otomatik kapanır).
 // ============================================================
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 
@@ -77,12 +78,14 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 22,
+    lineHeight: 30,
   },
   text: {
     color: '#0B0E14',
     fontSize: 15,
     fontWeight: '700',
     flexShrink: 1,
+    lineHeight: 21,
   },
   pressed: {
     opacity: 0.85,

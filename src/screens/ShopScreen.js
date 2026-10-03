@@ -20,7 +20,8 @@
 //   h1 yok · Lottie çerçeveler statik gösterilir (loop YOK).
 // ============================================================
 import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useNavigation } from '@react-navigation/native';
 import AnimatedCounter from '../components/AnimatedCounter';
 import AvatarCircle, { FrameDecor } from '../components/AvatarCircle';
@@ -186,10 +187,10 @@ export default function ShopScreen() {
       return (
         <Card key={entry.id} padding="sm" style={styles.card}>
           <Icon emoji={entry.item.emoji} size={30} color={C.text} />
-          <Text style={styles.cardName} numberOfLines={1}>
+          <Text variant="small" style={styles.cardName} numberOfLines={1}>
             {entry.name}
           </Text>
-          <Text style={styles.cardDesc} numberOfLines={3}>
+          <Text variant="micro" style={styles.cardDesc} numberOfLines={3}>
             {entry.desc}
           </Text>
           <Button
@@ -203,7 +204,7 @@ export default function ShopScreen() {
               notifyBuy(entry.name);
             }}
           />
-          <Text style={styles.cardSub} numberOfLines={1}>
+          <Text variant="micro" style={styles.cardSub} numberOfLines={1}>
             {entry.count} adetin var
           </Text>
         </Card>
@@ -251,7 +252,7 @@ export default function ShopScreen() {
 
         <View style={styles.cardNameRow}>
           {entry.vip ? <Icon emoji="👑" size={11} color={C.gold} /> : null}
-          <Text style={styles.cardName} numberOfLines={1}>
+          <Text variant="small" style={styles.cardName} numberOfLines={1}>
             {isItemsTheme ? entry.theme.emoji : ''}
             {isItemsTheme ? ' ' : ''}
             {entry.name}
@@ -261,7 +262,7 @@ export default function ShopScreen() {
         {entry.selected ? (
           <View style={styles.stateChip}>
             <Icon name="checkmark-circle" size={13} color={C.gold} />
-            <Text style={styles.stateChipText} numberOfLines={1}>
+            <Text variant="small" style={styles.stateChipText} numberOfLines={1}>
               Seçili
             </Text>
           </View>
@@ -294,7 +295,7 @@ export default function ShopScreen() {
           />
         )}
         {entry.owned && !entry.selected ? (
-          <Text style={styles.cardSub} numberOfLines={1}>
+          <Text variant="micro" style={styles.cardSub} numberOfLines={1}>
             Sahip Olunan
           </Text>
         ) : null}
@@ -318,7 +319,7 @@ export default function ShopScreen() {
       {/* ---------- ÜST: bakiye + aktif avatar ---------- */}
       <View style={styles.topRow}>
         <View>
-          <Text style={styles.topLabel}>ALTIN BAKİYESİ</Text>
+          <Text variant="micro" style={styles.topLabel}>ALTIN BAKİYESİ</Text>
           <View style={styles.balanceChip}>
             <Icon emoji="🪙" size={16} color={C.gold} />
             <AnimatedCounter value={gold} style={styles.balanceText} />
@@ -335,10 +336,10 @@ export default function ShopScreen() {
 
       <Card style={styles.profileCard}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={styles.profileName} numberOfLines={1}>
+          <Text variant="bodyStrong" style={styles.profileName} numberOfLines={1}>
             {currentItem?.name || 'Avatar'}
           </Text>
-          <Text style={styles.profileHint} numberOfLines={2}>
+          <Text variant="micro" style={styles.profileHint} numberOfLines={2}>
             Bugün ekranında ve liderlikte bu avatar görünür.
           </Text>
         </View>
@@ -376,7 +377,7 @@ export default function ShopScreen() {
               onPress={() => setFilter(f.key)}
               style={[styles.filterChip, active && styles.filterChipActive]}
             >
-              <Text
+              <Text variant="micro"
                 style={[styles.filterText, active && styles.filterTextActive]}
                 numberOfLines={1}
               >
@@ -392,15 +393,15 @@ export default function ShopScreen() {
         <Card style={styles.howCard}>
           <View style={styles.howHead}>
             <Icon emoji="🪙" size={14} color={C.gold} />
-            <Text style={styles.howTitle} numberOfLines={1}>
+            <Text variant="small" style={styles.howTitle} numberOfLines={1}>
               Altın nasıl kazanılır?
             </Text>
           </View>
           <View style={styles.howGrid}>
-            <Text style={styles.howItem} numberOfLines={1}>✅ Alışkanlık +5</Text>
-            <Text style={styles.howItem} numberOfLines={1}>🍅 Odak +15</Text>
-            <Text style={styles.howItem} numberOfLines={1}>🏆 Başarım +25..250</Text>
-            <Text style={styles.howItem} numberOfLines={1}>🎯 Görev +20..150</Text>
+            <Text variant="micro" style={styles.howItem} numberOfLines={1}>✅ Alışkanlık +5</Text>
+            <Text variant="micro" style={styles.howItem} numberOfLines={1}>🍅 Odak +15</Text>
+            <Text variant="micro" style={styles.howItem} numberOfLines={1}>🏆 Başarım +25..250</Text>
+            <Text variant="micro" style={styles.howItem} numberOfLines={1}>🎯 Görev +20..150</Text>
           </View>
         </Card>
       ) : null}
@@ -423,7 +424,7 @@ export default function ShopScreen() {
       {tab === 'frames' && !vipActive ? (
         <View style={styles.vipHint}>
           <Icon emoji="👑" size={13} color={C.gold} />
-          <Text style={styles.vipHintText} numberOfLines={3}>
+          <Text variant="small" style={styles.vipHintText} numberOfLines={3}>
             VIP çerçeveler Season Pass'te seni bekliyor — VIP olarak hepsini
             açabilirsin!
           </Text>
@@ -437,6 +438,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -455,6 +457,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 4,
+      lineHeight: 14,
     },
     balanceChip: {
       flexDirection: 'row',
@@ -463,9 +466,10 @@ function makeStyles(C, type) {
     },
     balanceText: {
       color: C.gold,
-      fontSize: 26,
+      fontSize: 22,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 30,
     },
     profileCard: {
       flexDirection: 'row',
@@ -475,13 +479,14 @@ function makeStyles(C, type) {
     profileName: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 16,
+      fontSize: 17,
+      lineHeight: 24,
     },
     profileHint: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 3,
-      lineHeight: 15,
+      lineHeight: 14,
     },
     photoActions: {
       gap: 6,
@@ -515,6 +520,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       flexShrink: 1,
+      lineHeight: 14,
     },
     filterTextActive: {
       color: C.primary,
@@ -533,6 +539,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       fontWeight: '700',
+      lineHeight: 18,
     },
     howGrid: {
       flexDirection: 'row',
@@ -546,6 +553,7 @@ function makeStyles(C, type) {
       borderRadius: 8,
       paddingHorizontal: 8,
       paddingVertical: 4,
+      lineHeight: 14,
     },
 
     // ---- grid ----
@@ -590,18 +598,20 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textAlign: 'center',
       flexShrink: 1,
+      lineHeight: 18,
     },
     cardDesc: {
       ...type.micro,
       color: C.textMuted,
-      textAlign: 'center',
-      lineHeight: 15,
+      textAlign: 'center',
       minHeight: 44,
+      lineHeight: 14,
     },
     cardSub: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
     stateChip: {
       flexDirection: 'row',
@@ -618,6 +628,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.gold,
       fontWeight: '700',
+      lineHeight: 18,
     },
 
     // ---- tema swatch ----
@@ -650,6 +661,7 @@ function makeStyles(C, type) {
     swatchEmoji: {
       fontSize: 22,
       marginTop: 8,
+      lineHeight: 30,
     },
     frameAvatar: {
       width: 60,
@@ -660,7 +672,8 @@ function makeStyles(C, type) {
       justifyContent: 'center',
     },
     frameAvatarEmoji: {
-      fontSize: 28,
+      fontSize: 22,
+      lineHeight: 30,
     },
 
     // ---- vip ----
@@ -676,6 +689,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       flex: 1,
+      minWidth: 0,
       lineHeight: 18,
     },
   });

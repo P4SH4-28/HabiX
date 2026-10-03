@@ -6,7 +6,8 @@
 // - React.memo: değişmeyen prop'lar yeniden render etmez
 // ============================================================
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -150,6 +151,7 @@ function makeStyles(C, radius) {
     },
     emoji: {
       fontSize: 22,
+      lineHeight: 30,
     },
     checkbox: {
       width: 34,
@@ -181,15 +183,18 @@ function makeStyles(C, radius) {
       color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     info: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     name: {
       color: C.text,
       fontSize: 15,
       fontWeight: '600',
+      lineHeight: 21,
     },
     nameDone: {
       textDecorationLine: 'line-through',
@@ -198,6 +203,7 @@ function makeStyles(C, radius) {
     meta: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     streakBadge: {
       flexDirection: 'row',
@@ -210,11 +216,13 @@ function makeStyles(C, radius) {
     },
     streakIcon: {
       fontSize: 13,
+      lineHeight: 18,
     },
     streakText: {
       color: C.text,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
   });
 }

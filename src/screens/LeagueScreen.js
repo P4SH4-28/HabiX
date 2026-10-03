@@ -20,7 +20,8 @@
 //   5 tipografi ölçeği · h1 yok (header).
 // ============================================================
 import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import Button from '../components/ui/Button';
@@ -121,13 +122,13 @@ export default function LeagueScreen() {
           zone === 'releg' && styles.zoneReleg,
         ]}
       >
-        <Text style={styles.rankNum}>{i + 1}</Text>
+        <Text variant="small" style={styles.rankNum}>{i + 1}</Text>
         <Icon emoji={p.league.emoji} size={15} color={C.textMuted} />
-        <Text style={[styles.rankName, isMe && styles.rankNameMe]} numberOfLines={1}>
+        <Text variant="small" style={[styles.rankName, isMe && styles.rankNameMe]} numberOfLines={1}>
           {p.username}
           {isMe ? ' (sen)' : ''}
         </Text>
-        <Text style={styles.rankXp}>{p.xp7d || 0} XP</Text>
+        <Text variant="small" style={styles.rankXp}>{p.xp7d || 0} XP</Text>
       </View>
     );
   };
@@ -159,15 +160,15 @@ export default function LeagueScreen() {
               <Icon emoji={myLeague.emoji} size={26} color={myLeague.color} />
             </View>
             <View style={styles.leagueTitles}>
-              <Text style={[styles.leagueName, { color: myLeague.color }]}>
+              <Text variant="h3" style={[styles.leagueName, { color: myLeague.color }]}>
                 {myLeague.name} Lig
               </Text>
-              <Text style={styles.leagueXp}>Bu hafta {myXp7d} XP kazandın</Text>
+              <Text variant="small" style={styles.leagueXp}>Bu hafta {myXp7d} XP kazandın</Text>
             </View>
           </View>
           <View style={styles.weekWrap}>
-            <Text style={styles.weekLabel}>HAFTA BİTER</Text>
-            <Text style={styles.weekCount}>{formatCountdown(countdownMs)}</Text>
+            <Text variant="micro" style={styles.weekLabel}>HAFTA BİTER</Text>
+            <Text variant="bodyStrong" style={styles.weekCount}>{formatCountdown(countdownMs)}</Text>
           </View>
         </View>
         <View style={styles.leagueProgress}>
@@ -183,7 +184,7 @@ export default function LeagueScreen() {
                 : 'En üst lig'
             }
           />
-          <Text style={styles.leagueProgressText}>
+          <Text variant="small" style={styles.leagueProgressText}>
             {nextInfo.next
               ? `${nextInfo.needed} XP kala ${nextInfo.next.emoji} ${nextInfo.next.name}`
               : 'En üst lige ulaştın!'}
@@ -195,9 +196,9 @@ export default function LeagueScreen() {
       <Card style={styles.rewardCard}>
         <View style={styles.rewardHead}>
           <Icon emoji="🎁" size={16} color={C.gold} />
-          <Text style={styles.rewardTitle}>Haftalık lig ödülü</Text>
+          <Text variant="h3" style={styles.rewardTitle}>Haftalık lig ödülü</Text>
         </View>
-        <Text style={styles.rewardDesc}>
+        <Text variant="small" style={styles.rewardDesc}>
           {claimAvailable
             ? `Bu hafta ${myLeague.name} liginde bitirirsen +${myLeague.reward} altın kazanırsın. Pazar gecesi yatmadan almayı unutma!`
             : `Bu haftanın ödülü alındı: +${
@@ -222,13 +223,13 @@ export default function LeagueScreen() {
       {/* ---------- 3) SIRA KARTI (STICKY) ---------- */}
       <View style={styles.stickyWrap}>
         <Card padding="sm" style={styles.selfCard}>
-          <Text style={styles.selfLabel}>SENİN SIRAN</Text>
+          <Text variant="micro" style={styles.selfLabel}>SENİN SIRAN</Text>
           <View style={styles.selfRow}>
-            <Text style={[styles.selfRank, { color: C.primary }]}>
+            <Text variant="stat" style={[styles.selfRank, { color: C.primary }]}>
               {myRank >= 0 ? `#${myRank + 1}` : '—'}
             </Text>
             <Icon emoji={myLeague.emoji} size={16} color={myLeague.color} />
-            <Text style={styles.selfName} numberOfLines={1}>
+            <Text variant="bodyStrong" style={styles.selfName} numberOfLines={1}>
               {me ? `${me.username} (sen)` : 'Sıralama yükleniyor…'}
             </Text>
             {zonesOn && myRank >= 0 ? (
@@ -252,7 +253,7 @@ export default function LeagueScreen() {
                     : 'Koruma'}
               </Pill>
             ) : null}
-            <Text style={styles.selfXp}>{myXp7d} XP</Text>
+            <Text variant="bodyStrong" style={styles.selfXp}>{myXp7d} XP</Text>
           </View>
         </Card>
       </View>
@@ -263,11 +264,11 @@ export default function LeagueScreen() {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: C.success }]} />
-              <Text style={styles.legendText}>Yükselme (ilk {PROMO_N})</Text>
+              <Text variant="micro" style={styles.legendText}>Yükselme (ilk {PROMO_N})</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: C.danger }]} />
-              <Text style={styles.legendText}>Düşme (son {RELEG_N})</Text>
+              <Text variant="micro" style={styles.legendText}>Düşme (son {RELEG_N})</Text>
             </View>
           </View>
         ) : null}
@@ -291,11 +292,11 @@ export default function LeagueScreen() {
           return (
             <View key={l.id} style={[styles.tierRow, current && styles.tierRowCurrent]}>
               <Icon emoji={l.emoji} size={18} color={l.color} />
-              <Text style={[styles.tierName, { color: l.color }]}>{l.name}</Text>
-              <Text style={styles.tierMin}>haftada {l.minXp} XP</Text>
+              <Text variant="bodyStrong" style={[styles.tierName, { color: l.color }]}>{l.name}</Text>
+              <Text variant="small" style={styles.tierMin}>haftada {l.minXp} XP</Text>
               <View style={styles.tierReward}>
                 <Icon emoji="🪙" size={11} color={C.gold} />
-                <Text style={styles.tierRewardText}>+{l.reward}</Text>
+                <Text variant="small" style={styles.tierRewardText}>+{l.reward}</Text>
               </View>
               {current ? (
                 <Pill size="sm" bg={C.primary + '1A'} color={C.primary}>
@@ -307,7 +308,7 @@ export default function LeagueScreen() {
         })}
       </Card>
 
-      <Text style={styles.note}>
+      <Text variant="small" style={styles.note}>
         Lig XP'n sunucudaki 7 günlük kazanç trendinden hesaplanır — cihaz verisi
         oynatılamaz. Her hafta Pazartesi sıfırlanır; ödül Pazar gecesi alınır ve
         haftada bir kezdir.
@@ -320,6 +321,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -359,11 +361,13 @@ function makeStyles(C, type) {
     },
     leagueName: {
       ...type.h3,
+      lineHeight: 24,
     },
     leagueXp: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     weekWrap: {
       alignItems: 'flex-end',
@@ -372,11 +376,13 @@ function makeStyles(C, type) {
     weekLabel: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     weekCount: {
       ...type.bodyStrong,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 21,
     },
     leagueProgress: {
       gap: 6,
@@ -385,6 +391,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       fontWeight: '600',
+      lineHeight: 18,
     },
 
     // ---- ödül ----
@@ -399,10 +406,12 @@ function makeStyles(C, type) {
     rewardTitle: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     rewardDesc: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- sticky sıra ----
@@ -419,6 +428,7 @@ function makeStyles(C, type) {
     selfLabel: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     selfRow: {
       flexDirection: 'row',
@@ -428,17 +438,20 @@ function makeStyles(C, type) {
     selfRank: {
       ...type.stat,
       fontVariant: ['tabular-nums'],
+      lineHeight: 30,
     },
     selfName: {
       ...type.bodyStrong,
       color: C.text,
       flex: 1,
       minWidth: 0,
+      lineHeight: 21,
     },
     selfXp: {
       ...type.bodyStrong,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 21,
     },
 
     // ---- sıralama ----
@@ -465,6 +478,7 @@ function makeStyles(C, type) {
     legendText: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     rankRow: {
       flexDirection: 'row',
@@ -492,6 +506,7 @@ function makeStyles(C, type) {
       width: 22,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     rankName: {
       ...type.small,
@@ -499,6 +514,7 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       fontWeight: '600',
+      lineHeight: 18,
     },
     rankNameMe: {
       fontWeight: '700',
@@ -509,6 +525,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     // ---- eşik tablosu ----
@@ -527,11 +544,13 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       flex: 1,
       minWidth: 0,
+      lineHeight: 21,
     },
     tierMin: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     tierReward: {
       flexDirection: 'row',
@@ -543,11 +562,13 @@ function makeStyles(C, type) {
       color: C.gold,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
   });
 }

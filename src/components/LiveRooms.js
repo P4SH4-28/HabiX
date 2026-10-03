@@ -11,10 +11,10 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
+import Text from './ui/Text';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import {
@@ -268,6 +268,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
     },
     createRow: {
       flexDirection: 'row',
@@ -277,12 +278,14 @@ function makeStyles(C) {
     },
     input: {
       flex: 1,
+      minWidth: 0,
       borderWidth: 1,
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: 13,
       fontWeight: '600',
+      lineHeight: 18,
     },
     createBtn: {
       borderRadius: 12,
@@ -292,6 +295,7 @@ function makeStyles(C) {
     createBtnText: {
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     disabled: {
       opacity: 0.5,
@@ -301,12 +305,14 @@ function makeStyles(C) {
       fontWeight: '700',
       paddingHorizontal: 16,
       paddingTop: 8,
+      lineHeight: 18,
     },
     offline: {
       fontSize: 13,
       fontWeight: '600',
       paddingHorizontal: 16,
       paddingTop: 8,
+      lineHeight: 18,
     },
     listContent: {
       padding: 16,
@@ -325,6 +331,7 @@ function makeStyles(C) {
       fontWeight: '700',
       letterSpacing: 1,
       textTransform: 'uppercase',
+      lineHeight: 18,
     },
     countChip: {
       borderRadius: 8,
@@ -334,6 +341,7 @@ function makeStyles(C) {
     countText: {
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     room: {
       flexDirection: 'row',
@@ -353,9 +361,11 @@ function makeStyles(C) {
     },
     roomEmoji: {
       fontSize: 22,
+      lineHeight: 30,
     },
     roomInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     roomTitleRow: {
@@ -368,6 +378,7 @@ function makeStyles(C) {
       fontSize: 15,
       fontWeight: '700',
       flexShrink: 1,
+      lineHeight: 21,
     },
     mineChip: {
       borderRadius: 8,
@@ -377,10 +388,12 @@ function makeStyles(C) {
     mineChipText: {
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     roomMeta: {
       color: C.textMuted,
       fontSize: 11,
+      lineHeight: 14,
     },
     roomSide: {
       flexDirection: 'row',
@@ -396,6 +409,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     joinBtn: {
       borderRadius: 8,
@@ -405,6 +419,7 @@ function makeStyles(C) {
     joinBtnText: {
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     leaveBtn: {
       borderRadius: 8,
@@ -416,6 +431,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     emptyLoad: {
       marginTop: 40,

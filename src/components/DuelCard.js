@@ -8,7 +8,8 @@
 // kazanan taraftır; ödülü sunucu verir (duel-action).
 // ============================================================
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 import IconTile from './ui/IconTile';
 import Progress from './ui/Progress';
@@ -127,17 +128,19 @@ function makeStyles(C) {
     },
     body: {
       flex: 1,
+      minWidth: 0,
       gap: 6,
     },
     title: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     desc: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 17,
+      lineHeight: 18,
     },
     actions: {
       flexDirection: 'row',
@@ -155,6 +158,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     finishBtnContent: {
       flexDirection: 'row',
@@ -171,6 +175,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     scoreRow: {
       flexDirection: 'row',
@@ -181,6 +186,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
+      lineHeight: 14,
     },
   });
 }

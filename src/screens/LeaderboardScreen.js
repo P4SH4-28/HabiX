@@ -22,7 +22,8 @@
 //   5 tipografi ölçeği · h1 yok (header).
 // ============================================================
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import PlayerProfileModal from '../components/PlayerProfileModal';
@@ -170,14 +171,14 @@ export default function LeaderboardScreen() {
       >
         <Card style={styles.lockCard}>
           <IconTile icon="trophy" emoji="🏆" variant="gold" size={64} iconSize={28} />
-          <Text style={styles.lockTitle}>Liderlik Tablosu Kilitli</Text>
-          <Text style={styles.lockText}>
+          <Text variant="h3" style={styles.lockTitle}>Liderlik Tablosu Kilitli</Text>
+          <Text variant="small" style={styles.lockText}>
             {leaderboardMinLevel}. seviyeye ulaştığında tablo açılır ve herkesin
             ilerlemesini görüp profillerini ziyaret edebilirsin.
           </Text>
           <View style={styles.lockBarHead}>
-            <Text style={styles.lockBarLabel}>SEVİYE {leaderboardMinLevel} YOLU</Text>
-            <Text style={styles.lockBarValue}>%{Math.round(pct)}</Text>
+            <Text variant="micro" style={styles.lockBarLabel}>SEVİYE {leaderboardMinLevel} YOLU</Text>
+            <Text variant="micro" style={styles.lockBarValue}>%{Math.round(pct)}</Text>
           </View>
           <Progress
             value={pct / 100}
@@ -185,7 +186,7 @@ export default function LeaderboardScreen() {
             colors={[C.gold]}
             accessibilityLabel={`Seviye ${leaderboardMinLevel} yolunun yüzdesi ${Math.round(pct)}`}
           />
-          <Text style={styles.lockHint}>
+          <Text variant="small" style={styles.lockHint}>
             Şu an Seviye {myLevel} — {neededXp} XP daha kazanmalısın
           </Text>
         </Card>
@@ -208,7 +209,7 @@ export default function LeaderboardScreen() {
         onPress={() => setSelected(e)}
         accessibilityLabel={`${rank}. sıra ${e.name}, ${e.totalXp} XP. Profili gör`}
       >
-        <Text style={styles.rankNum}>{rank}</Text>
+        <Text variant="small" style={styles.rankNum}>{rank}</Text>
         <AvatarCircle
           avatarId={e.avatarId}
           photo={e.photoUrl}
@@ -218,7 +219,7 @@ export default function LeaderboardScreen() {
         />
         <View style={styles.rowInfo}>
           <View style={styles.rowNameLine}>
-            <Text style={styles.rowName} numberOfLines={1}>
+            <Text variant="bodyStrong" style={styles.rowName} numberOfLines={1}>
               {e.name}
               {e.isMe ? <Text style={styles.meTag}> (sen)</Text> : null}
             </Text>
@@ -243,11 +244,11 @@ export default function LeaderboardScreen() {
               </Pill>
             ) : null}
             {e.xp7d > 0 ? (
-              <Text style={styles.rowWeek}>7g: +{e.xp7d} XP</Text>
+              <Text variant="micro" style={styles.rowWeek}>7g: +{e.xp7d} XP</Text>
             ) : null}
           </View>
         </View>
-        <Text style={styles.rowXp}>{e.totalXp} XP</Text>
+        <Text variant="small" style={styles.rowXp}>{e.totalXp} XP</Text>
         <Icon name="chevron-forward" size={16} color={C.textMuted} />
       </Card>
     );
@@ -295,7 +296,7 @@ export default function LeaderboardScreen() {
         {live && !live.ok ? (
           <View style={styles.offlineBox}>
             <Icon emoji="📡" size={14} color={C.danger} />
-            <Text style={styles.offlineText}>
+            <Text variant="small" style={styles.offlineText}>
               Canlı liderlik verisi alınamadı — önbellek gösteriliyor.
             </Text>
             <Button
@@ -338,10 +339,10 @@ export default function LeaderboardScreen() {
                     size={isTop ? 52 : 44}
                     ringColor={PODIUM_COLORS[rank]}
                   />
-                  <Text style={styles.podiumName} numberOfLines={1}>
+                  <Text variant="small" style={styles.podiumName} numberOfLines={1}>
                     {e.name}
                   </Text>
-                  <Text style={[styles.podiumXp, { color: PODIUM_COLORS[rank] }]}>
+                  <Text variant="small" style={[styles.podiumXp, { color: PODIUM_COLORS[rank] }]}>
                     {tab === 'weekly' ? `${e.xp7d} XP` : `${e.totalXp} XP`}
                   </Text>
                   {e.isMe ? (
@@ -362,7 +363,7 @@ export default function LeaderboardScreen() {
             (me alone in friends tab) satır zaten view.list'te varsa çizilir: */}
         {rest.length === 0 && podium.length === view.list.length ? null : null}
 
-        <Text style={styles.note}>
+        <Text variant="small" style={styles.note}>
           Profillere dokunabilir, gelişim verilerini görebilir ve arkadaşlık isteği
           gönderebilirsin.
         </Text>
@@ -372,7 +373,7 @@ export default function LeaderboardScreen() {
       {meEntry && myIndex >= 0 ? (
         <View style={styles.footer}>
           <Card padding="sm" style={styles.selfCard}>
-            <Text style={styles.selfRank}>#{myIndex + 1}</Text>
+            <Text variant="stat" style={styles.selfRank}>#{myIndex + 1}</Text>
             <AvatarCircle
               avatarId={meEntry.avatarId}
               photo={meEntry.photoUrl}
@@ -381,7 +382,7 @@ export default function LeaderboardScreen() {
               ringColor={C.primary}
             />
             <View style={styles.selfInfo}>
-              <Text style={styles.selfName} numberOfLines={1}>
+              <Text variant="bodyStrong" style={styles.selfName} numberOfLines={1}>
                 {meEntry.name} (sen)
               </Text>
               <View style={styles.selfMeta}>
@@ -390,7 +391,7 @@ export default function LeaderboardScreen() {
                 </Pill>
               </View>
             </View>
-            <Text style={styles.selfXp}>
+            <Text variant="h3" style={styles.selfXp}>
               {tab === 'weekly' ? `+${meEntry.xp7d} 7g` : `${meEntry.totalXp} XP`}
             </Text>
           </Card>
@@ -407,6 +408,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -425,11 +427,13 @@ function makeStyles(C, type) {
     lockTitle: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     lockText: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 18,
     },
     lockBarHead: {
       flexDirection: 'row',
@@ -439,17 +443,20 @@ function makeStyles(C, type) {
     lockBarLabel: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     lockBarValue: {
       ...type.micro,
       color: C.gold,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     lockHint: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     // ---- uyarı ----
@@ -465,7 +472,9 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       flex: 1,
+      minWidth: 0,
       fontWeight: '600',
+      lineHeight: 18,
     },
 
     // ---- podium ----
@@ -477,6 +486,7 @@ function makeStyles(C, type) {
     },
     podiumCard: {
       flex: 1,
+      minWidth: 0,
       alignItems: 'center',
       justifyContent: 'flex-end',
       gap: 4,
@@ -494,11 +504,13 @@ function makeStyles(C, type) {
       color: C.text,
       fontWeight: '700',
       maxWidth: '100%',
+      lineHeight: 18,
     },
     podiumXp: {
       ...type.small,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     // ---- liste ----
@@ -521,6 +533,7 @@ function makeStyles(C, type) {
       width: 24,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     rowInfo: {
       flex: 1,
@@ -536,6 +549,7 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       flexShrink: 1,
+      lineHeight: 21,
     },
     meTag: {
       color: C.primary,
@@ -550,17 +564,20 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     rowXp: {
       ...type.small,
       color: C.xp,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- sticky bottom ----
@@ -581,6 +598,7 @@ function makeStyles(C, type) {
       color: C.primary,
       minWidth: 52,
       textAlign: 'center',
+      lineHeight: 30,
     },
     selfInfo: {
       flex: 1,
@@ -590,6 +608,7 @@ function makeStyles(C, type) {
     selfName: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     selfMeta: {
       flexDirection: 'row',
@@ -599,6 +618,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
   });
 }

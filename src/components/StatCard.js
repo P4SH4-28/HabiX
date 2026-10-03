@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 import AnimatedCounter from './AnimatedCounter';
 import Icon from './ui/icons';
@@ -20,7 +21,9 @@ export default function StatCard({ label, value, icon, color }) {
         <Icon emoji={icon} size={16} color={color || C.primary} />
       </View>
       <AnimatedCounter value={value} style={styles.value} />
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -29,6 +32,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     card: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.surface,
       borderRadius: 16,
       padding: 14,
@@ -45,11 +49,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
+      lineHeight: 30,
     },
     label: {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
+      lineHeight: 14,
     },
   });
 }

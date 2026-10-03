@@ -24,7 +24,8 @@
 //   fotoğraf kaldırma · statik emoji yok (hepsi Icon → Ionicons).
 // ============================================================
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -209,12 +210,12 @@ export default function ProfileScreen() {
           </View>
         </PressableFX>
 
-        <Text style={styles.name} numberOfLines={1}>
+        <Text variant="h1" style={styles.name} numberOfLines={1}>
           {authUser?.name || 'Misafir'}
         </Text>
 
         <View style={styles.levelRow}>
-          <Text style={styles.levelText}>
+          <Text variant="small" style={styles.levelText}>
             Seviye {levelInfo.level} · <AnimatedCounter value={stats.totalXp} /> XP
           </Text>
           {vipActive ? (
@@ -224,7 +225,7 @@ export default function ProfileScreen() {
           ) : null}
         </View>
 
-        <Text style={styles.username}>@{username}</Text>
+        <Text variant="small" style={styles.username}>@{username}</Text>
       </View>
 
       {/* ---------- 3) BIO ---------- */}
@@ -253,13 +254,13 @@ export default function ProfileScreen() {
             accessibilityLabel="Bio düzenle"
           >
             <View>
-              <Text style={styles.bioText} numberOfLines={4}>
+              <Text variant="body" style={styles.bioText} numberOfLines={4}>
                 {settings.bio || 'Bio ekle'}
               </Text>
               {!settings.bio ? (
                 <View style={styles.bioHintRow}>
                   <Icon emoji="✏️" size={12} color={C.textMuted} />
-                  <Text style={styles.bioHintText}>dokun ve yaz</Text>
+                  <Text variant="micro" style={styles.bioHintText}>dokun ve yaz</Text>
                 </View>
               ) : null}
             </View>
@@ -273,7 +274,7 @@ export default function ProfileScreen() {
           <Card key={s.label} padding="sm" style={styles.statCard}>
             <Icon emoji={s.icon} size={16} color={s.color} />
             <AnimatedCounter value={s.value} style={styles.statValue} />
-            <Text style={styles.statLabel} numberOfLines={1}>
+            <Text variant="micro" style={styles.statLabel} numberOfLines={1}>
               {s.label}
             </Text>
           </Card>
@@ -285,10 +286,10 @@ export default function ProfileScreen() {
         <View style={styles.linkRow}>
           <IconTile name="cube" tint={C.primary} size={40} />
           <View style={styles.linkInfo}>
-            <Text style={styles.h3} numberOfLines={1}>
+            <Text variant="h3" style={styles.h3} numberOfLines={1}>
               Envanter
             </Text>
-            <Text style={styles.hint} numberOfLines={2}>
+            <Text variant="small" style={styles.hint} numberOfLines={2}>
               Eşyalarını kullan ve etkinleştir
             </Text>
           </View>
@@ -300,14 +301,14 @@ export default function ProfileScreen() {
       <Card>
         <View style={styles.rowBetween}>
           <View style={styles.xpTexts}>
-            <Text style={styles.h3} numberOfLines={1}>
+            <Text variant="h3" style={styles.h3} numberOfLines={1}>
               Seviye {levelInfo.level} → {levelInfo.level + 1}
             </Text>
-            <Text style={styles.hint} numberOfLines={1}>
+            <Text variant="small" style={styles.hint} numberOfLines={1}>
               {levelInfo.curXp}/{levelInfo.nextThreshold} XP
             </Text>
           </View>
-          <Text style={styles.xpValue}>%{xpPct}</Text>
+          <Text variant="h3" style={styles.xpValue}>%{xpPct}</Text>
         </View>
         <Progress
           value={xpPct / 100}
@@ -321,10 +322,10 @@ export default function ProfileScreen() {
           {summaryCells.map((cell) => (
             <View key={cell.label} style={styles.summaryCell}>
               <Icon emoji={cell.icon} size={15} color={C.primary} />
-              <Text style={styles.summaryCellValue} numberOfLines={1}>
+              <Text variant="h3" style={styles.summaryCellValue} numberOfLines={1}>
                 {cell.value}
               </Text>
-              <Text style={styles.summaryCellLabel} numberOfLines={1}>
+              <Text variant="micro" style={styles.summaryCellLabel} numberOfLines={1}>
                 {cell.label}
               </Text>
             </View>
@@ -357,10 +358,10 @@ export default function ProfileScreen() {
             recent3.map((a) => (
               <View key={a.key} style={styles.activityRow}>
                 <Icon emoji={a.emoji} size={16} color={C.textMuted} />
-                <Text style={styles.activityName} numberOfLines={1}>
+                <Text variant="body" style={styles.activityName} numberOfLines={1}>
                   {a.name}
                 </Text>
-                <Text style={styles.activityDate} numberOfLines={1}>
+                <Text variant="micro" style={styles.activityDate} numberOfLines={1}>
                   {dayLabel(a.date, today, yesterdayKey)}
                 </Text>
               </View>
@@ -409,6 +410,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -457,6 +459,7 @@ function makeStyles(C, type) {
       color: C.text,
       marginTop: 10,
       textAlign: 'center',
+      lineHeight: 30,
     },
     levelRow: {
       flexDirection: 'row',
@@ -467,11 +470,13 @@ function makeStyles(C, type) {
     levelText: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     username: {
       ...type.small,
       color: C.textMuted,
       opacity: 0.8,
+      lineHeight: 18,
     },
 
     // ---- bio ----
@@ -484,10 +489,12 @@ function makeStyles(C, type) {
     },
     bioBtn: {
       flex: 1,
+      minWidth: 0,
     },
     bioText: {
       ...type.body,
       color: C.text,
+      lineHeight: 21,
     },
     bioHintRow: {
       flexDirection: 'row',
@@ -498,6 +505,7 @@ function makeStyles(C, type) {
     bioHintText: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
 
     // ---- statlar ----
@@ -519,6 +527,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
     statLabel: {
       ...type.micro,
@@ -526,6 +535,7 @@ function makeStyles(C, type) {
       textAlign: 'center',
       letterSpacing: 0,
       flexShrink: 1,
+      lineHeight: 14,
     },
 
     // ---- link satırı ----
@@ -542,10 +552,12 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- seviye özeti ----
@@ -563,6 +575,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.primary,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
     xpProgress: {
       marginTop: 12,
@@ -585,6 +598,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
     summaryCellLabel: {
       ...type.micro,
@@ -592,6 +606,7 @@ function makeStyles(C, type) {
       textAlign: 'center',
       letterSpacing: 0,
       flexShrink: 1,
+      lineHeight: 14,
     },
     achBtn: {
       marginTop: 14,
@@ -609,10 +624,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
+      lineHeight: 21,
     },
     activityDate: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
 
     // ---- aksiyonlar ----

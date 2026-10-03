@@ -7,7 +7,8 @@
 // - "İstek Gönder" butonu: kullanıcıya arkadaşlık isteği gönderir
 // ============================================================
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -204,10 +205,12 @@ function makeStyles(C) {
   return StyleSheet.create({
     overlay: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     screen: {
       flex: 1,
+      minWidth: 0,
       paddingTop: 16,
     },
     topBar: {
@@ -242,12 +245,14 @@ function makeStyles(C) {
       justifyContent: 'center',
     },
     avatarEmoji: {
-      fontSize: 40,
+      fontSize: 48,
+      lineHeight: 56,
     },
     name: {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
+      lineHeight: 30,
     },
     friendBadge: {
       flexDirection: 'row',
@@ -263,6 +268,7 @@ function makeStyles(C) {
       color: C.accent,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     headerStats: {
       flexDirection: 'row',
@@ -277,6 +283,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     card: {
       backgroundColor: C.surface,
@@ -306,6 +313,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     actionDone: {
       backgroundColor: C.surface,
@@ -314,6 +322,7 @@ function makeStyles(C) {
       color: C.accent,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
   });
 }

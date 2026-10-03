@@ -15,10 +15,10 @@ import { forwardRef, memo, useEffect, useMemo } from 'react';
 import {
   Pressable,
   StyleSheet,
-  Text,
   TextInput as RNTextInput,
-  View,
+  View
 } from 'react-native';
+import Text from './Text';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -101,7 +101,7 @@ const TextInput = forwardRef(function AppTextInput(
 
   return (
     <View ref={containerRef} style={[styles.container, style]}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? <Text variant="micro" style={styles.label}>{label}</Text> : null}
 
       <Animated.View
         style={[styles.field, fieldSize, animatedBorder, !editable && styles.disabled]}
@@ -142,9 +142,9 @@ const TextInput = forwardRef(function AppTextInput(
       </Animated.View>
 
       {error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Text variant="small" style={styles.error}>{error}</Text>
       ) : hint ? (
-        <Text style={styles.hint}>{hint}</Text>
+        <Text variant="small" style={styles.hint}>{hint}</Text>
       ) : null}
     </View>
   );
@@ -157,6 +157,7 @@ function makeStyles(C, radius, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 6,
+      lineHeight: 14,
     },
     field: {
       flexDirection: 'row',
@@ -177,17 +178,20 @@ function makeStyles(C, radius, type) {
       padding: 0,
       margin: 0,
       minWidth: 0,
+      lineHeight: 21,
     },
     inputMultiline: { textAlignVertical: 'top' },
     error: {
       ...type.small,
       color: C.danger,
       marginTop: 6,
+      lineHeight: 18,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
       marginTop: 6,
+      lineHeight: 18,
     },
   });
 }

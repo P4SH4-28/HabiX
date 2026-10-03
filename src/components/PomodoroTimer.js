@@ -13,7 +13,8 @@
 // çubuğu, XP ödülü pill'i, Linear/Vercel tarzı yumuşak köşeler.
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useData } from '../context/DataContext';
 import { formatDuration, POMODORO_DURATION_MS } from '../logic';
 import { useTheme } from '../theme';
@@ -144,12 +145,14 @@ function makeStyles(C, radius) {
     },
     headerInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 4,
     },
     title: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     metaRow: {
       flexDirection: 'row',
@@ -159,14 +162,16 @@ function makeStyles(C, radius) {
     subtitle: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     timer: {
       color: C.text,
-      fontSize: 46,
+      fontSize: 48,
       fontWeight: '700',
       textAlign: 'center',
       marginVertical: 8,
       fontVariant: ['tabular-nums'],
+      lineHeight: 56,
     },
     buttons: {
       flexDirection: 'row',
@@ -175,6 +180,7 @@ function makeStyles(C, radius) {
     },
     btnFlex: {
       flex: 1,
+      minWidth: 0,
     },
     btnGhost: {
       flexShrink: 0,

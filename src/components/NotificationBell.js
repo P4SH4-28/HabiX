@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useData } from '../context/DataContext';
 import { useTheme } from '../theme';
 import AvatarCircle from './AvatarCircle';
@@ -113,6 +114,7 @@ function makeStyles(C) {
     },
     bell: {
       fontSize: 17,
+      lineHeight: 24,
     },
     badge: {
       position: 'absolute',
@@ -130,6 +132,7 @@ function makeStyles(C) {
       color: '#FFFFFF',
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     emptyBox: {
       alignItems: 'center',
@@ -137,16 +140,19 @@ function makeStyles(C) {
       gap: 6,
     },
     emptyEmoji: {
-      fontSize: 34,
+      fontSize: 22,
+      lineHeight: 30,
     },
     emptyText: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     emptySub: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     row: {
       flexDirection: 'row',
@@ -155,12 +161,14 @@ function makeStyles(C) {
     },
     rowInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     rowName: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     rowMeta: {
       flexDirection: 'row',
@@ -170,12 +178,14 @@ function makeStyles(C) {
     rowMetaText: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     rowMetaDot: {
       color: C.textMuted,
       fontSize: 13,
       opacity: 0.5,
       marginHorizontal: 2,
+      lineHeight: 18,
     },
     actions: {
       flexDirection: 'row',
@@ -191,6 +201,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     declineButton: {
       backgroundColor: C.surfaceLight,
@@ -202,6 +213,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     disabled: {
       opacity: 0.5,

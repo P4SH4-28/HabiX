@@ -9,7 +9,8 @@
 // ============================================================
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Component } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 
 const LAST_ERROR_KEY = '@habit_tracker_last_error';
@@ -121,6 +122,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+    minWidth: 0,
   },
   content: {
     padding: 24,
@@ -128,20 +130,22 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   emoji: {
-    fontSize: 44,
+    fontSize: 48,
     textAlign: 'center',
+    lineHeight: 56,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
     marginTop: 12,
+    lineHeight: 30,
   },
   subtitle: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
+    lineHeight: 18,
   },
   msgBox: {
     borderRadius: 16,
@@ -152,6 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     marginBottom: 6,
+    lineHeight: 14,
   },
   message: {
     fontSize: 15,
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
   stack: {
     fontFamily: 'monospace',
     fontSize: 11,
-    lineHeight: 17,
+    lineHeight: 14,
   },
   copyHint: {
     fontSize: 13,
@@ -184,5 +189,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     overflow: 'hidden',
+    lineHeight: 21,
   },
 });

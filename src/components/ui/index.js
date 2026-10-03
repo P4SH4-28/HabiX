@@ -16,3 +16,4 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as SegmentedTabs } from './SegmentedTabs';
 export { default as SoftButton } from './SoftButton';
 export { default as BrandMark } from './BrandMark';
+export { default as Text } from './Text';

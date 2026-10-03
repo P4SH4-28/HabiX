@@ -3,7 +3,8 @@
 // "Yumuşatılmış keskin": kapsül track + aktif segment glass; pressFX
 // ile yumuşak mikro-etkileşim.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 import PressableFX from '../PressableFX';
 import Icon from './icons';
@@ -70,6 +71,7 @@ const styles = StyleSheet.create({
   },
   seg: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -84,5 +86,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '700',
+    lineHeight: 18,
   },
 });

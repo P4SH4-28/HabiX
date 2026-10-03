@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useNavigation } from '@react-navigation/native';
 import AddFriendModal from '../components/AddFriendModal';
 import AvatarCircle from '../components/AvatarCircle';
@@ -218,6 +219,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     header: {
@@ -233,11 +235,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
+      lineHeight: 30,
     },
     screenSub: {
       color: C.textMuted,
       fontSize: 13,
       marginTop: 2,
+      lineHeight: 18,
     },
     addButton: {
       backgroundColor: C.primary,
@@ -267,11 +271,13 @@ function makeStyles(C) {
       color: C.danger,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     addButtonText: {
       color: C.onPrimary,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     noteBox: {
       flexDirection: 'row',
@@ -308,6 +314,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 17,
       fontWeight: '700',
+      lineHeight: 24,
     },
     duelBtn: {
       backgroundColor: C.surfaceLight,
@@ -320,12 +327,14 @@ function makeStyles(C) {
     },
     info: {
       flex: 1,
+      minWidth: 0,
       gap: 6,
     },
     name: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     metaRow: {
       flexDirection: 'row',
@@ -339,6 +348,7 @@ function makeStyles(C) {
     metaText: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     statusDot: {
       width: 10,

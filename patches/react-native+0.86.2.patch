@@ -1,0 +1,29 @@
+diff --git a/node_modules/react-native/Libraries/Components/TextInput/TextInput.js b/node_modules/react-native/Libraries/Components/TextInput/TextInput.js
+index adca4e3..2b42a13 100644
+--- a/node_modules/react-native/Libraries/Components/TextInput/TextInput.js
++++ b/node_modules/react-native/Libraries/Components/TextInput/TextInput.js
+@@ -903,7 +903,7 @@ const TextInput: component(
+   ...props: React.ElementConfig<typeof InternalTextInput>
+ ) = function TextInput({
+   ref: forwardedRef,
+-  allowFontScaling = true,
++  allowFontScaling = false,
+   rejectResponderTermination = true,
+   underlineColorAndroid = 'transparent',
+   autoComplete,
+diff --git a/node_modules/react-native/Libraries/Text/Text.js b/node_modules/react-native/Libraries/Text/Text.js
+index 8e7b29c..19d5dee 100644
+--- a/node_modules/react-native/Libraries/Text/Text.js
++++ b/node_modules/react-native/Libraries/Text/Text.js
+@@ -286,7 +286,10 @@ const TextImpl: component(
+   let nativeText = null;
+ 
+   processedProps.accessible = _accessible;
+-  processedProps.allowFontScaling = allowFontScaling !== false;
++  // HabiX patch: font ölçeği global olarak KAPALI (varsayılan false).
++  processedProps.allowFontScaling = allowFontScaling ?? false;
++  // HabiX patch: sistem font büyümesi en fazla 1.2x.
++  processedProps.maxFontSizeMultiplier = processedProps.maxFontSizeMultiplier ?? 1.2;
+   processedProps.disabled = _disabled;
+   processedProps.ellipsizeMode = ellipsizeMode ?? 'tail';
+   processedProps.children = children;

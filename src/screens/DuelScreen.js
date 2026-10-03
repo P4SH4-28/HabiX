@@ -22,7 +22,8 @@
 //   30sn interval · sadece re-render) · VS tipi type.stat (h1 bu ekranda yok).
 // ============================================================
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -154,7 +155,7 @@ export default function DuelScreen({ navigation }) {
           </Pill>
           <View style={styles.vsClock}>
             <Icon name="time-outline" size={13} color={finished ? C.success : C.textMuted} />
-            <Text style={[styles.vsClockText, finished && { color: C.success }]}>
+            <Text variant="micro" style={[styles.vsClockText, finished && { color: C.success }]}>
               {finished ? 'süre doldu' : `kalan ${remaining}`}
             </Text>
           </View>
@@ -169,22 +170,22 @@ export default function DuelScreen({ navigation }) {
               size={54}
               ringColor={C.primary}
             />
-            <Text style={styles.vsName} numberOfLines={1}>
+            <Text variant="small" style={styles.vsName} numberOfLines={1}>
               {meName}
             </Text>
-            <Text style={[styles.vsGain, { color: C.xp }]}>+{myGain} XP</Text>
+            <Text variant="small" style={[styles.vsGain, { color: C.xp }]}>+{myGain} XP</Text>
           </View>
 
           <View style={styles.vsCenter}>
-            <Text style={styles.vsMark}>VS</Text>
+            <Text variant="stat" style={styles.vsMark}>VS</Text>
           </View>
 
           <View style={styles.vsSide}>
             <AvatarCircle emoji="🙂" size={54} ringColor={C.border} />
-            <Text style={styles.vsName} numberOfLines={1}>
+            <Text variant="small" style={styles.vsName} numberOfLines={1}>
               {duel.opponent}
             </Text>
-            <Text style={[styles.vsGain, { color: C.textMuted }]}>+{theirGain} XP</Text>
+            <Text variant="small" style={[styles.vsGain, { color: C.textMuted }]}>+{theirGain} XP</Text>
           </View>
         </View>
 
@@ -195,8 +196,8 @@ export default function DuelScreen({ navigation }) {
           accessibilityLabel={`Düello skoru: sen ${myGain}, rakip ${theirGain} XP`}
         />
         <View style={styles.vsScoreRow}>
-          <Text style={styles.vsScore}>Sen +{myGain}</Text>
-          <Text style={[styles.vsScore, styles.vsScoreRight]}>Rakip +{theirGain}</Text>
+          <Text variant="micro" style={styles.vsScore}>Sen +{myGain}</Text>
+          <Text variant="micro" style={[styles.vsScore, styles.vsScoreRight]}>Rakip +{theirGain}</Text>
         </View>
 
         {finished ? (
@@ -218,8 +219,8 @@ export default function DuelScreen({ navigation }) {
       <View style={styles.inviteHead}>
         <AvatarCircle emoji="📨" size={44} ringColor={C.accent} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.inviteTitle}>{duel.opponent} seni düelloya davet etti</Text>
-          <Text style={styles.inviteDesc}>
+          <Text variant="bodyStrong" style={styles.inviteTitle}>{duel.opponent} seni düelloya davet etti</Text>
+          <Text variant="small" style={styles.inviteDesc}>
             7 günlük XP yarışı — kazanan +100 XP ve +50 altın alır.
           </Text>
         </View>
@@ -249,8 +250,8 @@ export default function DuelScreen({ navigation }) {
     <Card key={`out_${duel.id}`} padding="sm" style={styles.pendingRow}>
       <IconTile icon="swords" emoji="⚔️" variant="glass" size={38} iconSize={17} />
       <View style={{ flex: 1 }}>
-        <Text style={styles.pendingTitle}>{duel.opponent}</Text>
-        <Text style={styles.pendingSub}>Davet gönderildi · kabul edilmesi bekleniyor</Text>
+        <Text variant="bodyStrong" style={styles.pendingTitle}>{duel.opponent}</Text>
+        <Text variant="micro" style={styles.pendingSub}>Davet gönderildi · kabul edilmesi bekleniyor</Text>
       </View>
       <Pill size="sm" bg={C.surfaceLight} color={C.textMuted}>
         BEKLİYOR
@@ -273,8 +274,8 @@ export default function DuelScreen({ navigation }) {
           iconSize={17}
         />
         <View style={{ flex: 1 }}>
-          <Text style={styles.histTitle}>{h.opponent}</Text>
-          <Text style={styles.histSub}>
+          <Text variant="bodyStrong" style={styles.histTitle}>{h.opponent}</Text>
+          <Text variant="micro" style={styles.histSub}>
             {formatDate(h.at)}
             {h.xp ? ` · +${h.xp} XP` : ''}
             {h.gold ? ` · +${h.gold} 🪙` : ''}
@@ -318,7 +319,7 @@ export default function DuelScreen({ navigation }) {
         />
         <View style={styles.rulesCard}>
           <Icon emoji="📜" size={14} color={C.gold} />
-          <Text style={styles.rulesText}>
+          <Text variant="small" style={styles.rulesText}>
             Düello başlangıcından bu yana en çok XP kazanan taraf kazanır. Süre
             dolduğunda "Sonucu Gör" ile sonucu sunucu belirler ve ödül anında
             verilir.
@@ -366,7 +367,7 @@ export default function DuelScreen({ navigation }) {
 
       <View style={styles.rulesCard}>
         <Icon emoji="💡" size={13} color={C.primary} />
-        <Text style={styles.rulesText}>
+        <Text variant="small" style={styles.rulesText}>
           {anyOpen
             ? 'Skorlar her senkronda tazelenir; süre dolunca "Sonucu Gör" ile kazananı belirleyip ödülleri alabilirsin.'
             : 'Açık düello yok — yeni davet geldiğinde burada listelenir.'}
@@ -384,6 +385,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -409,6 +411,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     vsRow: {
       flexDirection: 'row',
@@ -417,6 +420,7 @@ function makeStyles(C, type) {
     },
     vsSide: {
       flex: 1,
+      minWidth: 0,
       alignItems: 'center',
       gap: 5,
     },
@@ -428,6 +432,7 @@ function makeStyles(C, type) {
       ...type.stat,
       color: C.textMuted,
       letterSpacing: 1,
+      lineHeight: 30,
     },
     vsName: {
       ...type.small,
@@ -435,11 +440,13 @@ function makeStyles(C, type) {
       fontWeight: '700',
       maxWidth: '100%',
       textAlign: 'center',
+      lineHeight: 18,
     },
     vsGain: {
       ...type.small,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     vsScoreRow: {
       flexDirection: 'row',
@@ -451,6 +458,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     vsScoreRight: {
       textAlign: 'right',
@@ -470,12 +478,13 @@ function makeStyles(C, type) {
     inviteTitle: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     inviteDesc: {
       ...type.small,
       color: C.textMuted,
       marginTop: 2,
-      lineHeight: 17,
+      lineHeight: 18,
     },
     inviteActions: {
       flexDirection: 'row',
@@ -491,11 +500,13 @@ function makeStyles(C, type) {
     pendingTitle: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     pendingSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
+      lineHeight: 14,
     },
 
     // ---- geçmiş ----
@@ -507,13 +518,15 @@ function makeStyles(C, type) {
     histTitle: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     histSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
 
     // ---- kural notu ----
@@ -532,6 +545,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       flex: 1,
+      minWidth: 0,
       lineHeight: 18,
     },
   });

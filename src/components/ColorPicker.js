@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { HABIT_COLORS, useTheme } from '../theme';
 
 export default function ColorPicker({ value, onChange }) {
@@ -40,6 +41,7 @@ function makeStyles(C) {
     color: C.textMuted,
     fontSize: 13,
     fontWeight: '600',
+    lineHeight: 18,
   },
   row: {
     flexDirection: 'row',
@@ -70,6 +72,7 @@ function makeStyles(C) {
     fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowRadius: 2,
+    lineHeight: 21,
   },
 });
 }

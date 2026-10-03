@@ -5,7 +5,8 @@
 //   <ErrorState title="..." message="..." onRetry={fn} />
 // ============================================================
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 import IconTile from './IconTile';
 import SoftButton from './SoftButton';
@@ -73,18 +74,21 @@ function makeStyles(C) {
       fontSize: 15,
       fontWeight: '700',
       textAlign: 'center',
+      lineHeight: 21,
     },
     titleCompact: {
       fontSize: 15,
+      lineHeight: 21,
     },
     message: {
       color: C.textMuted,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: 13,
       textAlign: 'center',
+      lineHeight: 18,
     },
     messageCompact: {
       fontSize: 13,
+      lineHeight: 18,
     },
     action: {
       marginTop: 4,

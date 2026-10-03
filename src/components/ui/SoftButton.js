@@ -10,7 +10,8 @@
 // accessibilityRole/Label/State (disabled + loading) otomatik.
 // loading: işlem sürerken dönen imgeç + etiket, çift basma kapanır.
 // ============================================================
-import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 import PressableFX from '../PressableFX';
 import Icon from './icons';

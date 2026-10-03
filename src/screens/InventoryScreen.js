@@ -17,7 +17,8 @@
 //   onay kutuları (eşya kullanımı geri alınamaz → onaylı).
 // ============================================================
 import { useMemo } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useData } from '../context/DataContext';
@@ -94,7 +95,7 @@ export default function InventoryScreen() {
     >
       {/* ---------- ÜST: bakiye ---------- */}
       <View style={styles.topRow}>
-        <Text style={styles.topLabel}>ALTIN BAKİYESİ</Text>
+        <Text variant="micro" style={styles.topLabel}>ALTIN BAKİYESİ</Text>
         <View style={styles.balanceChip}>
           <Icon emoji="🪙" size={16} color={C.gold} />
           <Text style={styles.balanceText}>{gold}</Text>
@@ -109,13 +110,13 @@ export default function InventoryScreen() {
             <View key={item.id} style={styles.activeRow}>
               <IconTile emoji={item.emoji} size={30} iconSize={15} variant="glass" />
               <View style={{ flex: 1 }}>
-                <Text style={styles.activeName}>{item.name}</Text>
-                <Text style={styles.activeText}>{text}</Text>
+                <Text variant="small" style={styles.activeName}>{item.name}</Text>
+                <Text variant="micro" style={styles.activeText}>{text}</Text>
               </View>
             </View>
           ))
         ) : (
-          <Text style={styles.activeEmpty}>
+          <Text variant="small" style={styles.activeEmpty}>
             Aktif eşya etkisi yok — bir eşyayı kullanarak başla.
           </Text>
         )}
@@ -133,18 +134,18 @@ export default function InventoryScreen() {
               <Card key={item.id} padding="sm" style={[styles.itemRow, !canUse && styles.itemRowOff]}>
                 <IconTile emoji={item.emoji} size={40} iconSize={18} variant="glass" />
                 <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.name}</Text>
-                  <Text style={styles.itemCount}>
+                  <Text variant="bodyStrong" style={styles.itemName}>{item.name}</Text>
+                  <Text variant="micro" style={styles.itemCount}>
                     {count} adet
                     {item.id === 'xp_boost' ? ` · her kullanım ${XP_BOOST_USES} hak` : ''}
                   </Text>
-                  <Text style={styles.itemDesc} numberOfLines={2}>
+                  <Text variant="micro" style={styles.itemDesc} numberOfLines={2}>
                     {item.desc}
                   </Text>
                 </View>
                 {active ? (
                   <View style={styles.activeChip}>
-                    <Text style={styles.activeChipText}>Aktif</Text>
+                    <Text variant="small" style={styles.activeChipText}>Aktif</Text>
                   </View>
                 ) : (
                   <Button
@@ -172,7 +173,7 @@ export default function InventoryScreen() {
 
       <View style={styles.noteBox}>
         <Icon emoji="💡" size={13} color={C.primary} style={{ marginTop: 2 }} />
-        <Text style={styles.noteText}>
+        <Text variant="small" style={styles.noteText}>
           Eşyalar Dükkan'dan altınla satın alınır. Etkiler sunucu gününe
           bağlıdır ve gün değişince yenilenir; XP Enerjisi hakkı bitene kadar
           bekler. Cezadan korunmak için Kalkan'ı gün içinde kullanmayı unutma!
@@ -186,6 +187,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -203,6 +205,7 @@ function makeStyles(C, type) {
     topLabel: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     balanceChip: {
       flexDirection: 'row',
@@ -214,6 +217,7 @@ function makeStyles(C, type) {
       fontSize: 22,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 30,
     },
 
     // ---- aktif ----
@@ -230,11 +234,13 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       fontWeight: '700',
+      lineHeight: 18,
     },
     activeText: {
       ...type.micro,
       color: C.success,
       marginTop: 2,
+      lineHeight: 14,
     },
     activeEmpty: {
       ...type.small,
@@ -262,18 +268,20 @@ function makeStyles(C, type) {
     itemName: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     itemCount: {
       ...type.micro,
       color: C.gold,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     itemDesc: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 15,
+      lineHeight: 14,
     },
     activeChip: {
       backgroundColor: C.primary + '22',
@@ -285,6 +293,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.primary,
       fontWeight: '700',
+      lineHeight: 18,
     },
 
     // ---- not ----
@@ -303,6 +312,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       flex: 1,
+      minWidth: 0,
       lineHeight: 18,
     },
   });

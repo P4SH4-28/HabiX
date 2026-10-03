@@ -24,9 +24,9 @@ import {
   ScrollView,
   Share,
   StyleSheet,
-  Text,
-  View,
+  View
 } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -196,14 +196,14 @@ export default function TeamScreen() {
           <View style={styles.teamHeader}>
             <IconTile emoji={myTeam.emoji} size={56} iconSize={26} variant="glass" />
             <View style={styles.teamInfo}>
-              <Text style={styles.teamName} numberOfLines={1}>
+              <Text variant="h3" style={styles.teamName} numberOfLines={1}>
                 {myTeam.name}
               </Text>
-              <Text style={styles.teamMeta}>
+              <Text variant="small" style={styles.teamMeta}>
                 Lider: {myTeam.leader} · {members.length} üye
               </Text>
               <View style={styles.teamPills}>
-                <Text style={styles.teamRole}>
+                <Text variant="micro" style={styles.teamRole}>
                   {myRole === 'leader' ? '👑 Sen lider' : '👤 Üyesin'}
                 </Text>
               </View>
@@ -233,11 +233,11 @@ export default function TeamScreen() {
           <View style={styles.goalTop}>
             <View style={styles.goalTitleRow}>
               <Icon emoji={goalDone ? '🎉' : '🎯'} size={15} color={goalDone ? C.success : C.primary} />
-              <Text style={styles.goalTitle}>
+              <Text variant="small" style={styles.goalTitle}>
                 {goalDone ? 'Haftalık hedef tamam!' : 'Haftalık ortak hedef'}
               </Text>
             </View>
-            <Text style={styles.goalXp}>
+            <Text variant="small" style={styles.goalXp}>
               {weeklyXp}/{WEEKLY_GOAL_XP} XP
             </Text>
           </View>
@@ -248,7 +248,7 @@ export default function TeamScreen() {
             colors={goalDone ? [C.success] : [C.primary, C.primaryDark]}
             accessibilityLabel={`Haftalık takım hedefi yüzde ${Math.round(goalPct * 100)}`}
           />
-          <Text style={styles.goalHint}>
+          <Text variant="micro" style={styles.goalHint}>
             Her üyenin bu haftaki XP kazancı ortak hedefe sayılır.
           </Text>
         </Card>
@@ -267,7 +267,7 @@ export default function TeamScreen() {
                   size={36}
                 />
                 <View style={styles.memberInfo}>
-                  <Text
+                  <Text variant="bodyStrong"
                     style={[styles.memberName, m.role === 'leader' && styles.memberLeader]}
                     numberOfLines={1}
                   >
@@ -278,7 +278,7 @@ export default function TeamScreen() {
                     <PillInline>{m.xp7d || 0} XP/7g</PillInline>
                     <View style={styles.streakRow}>
                       <Icon emoji="🔥" size={10} color={C.accent} />
-                      <Text style={styles.streakText}>{m.streak || 0}</Text>
+                      <Text variant="micro" style={styles.streakText}>{m.streak || 0}</Text>
                     </View>
                   </View>
                 </View>
@@ -299,7 +299,7 @@ export default function TeamScreen() {
 
         <View style={styles.noteBox}>
           <Icon emoji="💡" size={13} color={C.primary} style={{ marginTop: 2 }} />
-          <Text style={styles.noteText}>
+          <Text variant="small" style={styles.noteText}>
             Takım arkadaşına üstteki "Davet Et" ile paylaşım gönderebilir ya da
             takım adını söyleyebilirsin — birlikte 1000 XP hedefi herkesin
             katkısıyla ilerler.
@@ -322,8 +322,8 @@ export default function TeamScreen() {
         <View style={styles.createHead}>
           <IconTile emoji="🚩" size={44} iconSize={20} variant="primary" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.createTitle}>Yeni takım kur</Text>
-            <Text style={styles.createSub}>Lider olursun — adını ve amblemını seç.</Text>
+            <Text variant="bodyStrong" style={styles.createTitle}>Yeni takım kur</Text>
+            <Text variant="small" style={styles.createSub}>Lider olursun — adını ve amblemını seç.</Text>
           </View>
         </View>
 
@@ -336,7 +336,7 @@ export default function TeamScreen() {
           hint="En fazla 30 karakter."
         />
 
-        <Text style={styles.emojiLabel}>AMBLEM</Text>
+        <Text variant="micro" style={styles.emojiLabel}>AMBLEM</Text>
         <View style={styles.emojiRow}>
           {TEAM_EMOJIS.map((e) => {
             const active = newEmoji === e;
@@ -372,10 +372,10 @@ export default function TeamScreen() {
             <Card key={t.id} padding="sm" style={styles.openRow}>
               <IconTile emoji={t.emoji} size={40} iconSize={18} variant="glass" />
               <View style={styles.openInfo}>
-                <Text style={styles.openName} numberOfLines={1}>
+                <Text variant="bodyStrong" style={styles.openName} numberOfLines={1}>
                   {t.name}
                 </Text>
-                <Text style={styles.openMeta}>
+                <Text variant="micro" style={styles.openMeta}>
                   Lider: {t.leader} · {t.memberCount} üye
                 </Text>
               </View>
@@ -394,7 +394,7 @@ export default function TeamScreen() {
 
       <View style={styles.noteBox}>
         <Icon emoji="💡" size={13} color={C.primary} style={{ marginTop: 2 }} />
-        <Text style={styles.noteText}>
+        <Text variant="small" style={styles.noteText}>
           Herkes en fazla bir takımda olabilir. Lider ayrılınca takım silinir;
           üyeler lider adını (veya paylaşımı) kullanarak katılırlar.
         </Text>
@@ -407,7 +407,7 @@ export default function TeamScreen() {
 function PillInline({ children }) {
   const { colors: C, type } = useTheme();
   return (
-    <Text style={{ ...type.micro, color: C.textMuted, fontWeight: '700' }}>
+    <Text variant="micro" style={{ ...type.micro, color: C.textMuted, fontWeight: '700' }}>
       {children}
     </Text>
   );
@@ -417,6 +417,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -441,10 +442,12 @@ function makeStyles(C, type) {
     teamName: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     teamMeta: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     teamPills: {
       flexDirection: 'row',
@@ -455,6 +458,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.primary,
       fontWeight: '700',
+      lineHeight: 14,
     },
     teamActions: {
       flexDirection: 'row',
@@ -462,6 +466,7 @@ function makeStyles(C, type) {
     },
     actionFlex: {
       flex: 1,
+      minWidth: 0,
     },
 
     // ---- hedef ----
@@ -483,17 +488,19 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       fontWeight: '700',
+      lineHeight: 18,
     },
     goalXp: {
       ...type.small,
       color: C.primary,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     goalHint: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 16,
+      lineHeight: 14,
     },
 
     // ---- üyeler ----
@@ -515,7 +522,8 @@ function makeStyles(C, type) {
     memberName: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     memberLeader: {
       color: C.gold,
@@ -534,6 +542,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
 
     // ---- kur formu ----
@@ -548,17 +557,20 @@ function makeStyles(C, type) {
     createTitle: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 16,
+      fontSize: 17,
+      lineHeight: 24,
     },
     createSub: {
       ...type.small,
       color: C.textMuted,
       marginTop: 2,
+      lineHeight: 18,
     },
     emojiLabel: {
       ...type.micro,
       color: C.textMuted,
       marginBottom: -6,
+      lineHeight: 14,
     },
     emojiRow: {
       flexDirection: 'row',
@@ -581,6 +593,7 @@ function makeStyles(C, type) {
     },
     emojiPickText: {
       fontSize: 22,
+      lineHeight: 30,
     },
 
     // ---- açık takımlar ----
@@ -600,10 +613,12 @@ function makeStyles(C, type) {
     openName: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     openMeta: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
 
     // ---- not ----
@@ -621,6 +636,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       flex: 1,
+      minWidth: 0,
       lineHeight: 18,
     },
   });

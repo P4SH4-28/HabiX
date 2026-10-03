@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { EMOJIS, useTheme } from '../theme';
 
 export default function EmojiPicker({ value, onChange }) {
@@ -36,6 +37,7 @@ function makeStyles(C) {
     color: C.textMuted,
     fontSize: 13,
     fontWeight: '600',
+    lineHeight: 18,
   },
   grid: {
     flexDirection: 'row',
@@ -58,6 +60,7 @@ function makeStyles(C) {
   },
   emoji: {
     fontSize: 22,
+    lineHeight: 30,
   },
 });
 }

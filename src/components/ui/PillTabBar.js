@@ -9,7 +9,8 @@
 //   ikonu mantığı dahil burada korunur).
 // ============================================================
 import { useEffect, useRef } from 'react';
-import { Animated, Platform, StyleSheet, Text, View } from 'react-native';
+import { Animated, Platform, StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tint, useTheme } from '../../theme';
@@ -137,6 +138,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     flex: 1,
+    minWidth: 0,
     // SABİT yükseklik: minHeight tek başına bar'ı içerikten daha uzun
     // bırakıyor, çocuklar (barInner) tepede kalıp ikonlar "havada" duruyordu.
     height: MIN_BAR_HEIGHT,
@@ -148,6 +150,7 @@ const styles = StyleSheet.create({
   },
   barInner: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -156,10 +159,12 @@ const styles = StyleSheet.create({
   },
   itemWrap: {
     flex: 1,
+    minWidth: 0,
     justifyContent: 'center',
   },
   item: {
     flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 4,

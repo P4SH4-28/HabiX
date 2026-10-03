@@ -26,7 +26,8 @@
 //   emoji glyph yok (Icon → Ionicons) · 5 tipografi boyutu + displayXl (yalnız timer).
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import Button from '../components/ui/Button';
@@ -168,9 +169,9 @@ export default function PomodoroScreen() {
 
       {/* ---------- 2) SÜRE SEÇİCİ ---------- */}
       <Card>
-        <Text style={styles.microLabel}>SÜRE</Text>
+        <Text variant="micro" style={styles.microLabel}>SÜRE</Text>
         <SegmentedTabs options={DURATIONS} value={selectedKey} onChange={onSelectDuration} />
-        <Text style={styles.hint}>
+        <Text variant="small" style={styles.hint}>
           {state === 'idle'
             ? 'Seçili süre bir sonraki seansa uygulanır.'
             : 'Seans sürerken süre değiştirilemez.'}
@@ -209,8 +210,8 @@ export default function PomodoroScreen() {
           </View>
         ))}
         <View style={styles.ringCenter}>
-          <Text style={styles.time}>{formatDuration(remainingMs)}</Text>
-          <Text style={styles.timeSub}>
+          <Text variant="displayXl" style={styles.time}>{formatDuration(remainingMs)}</Text>
+          <Text variant="micro" style={styles.timeSub}>
             {state === 'running' ? 'kalan süre' : `toplam ${Math.round(totalMs / 60000)} dk`}
           </Text>
         </View>
@@ -260,13 +261,13 @@ export default function PomodoroScreen() {
       <View style={styles.statsRow}>
         <Card padding="sm" style={styles.statCard}>
           <Icon emoji="🍅" size={16} color={C.primary} />
-          <Text style={styles.statValue}>{data.stats.pomodoroCount || 0}</Text>
-          <Text style={styles.statLabel}>TOPLAM SEANS</Text>
+          <Text variant="h3" style={styles.statValue}>{data.stats.pomodoroCount || 0}</Text>
+          <Text variant="micro" style={styles.statLabel}>TOPLAM SEANS</Text>
         </Card>
         <Card padding="sm" style={styles.statCard}>
           <Icon emoji="📅" size={16} color={C.success} />
-          <Text style={styles.statValue}>{data.stats.day?.pomodoro || 0}</Text>
-          <Text style={styles.statLabel}>BUGÜN</Text>
+          <Text variant="h3" style={styles.statValue}>{data.stats.day?.pomodoro || 0}</Text>
+          <Text variant="micro" style={styles.statLabel}>BUGÜN</Text>
         </Card>
       </View>
 
@@ -288,8 +289,8 @@ export default function PomodoroScreen() {
               .map((s, i) => (
                 <View key={`${s.at}_${i}`} style={styles.sessionRow}>
                   <Icon emoji="🍅" size={16} color={C.textMuted} />
-                  <Text style={styles.sessionName}>{s.dk} dk odak</Text>
-                  <Text style={styles.sessionWhen}>{whenLabel(s.at, today)}</Text>
+                  <Text variant="body" style={styles.sessionName}>{s.dk} dk odak</Text>
+                  <Text variant="micro" style={styles.sessionWhen}>{whenLabel(s.at, today)}</Text>
                 </View>
               ))
           )}
@@ -303,6 +304,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -323,11 +325,13 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 8,
+      lineHeight: 14,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
       marginTop: 8,
+      lineHeight: 18,
     },
 
     // ---- halka ----
@@ -358,10 +362,12 @@ function makeStyles(C, type) {
     time: {
       ...type.displayXl,
       color: C.text,
+      lineHeight: 56,
     },
     timeSub: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
 
     // ---- kontroller ----
@@ -371,6 +377,7 @@ function makeStyles(C, type) {
     },
     btnFlex: {
       flex: 1,
+      minWidth: 0,
     },
 
     // ---- özet ----
@@ -380,6 +387,7 @@ function makeStyles(C, type) {
     },
     statCard: {
       flex: 1,
+      minWidth: 0,
       alignItems: 'center',
       gap: 4,
     },
@@ -387,11 +395,13 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
 
     // ---- seans satırı ----
@@ -406,10 +416,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
+      lineHeight: 21,
     },
     sessionWhen: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
   });
 }

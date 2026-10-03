@@ -4,7 +4,8 @@
 // kalan tek katman temaya özgü emoji dokusudur (çok düşük opaklık).
 // Tüm katman pointerEvents="none" — dokunuşları asla engellemez.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 
 export default function BackgroundPattern() {
@@ -43,6 +44,7 @@ const styles = StyleSheet.create({
   },
   grid: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
     opacity: 0.028,
@@ -51,5 +53,6 @@ const styles = StyleSheet.create({
     width: '12.5%',
     fontSize: 17,
     textAlign: 'center',
+    lineHeight: 24,
   },
 });

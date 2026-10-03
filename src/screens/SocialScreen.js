@@ -49,6 +49,7 @@ export default function SocialScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    minWidth: 0,
   },
   tabs: {
     marginHorizontal: 16,
@@ -57,5 +58,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    minWidth: 0,
   },
 });

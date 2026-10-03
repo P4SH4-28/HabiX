@@ -3,7 +3,8 @@
 // İsteğe bağlı ikon; metin içi "🔥 12", "🪙 120" gibi değer
 // etiketlerinde de kullanılır. Boyut: sm | md.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 import Icon from './icons';
 

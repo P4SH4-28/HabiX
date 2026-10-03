@@ -10,7 +10,8 @@
 //   `inputRef` / `containerRef` — dışarıdan odak + konum ölçümü için.
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import Text from './Text';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -91,7 +92,7 @@ export default function AppTextField({
       collapsable={containerRef ? false : undefined}
       style={[styles.wrap, style]}
     >
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? <Text variant="label" style={styles.label}>{label}</Text> : null}
       <View
         style={[
           styles.box,
@@ -163,10 +164,10 @@ export default function AppTextField({
       {hasError ? (
         <View style={styles.msgRow} accessibilityRole="alert">
           <Icon name="alert-circle" size={13} color={C.danger} />
-          <Text style={[styles.msg, { color: C.danger }]}>{error}</Text>
+          <Text variant="small" style={[styles.msg, { color: C.danger }]}>{error}</Text>
         </View>
       ) : hint ? (
-        <Text style={[styles.msg, hintColor ? { color: hintColor } : null]}>{hint}</Text>
+        <Text variant="small" style={[styles.msg, hintColor ? { color: hintColor } : null]}>{hint}</Text>
       ) : null}
     </View>
   );
@@ -180,6 +181,7 @@ function makeStyles(C, radius, type, space) {
     label: {
       color: C.textMuted,
       ...type.label,
+      lineHeight: 14,
     },
     box: {
       borderWidth: 1,
@@ -208,9 +210,11 @@ function makeStyles(C, radius, type, space) {
     },
     input: {
       flex: 1,
+      minWidth: 0,
       fontSize: 15,
       fontWeight: '600',
       paddingVertical: 0,
+      lineHeight: 21,
     },
     inputDisabled: {
       opacity: 0.7,
@@ -230,6 +234,7 @@ function makeStyles(C, radius, type, space) {
     msg: {
       color: C.textMuted,
       ...type.small,
+      lineHeight: 18,
     },
   });
 }

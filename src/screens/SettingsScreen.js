@@ -29,9 +29,9 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
-  View,
+  View
 } from 'react-native';
+import Text from '../components/ui/Text';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AvatarCircle from '../components/AvatarCircle';
@@ -86,8 +86,8 @@ function Row({ name, label, desc, right, onPress, danger }) {
     <>
       <IconTile name={name} size={36} iconSize={17} variant={danger ? 'danger' : 'glass'} />
       <View style={styles.rowText}>
-        <Text style={[styles.rowLabel, danger && { color: C.danger }]}>{label}</Text>
-        {desc ? <Text style={styles.rowDesc}>{desc}</Text> : null}
+        <Text variant="bodyStrong" style={[styles.rowLabel, danger && { color: C.danger }]}>{label}</Text>
+        {desc ? <Text variant="micro" style={styles.rowDesc}>{desc}</Text> : null}
       </View>
       {right !== undefined ? (
         right
@@ -138,7 +138,7 @@ function EditModal({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
       <Pressable style={styles.backdrop} onPress={() => { reset(); onClose(); }}>
         <Pressable style={styles.sheet}>
           <Card style={styles.sheetCard}>
-            <Text style={styles.sheetTitle}>{title}</Text>
+            <Text variant="h3" style={styles.sheetTitle}>{title}</Text>
             {fields.map((f, i) => (
               <TextInput
                 key={f}
@@ -150,7 +150,7 @@ function EditModal({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
                 autoCapitalize="none"
               />
             ))}
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text variant="small" style={styles.error}>{error}</Text> : null}
             <Button label={buttonLabel} fullWidth onPress={submit} />
             <Button
               label="Vazgeç"
@@ -324,8 +324,8 @@ export default function SettingsScreen() {
           ringColor={C.gold}
         />
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{authUser?.name || 'Kullanıcı'}</Text>
-          <Text style={styles.profileSub}>
+          <Text variant="h3" style={styles.profileName}>{authUser?.name || 'Kullanıcı'}</Text>
+          <Text variant="small" style={styles.profileSub}>
             {currentAvatar?.name || 'Avatar'} · hesap adın liderlikte görünür
           </Text>
         </View>
@@ -367,8 +367,8 @@ export default function SettingsScreen() {
         <View style={styles.hourHead}>
           <IconTile name="alarm" size={36} iconSize={17} variant="glass" />
           <View style={styles.rowText}>
-            <Text style={styles.rowLabel}>Günlük hatırlatma</Text>
-            <Text style={styles.rowDesc}>
+            <Text variant="bodyStrong" style={styles.rowLabel}>Günlük hatırlatma</Text>
+            <Text variant="micro" style={styles.rowDesc}>
               {reminderHour == null
                 ? 'Kapalı — bir saat seçerek aç'
                 : `Her gün ${String(reminderHour).padStart(2, '0')}:00'de hatırlatır`}
@@ -383,7 +383,7 @@ export default function SettingsScreen() {
             hitSlop={HOUR_CHIP_HIT_SLOP}
             style={[styles.hourChip, styles.hourChipOff, reminderHour == null && styles.hourChipOffActive]}
           >
-            <Text style={[styles.hourChipOffText, reminderHour == null && styles.hourChipTextActive]}>
+            <Text variant="micro" style={[styles.hourChipOffText, reminderHour == null && styles.hourChipTextActive]}>
               Kapalı
             </Text>
           </Pressable>
@@ -399,7 +399,7 @@ export default function SettingsScreen() {
                 hitSlop={HOUR_CHIP_HIT_SLOP}
                 style={[styles.hourChip, active && styles.hourChipActive]}
               >
-                <Text style={[styles.hourChipText, active && styles.hourChipTextActive]}>
+                <Text variant="micro" style={[styles.hourChipText, active && styles.hourChipTextActive]}>
                   {String(h).padStart(2, '0')}
                 </Text>
               </Pressable>
@@ -584,8 +584,8 @@ export default function SettingsScreen() {
 
       {/* ---------- Hakkında ---------- */}
       <View style={styles.aboutBox}>
-        <Text style={styles.aboutTitle}>HabiX</Text>
-        <Text style={styles.aboutText}>
+        <Text variant="bodyStrong" style={styles.aboutTitle}>HabiX</Text>
+        <Text variant="micro" style={styles.aboutText}>
           Oyunlaştırılmış Alışkanlık Takibi · Sürüm 1.1.0{'\n'}
           React Native + Expo SDK 57
         </Text>
@@ -616,6 +616,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -649,12 +650,13 @@ function makeStyles(C, type) {
     rowLabel: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     rowDesc: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 15,
+      lineHeight: 14,
     },
     valueRow: {
       flexDirection: 'row',
@@ -662,7 +664,8 @@ function makeStyles(C, type) {
       gap: 8,
     },
     valueEmoji: {
-      fontSize: 20,
+      fontSize: 22,
+      lineHeight: 30,
     },
     dot: {
       width: 10,
@@ -679,15 +682,18 @@ function makeStyles(C, type) {
     },
     profileInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 3,
     },
     profileName: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     profileSub: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- saat şeridi ----
@@ -730,11 +736,13 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     hourChipOffText: {
       ...type.micro,
       color: C.textMuted,
       fontWeight: '700',
+      lineHeight: 14,
     },
     hourChipTextActive: {
       color: C.onPrimary,
@@ -743,6 +751,7 @@ function makeStyles(C, type) {
     // ---- modal ----
     backdrop: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: 'rgba(0,0,0,0.55)',
       justifyContent: 'center',
       padding: 24,
@@ -759,11 +768,13 @@ function makeStyles(C, type) {
       color: C.text,
       textAlign: 'center',
       marginBottom: 4,
+      lineHeight: 24,
     },
     error: {
       ...type.small,
       color: C.danger,
       fontWeight: '600',
+      lineHeight: 18,
     },
 
     // ---- hakkında ----
@@ -776,12 +787,13 @@ function makeStyles(C, type) {
     aboutTitle: {
       ...type.bodyStrong,
       color: C.textMuted,
+      lineHeight: 21,
     },
     aboutText: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 16,
+      lineHeight: 14,
     },
   });
 }

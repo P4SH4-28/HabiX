@@ -4,7 +4,8 @@
 // Trend oku ▲ / ▼ / ■ ile artış, düşüş veya aynı kaldığını gösterir.
 // ============================================================
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 
 export default function WeeklyCompare({ weekly }) {
@@ -62,6 +63,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     columns: {
       flexDirection: 'row',
@@ -69,6 +71,7 @@ function makeStyles(C) {
     },
     column: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.surfaceLight,
       borderRadius: 12,
       padding: 14,
@@ -84,14 +87,16 @@ function makeStyles(C) {
       fontSize: 11,
       fontWeight: '700',
       textTransform: 'uppercase',
+      lineHeight: 14,
     },
     labelHighlight: {
       color: C.primary,
     },
     columnValue: {
       color: C.text,
-      fontSize: 26,
+      fontSize: 22,
       fontWeight: '700',
+      lineHeight: 30,
     },
     valueHighlight: {
       color: C.primary,
@@ -99,6 +104,7 @@ function makeStyles(C) {
     columnHint: {
       color: C.textMuted,
       fontSize: 11,
+      lineHeight: 14,
     },
     trendRow: {
       flexDirection: 'row',
@@ -108,16 +114,20 @@ function makeStyles(C) {
     arrow: {
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     trendText: {
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
     trendHint: {
       color: C.textMuted,
       fontSize: 13,
       flex: 1,
+      minWidth: 0,
       textAlign: 'right',
+      lineHeight: 18,
     },
   });
 }

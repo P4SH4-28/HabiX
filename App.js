@@ -8,7 +8,18 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { enableScreens } from 'react-native-screens';
 import { useMemo, useCallback, useEffect, useState } from 'react';
-import { Linking, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Linking, StatusBar, StyleSheet, View } from 'react-native';
+// ── Global font ölçeği koruması ────────────────────────────────
+//  • Tüm uygulama metinleri TEK bileşenden gelir
+//    (src/components/ui/Text): allowFontScaling=false,
+//    maxFontSizeMultiplier=1.2.
+//  • Üçüncü taraf (react-navigation vb.) için koruma react-native
+//    yamasıyla zorlanır → patches/react-native+0.86.2.patch
+//    (Text: varsayılan false + max 1.2 · TextInput: varsayılan false).
+//  • NOT: React 19 + automatic JSX runtime artık `Text.defaultProps`
+//    uygulamadığı için App.js içinde tanımlamak ETKİSİZDİ; global
+//    koruma bu yüzden yama ile sağlanıyor.
+import Text from './src/components/ui/Text';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { DataProvider, useData } from './src/context/DataContext';
@@ -311,7 +322,7 @@ function Root() {
     return (
       <ThemeProvider value={{ colors }}>
         <View style={[styles.root, styles.banCenter, { backgroundColor: colors.background }]}>
-          <Text style={{ fontSize: 56 }}>⛔</Text>
+          <Text style={{ fontSize: 48, lineHeight: 56 }}>⛔</Text>
           <Text style={[styles.banTitle, { color: colors.text }]}>Hesabın yasaklandı</Text>
           {server.banReason ? (
             <Text style={[styles.banReason, { color: colors.textMuted }]}>Gerekçe: {server.banReason}</Text>
@@ -379,6 +390,7 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: '#0B0E14',
   },
   banCenter: {
@@ -387,20 +399,22 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   banTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     marginTop: 12,
+    lineHeight: 30,
   },
   banReason: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     marginTop: 8,
     textAlign: 'center',
+    lineHeight: 21,
   },
   banHint: {
     fontSize: 13,
     marginTop: 8,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
   },
 });

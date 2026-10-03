@@ -22,7 +22,8 @@
 // SAFE AREA: üst başlık Stack header, alt inset burada.
 // ============================================================
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import Button from '../components/ui/Button';
@@ -145,7 +146,7 @@ export default function SeasonPassScreen() {
         ]}
       >
         <Icon emoji={rewardEmoji(reward)} size={22} color={claimed ? C.textMuted : accent} />
-        <Text style={styles.boxReward} numberOfLines={2}>
+        <Text variant="micro" style={styles.boxReward} numberOfLines={2}>
           {rewardText(reward)}
         </Text>
         {claimed ? (
@@ -187,8 +188,8 @@ export default function SeasonPassScreen() {
       <Card style={styles.seasonCard}>
         <View style={styles.seasonHead}>
           <View style={styles.seasonTitleWrap}>
-            <Text style={styles.seasonName}>{PASS_NAME}</Text>
-            <Text style={styles.seasonSub}>
+            <Text variant="h3" style={styles.seasonName}>{PASS_NAME}</Text>
+            <Text variant="small" style={styles.seasonSub}>
               Sezonu bitirmeye kalan: {seasonXpLeft} XP
             </Text>
           </View>
@@ -199,7 +200,7 @@ export default function SeasonPassScreen() {
 
         <View style={styles.tierRow}>
           <View style={styles.levelCircle}>
-            <Text style={styles.levelText}>{pass.level}</Text>
+            <Text variant="stat" style={styles.levelText}>{pass.level}</Text>
           </View>
           <View style={styles.tierInfo}>
             <Progress
@@ -209,10 +210,10 @@ export default function SeasonPassScreen() {
               accessibilityLabel={`Tier ilerlemesi seviye ${pass.level} / ${PASS_MAX_LEVEL}`}
             />
             <View style={styles.tierLabels}>
-              <Text style={styles.tierLabelStrong}>
+              <Text variant="micro" style={styles.tierLabelStrong}>
                 TIER {pass.level}/{PASS_MAX_LEVEL}
               </Text>
-              <Text style={styles.tierLabel}>
+              <Text variant="micro" style={styles.tierLabel}>
                 {pass.level >= PASS_MAX_LEVEL
                   ? 'Sezon tamamlandı!'
                   : `Sonraki seviye: ${pass.nextThreshold - curXp} XP`}
@@ -227,8 +228,8 @@ export default function SeasonPassScreen() {
         <Card style={styles.vipActiveCard}>
           <Icon emoji="👑" size={26} color={C.gold} />
           <View style={styles.vipInfo}>
-            <Text style={styles.vipActiveTitle}>VIP aktif</Text>
-            <Text style={styles.vipText}>
+            <Text variant="h3" style={styles.vipActiveTitle}>VIP aktif</Text>
+            <Text variant="small" style={styles.vipText}>
               {vipDaysLeft} gün kaldı — VIP ödül kutuları, +4 görev ve ×1.5 çarpan açık.
             </Text>
           </View>
@@ -238,8 +239,8 @@ export default function SeasonPassScreen() {
           <View style={styles.vipHead}>
             <Icon emoji="👑" size={26} color={C.gold} />
             <View style={styles.vipInfo}>
-              <Text style={styles.vipBuyTitle}>VIP üyeliği al</Text>
-              <Text style={styles.vipText}>
+              <Text variant="h3" style={styles.vipBuyTitle}>VIP üyeliği al</Text>
+              <Text variant="small" style={styles.vipText}>
                 30 gün: +4 ekstra günlük görev, ×1.5 ödül çarpanı, Season Pass VIP
                 kutuları.
               </Text>
@@ -248,7 +249,7 @@ export default function SeasonPassScreen() {
           <View style={styles.vipBuyFoot}>
             <View style={styles.priceRow}>
               <Icon emoji="🪙" size={15} color={C.gold} />
-              <Text style={styles.priceText}>{VIP_PRICE_GOLD}</Text>
+              <Text variant="h3" style={styles.priceText}>{VIP_PRICE_GOLD}</Text>
             </View>
             <Button
               label="Satın Al"
@@ -261,7 +262,7 @@ export default function SeasonPassScreen() {
           {gold < VIP_PRICE_GOLD ? (
             <View style={styles.warnRow}>
               <Icon emoji="⚠" size={12} color={C.danger} />
-              <Text style={styles.warnText}>
+              <Text variant="micro" style={styles.warnText}>
                 {VIP_PRICE_GOLD - gold} altın daha lazım (bakiyen: {gold})
               </Text>
             </View>
@@ -273,8 +274,8 @@ export default function SeasonPassScreen() {
       <SectionHeader title="Sezon Ödülleri" />
       <View style={styles.colHead}>
         <View style={styles.colNumSpacer} />
-        <Text style={[styles.colLabel, { color: C.primary }]}>FREE</Text>
-        <Text style={[styles.colLabel, styles.colLabelVip]}>VIP</Text>
+        <Text variant="micro" style={[styles.colLabel, { color: C.primary }]}>FREE</Text>
+        <Text variant="micro" style={[styles.colLabel, styles.colLabelVip]}>VIP</Text>
       </View>
 
       <View style={styles.tierList}>
@@ -284,7 +285,7 @@ export default function SeasonPassScreen() {
           return (
             <View key={lvl.level} style={styles.tierItem}>
               <View style={styles.tierNumCol}>
-                <Text
+                <Text variant="bodyStrong"
                   style={[
                     styles.tierNum,
                     { color: reached ? C.text : C.textMuted },
@@ -304,7 +305,7 @@ export default function SeasonPassScreen() {
         })}
       </View>
 
-      <Text style={styles.note}>
+      <Text variant="small" style={styles.note}>
         Pass seviyen toplam XP'nle otomatik yükselir. Kutular seviyeye ulaşınca
         açılır; VIP kutuları yalnızca aktif VIP üyelere verilir.
       </Text>
@@ -316,6 +317,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -341,11 +343,13 @@ function makeStyles(C, type) {
     seasonName: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     seasonSub: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     tierRow: {
       flexDirection: 'row',
@@ -365,6 +369,7 @@ function makeStyles(C, type) {
     levelText: {
       ...type.stat,
       color: C.primary,
+      lineHeight: 30,
     },
     tierInfo: {
       flex: 1,
@@ -380,11 +385,13 @@ function makeStyles(C, type) {
     tierLabelStrong: {
       ...type.micro,
       color: C.text,
+      lineHeight: 14,
     },
     tierLabel: {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
 
     // ---- VIP ----
@@ -415,14 +422,17 @@ function makeStyles(C, type) {
     vipActiveTitle: {
       ...type.h3,
       color: C.gold,
+      lineHeight: 24,
     },
     vipBuyTitle: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     vipText: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     vipBuyFoot: {
       flexDirection: 'row',
@@ -439,6 +449,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.gold,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
     warnRow: {
       flexDirection: 'row',
@@ -448,6 +459,7 @@ function makeStyles(C, type) {
     warnText: {
       ...type.micro,
       color: C.danger,
+      lineHeight: 14,
     },
 
     // ---- sütun başlıkları ----
@@ -462,7 +474,9 @@ function makeStyles(C, type) {
     colLabel: {
       ...type.micro,
       flex: 1,
+      minWidth: 0,
       textAlign: 'center',
+      lineHeight: 14,
     },
     colLabelVip: {
       color: C.gold,
@@ -486,6 +500,7 @@ function makeStyles(C, type) {
     tierNum: {
       ...type.bodyStrong,
       fontVariant: ['tabular-nums'],
+      lineHeight: 21,
     },
     tierNumCurrent: {
       color: C.primary,
@@ -498,11 +513,13 @@ function makeStyles(C, type) {
     },
     boxes: {
       flex: 1,
+      minWidth: 0,
       flexDirection: 'row',
       gap: 8,
     },
     box: {
       flex: 1,
+      minWidth: 0,
       minHeight: 104,
       borderRadius: 16,
       borderWidth: 1,
@@ -534,11 +551,13 @@ function makeStyles(C, type) {
       textTransform: 'none',
       letterSpacing: 0,
       fontWeight: '600',
+      lineHeight: 14,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
   });
 }

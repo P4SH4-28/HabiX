@@ -30,9 +30,9 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
+  View
 } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -274,8 +274,8 @@ export default function AdminScreen() {
         <View style={styles.statGrid}>
           {statsList.map((s) => (
             <Card key={s.key} padding="sm" style={styles.statCard}>
-              <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.statLabel}>{s.label}</Text>
+              <Text variant="stat" style={styles.statValue}>{s.value}</Text>
+              <Text variant="micro" style={styles.statLabel}>{s.label}</Text>
             </Card>
           ))}
         </View>
@@ -287,10 +287,10 @@ export default function AdminScreen() {
             ]}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.systemTitle}>
+            <Text variant="bodyStrong" style={styles.systemTitle}>
               {server?.connected ? 'Sistem çevrimiçi' : 'Sistem çevrimdışı'}
             </Text>
-            <Text style={styles.systemSub}>
+            <Text variant="micro" style={styles.systemSub}>
               {server?.lastSync
                 ? `Son senkron: ${new Date(server.lastSync).toLocaleString('tr-TR')}`
                 : 'Henüz senkron yapılmadı'}
@@ -335,8 +335,8 @@ export default function AdminScreen() {
                 accessibilityLabel={`${u.username} profilini aç`}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.resultName}>{u.username}</Text>
-                  <Text style={styles.resultMeta}>
+                  <Text variant="bodyStrong" style={styles.resultName}>{u.username}</Text>
+                  <Text variant="micro" style={styles.resultMeta}>
                     {u.xp} XP · {u.coins} 🪙
                   </Text>
                 </View>
@@ -383,8 +383,8 @@ export default function AdminScreen() {
             <Card style={styles.userCard}>
               <View style={styles.userHead}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.userName}>{selected.username}</Text>
-                  <Text style={styles.userMeta}>
+                  <Text variant="h3" style={styles.userName}>{selected.username}</Text>
+                  <Text variant="micro" style={styles.userMeta}>
                     {selected.xp} XP · {selected.coins} 🪙
                     {selected.xp7d ? ` · 7g +${selected.xp7d}` : ''}
                   </Text>
@@ -407,16 +407,16 @@ export default function AdminScreen() {
                 </View>
               </View>
               {selected.ban_reason ? (
-                <Text style={styles.reasonText}>Gerekçe: {selected.ban_reason}</Text>
+                <Text variant="small" style={styles.reasonText}>Gerekçe: {selected.ban_reason}</Text>
               ) : null}
               {selected.flagged_reason && !selected.banned ? (
-                <Text style={styles.reasonText}>Bayrak nedeni: {selected.flagged_reason}</Text>
+                <Text variant="small" style={styles.reasonText}>Bayrak nedeni: {selected.flagged_reason}</Text>
               ) : null}
             </Card>
 
             {/* Hediye et */}
             <Card style={styles.blockCard}>
-              <Text style={styles.blockTitle}>Hediye Et</Text>
+              <Text variant="bodyStrong" style={styles.blockTitle}>Hediye Et</Text>
               <SegmentedTabs
                 options={GRANT_TABS.map((t) => ({ key: t.key, label: t.label }))}
                 value={grantTab}
@@ -428,7 +428,7 @@ export default function AdminScreen() {
                   return (
                     <Card key={item.id} padding="sm" style={styles.grantCell}>
                       <Text style={styles.grantEmoji}>{item.emoji}</Text>
-                      <Text style={styles.grantName} numberOfLines={1}>
+                      <Text variant="micro" style={styles.grantName} numberOfLines={1}>
                         {item.name}
                       </Text>
                       {granted ? (
@@ -457,7 +457,7 @@ export default function AdminScreen() {
 
             {/* Ödül (normal bölge) */}
             <Card style={styles.blockCard}>
-              <Text style={styles.blockTitle}>Ödül Ver (XP / altın)</Text>
+              <Text variant="bodyStrong" style={styles.blockTitle}>Ödül Ver (XP / altın)</Text>
               <View style={styles.inputRow}>
                 <View style={styles.inputFlex}>
                   <TextInput
@@ -503,7 +503,7 @@ export default function AdminScreen() {
             <Card style={styles.dangerCard}>
               <View style={styles.dangerHead}>
                 <Icon emoji="⚠️" size={14} color={C.danger} />
-                <Text style={styles.dangerTitle}>Bu işlemler geri alınamayabilir</Text>
+                <Text variant="bodyStrong" style={styles.dangerTitle}>Bu işlemler geri alınamayabilir</Text>
               </View>
 
               {/* Yasaklama */}
@@ -527,7 +527,7 @@ export default function AdminScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.dangerNote}>
+                  <Text variant="small" style={styles.dangerNote}>
                     Bu kullanıcı yasaklı — senkronu ve liderliği kapalı.
                   </Text>
                   <Button
@@ -542,7 +542,7 @@ export default function AdminScreen() {
 
               {/* Ceza */}
               <View style={styles.dangerDivider} />
-              <Text style={styles.dangerSubTitle}>Ceza Kes (−XP / −altın)</Text>
+              <Text variant="small" style={styles.dangerSubTitle}>Ceza Kes (−XP / −altın)</Text>
               <View style={styles.inputRow}>
                 <View style={styles.inputFlex}>
                   <TextInput
@@ -574,8 +574,8 @@ export default function AdminScreen() {
 
               {/* Para transferi */}
               <View style={styles.dangerDivider} />
-              <Text style={styles.dangerSubTitle}>Para Transferi</Text>
-              <Text style={styles.dangerNote}>
+              <Text variant="small" style={styles.dangerSubTitle}>Para Transferi</Text>
+              <Text variant="small" style={styles.dangerNote}>
                 Kaynak hesaptan hedefe XP/altın aktarılır (kaynak bakiyesi düşer).
               </Text>
               <TextInput
@@ -639,12 +639,12 @@ export default function AdminScreen() {
             <Card style={styles.logsCard}>
               {logs.map((l) => (
                 <View key={l.id} style={styles.logRow}>
-                  <Text style={styles.logText}>
+                  <Text variant="micro" style={styles.logText}>
                     {l.created_at?.slice(0, 16).replace('T', ' ')} ·{' '}
                     <Text style={styles.logAction}>{l.action}</Text>
                     {l.target ? ` → ${l.target}` : ''}
                   </Text>
-                  {l.detail ? <Text style={styles.logDetail}>{l.detail}</Text> : null}
+                  {l.detail ? <Text variant="micro" style={styles.logDetail}>{l.detail}</Text> : null}
                 </View>
               ))}
             </Card>
@@ -670,6 +670,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -692,11 +693,13 @@ function makeStyles(C, type) {
     statValue: {
       ...type.stat,
       color: C.primary,
+      lineHeight: 30,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
     systemCard: {
       flexDirection: 'row',
@@ -711,13 +714,15 @@ function makeStyles(C, type) {
     systemTitle: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     systemSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
 
     // ---- arama ----
@@ -750,12 +755,14 @@ function makeStyles(C, type) {
     resultName: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     resultMeta: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     resultBadges: {
       flexDirection: 'row',
@@ -774,12 +781,14 @@ function makeStyles(C, type) {
     userName: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     userMeta: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 3,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     userPills: {
       flexDirection: 'row',
@@ -788,6 +797,7 @@ function makeStyles(C, type) {
     reasonText: {
       ...type.small,
       color: C.xp,
+      lineHeight: 18,
     },
     blockCard: {
       gap: 12,
@@ -795,7 +805,8 @@ function makeStyles(C, type) {
     blockTitle: {
       ...type.bodyStrong,
       color: C.text,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
 
     // ---- hediye ----
@@ -812,11 +823,13 @@ function makeStyles(C, type) {
     },
     grantEmoji: {
       fontSize: 22,
+      lineHeight: 30,
     },
     grantName: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
 
     // ---- form ----
@@ -826,6 +839,7 @@ function makeStyles(C, type) {
     },
     inputFlex: {
       flex: 1,
+      minWidth: 0,
     },
 
     // ---- tehlikeli bölge ----
@@ -843,7 +857,8 @@ function makeStyles(C, type) {
     dangerTitle: {
       ...type.bodyStrong,
       color: C.danger,
-      fontSize: 14,
+      fontSize: 15,
+      lineHeight: 21,
     },
     dangerSubTitle: {
       ...type.small,
@@ -851,6 +866,7 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: 1,
+      lineHeight: 18,
     },
     dangerNote: {
       ...type.small,
@@ -876,7 +892,7 @@ function makeStyles(C, type) {
     logText: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 16,
+      lineHeight: 14,
     },
     logAction: {
       color: C.text,
@@ -886,6 +902,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
+      lineHeight: 14,
     },
   });
 }

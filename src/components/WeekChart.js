@@ -7,7 +7,8 @@
 // Bar yüksekliği layout prop'u olduğundan JS driver kullanılır.
 // ============================================================
 import { useEffect, useMemo, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { dayNameShort } from '../logic';
 import { useTheme } from '../theme';
 import AnimatedCounter from './AnimatedCounter';
@@ -93,6 +94,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     chart: {
       flexDirection: 'row',
@@ -102,6 +104,7 @@ function makeStyles(C) {
     },
     column: {
       flex: 1,
+      minWidth: 0,
       alignItems: 'center',
       gap: 6,
       height: '100%',
@@ -116,11 +119,13 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
+      lineHeight: 14,
     },
     totalSlash: {
       color: C.textMuted,
       fontSize: 11,
       opacity: 0.6,
+      lineHeight: 14,
     },
     valueToday: {
       color: C.primary,
@@ -141,6 +146,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
+      lineHeight: 14,
     },
     dayLabelToday: {
       color: C.primary,

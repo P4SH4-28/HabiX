@@ -22,7 +22,8 @@
 //   5 tipografi boyutu · h1 yalnız ekran başlığı.
 // ============================================================
 import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddHabitModal from '../components/AddHabitModal';
@@ -127,7 +128,7 @@ export default function HabitsScreen() {
       >
         {/* ---------- 1) BAŞLIK ---------- */}
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Alışkanlıklar</Text>
+          <Text variant="h1" style={styles.title}>Alışkanlıklar</Text>
           <Pill
             size="sm"
             bg={atMax ? C.gold + '1A' : C.primary + '1A'}
@@ -136,13 +137,13 @@ export default function HabitsScreen() {
             {total}/{MAX_ACTIVE_HABITS}
           </Pill>
         </View>
-        <Text style={styles.subtitle}>Dokun → tamamla · uzun bas → sil</Text>
+        <Text variant="small" style={styles.subtitle}>Dokun → tamamla · uzun bas → sil</Text>
 
         {/* ---------- 2) ÖZET ---------- */}
         <Card>
           <View style={styles.rowBetween}>
-            <Text style={styles.h3}>Bugünkü İlerleme</Text>
-            <Text style={styles.pctValue}>{Math.round(pct * 100)}%</Text>
+            <Text variant="h3" style={styles.h3}>Bugünkü İlerleme</Text>
+            <Text variant="stat" style={styles.pctValue}>{Math.round(pct * 100)}%</Text>
           </View>
           <Progress
             value={pct}
@@ -153,19 +154,19 @@ export default function HabitsScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statCol}>
               <Icon emoji="🔥" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>En uzun seri</Text>
+              <Text variant="micro" style={styles.statLabel}>En uzun seri</Text>
               <AnimatedCounter value={bestStreakValue} style={styles.statValue} />
             </View>
             <View style={styles.statCol}>
               <Ionicons name="checkmark-circle" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>Tamamlanan</Text>
-              <Text style={styles.statValue}>
+              <Text variant="micro" style={styles.statLabel}>Tamamlanan</Text>
+              <Text variant="h3" style={styles.statValue}>
                 <AnimatedCounter value={doneToday} style={styles.statValue} />/{total}
               </Text>
             </View>
             <View style={styles.statCol}>
               <Ionicons name="star" size={16} color={C.textMuted} />
-              <Text style={styles.statLabel}>Seviye</Text>
+              <Text variant="micro" style={styles.statLabel}>Seviye</Text>
               <AnimatedCounter value={level} style={styles.statValue} />
             </View>
           </View>
@@ -254,6 +255,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -272,11 +274,13 @@ function makeStyles(C, type) {
       ...type.h1,
       color: C.text,
       flexShrink: 1,
+      lineHeight: 30,
     },
     subtitle: {
       ...type.small,
       color: C.textMuted,
       marginTop: -6,
+      lineHeight: 18,
     },
 
     // ---- özet ----
@@ -289,10 +293,12 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     pctValue: {
       ...type.stat,
       color: C.success,
+      lineHeight: 30,
     },
     statsRow: {
       flexDirection: 'row',
@@ -303,16 +309,19 @@ function makeStyles(C, type) {
       alignItems: 'center',
       gap: 4,
       flex: 1,
+      minWidth: 0,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
     statValue: {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
+      lineHeight: 24,
     },
 
     // ---- alışkanlık satırı: HabitSwipeRow (HomeScreen'den import) ----

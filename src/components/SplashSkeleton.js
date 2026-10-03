@@ -32,6 +32,7 @@ export default function SplashSkeleton() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    minWidth: 0,
     padding: 20,
   },
   topRow: {

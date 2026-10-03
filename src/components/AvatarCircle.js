@@ -9,7 +9,8 @@
 // - Çerçeve varsa avatarın arkasına yumuşak bir ışıltı (glow) eklenir.
 // ============================================================
 import { useMemo, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import LottieView from 'lottie-react-native';
 import { getAvatarEmoji, getFrame } from '../data/shop';
 import { useTheme } from '../theme';

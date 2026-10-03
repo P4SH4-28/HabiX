@@ -10,10 +10,10 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
+import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -218,6 +218,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
     },
     listContent: {
       padding: 16,
@@ -243,17 +244,19 @@ function makeStyles(C) {
     msgName: {
       fontSize: 11,
       fontWeight: '700',
+      lineHeight: 14,
     },
     msgText: {
       color: C.text,
       fontSize: 15,
-      lineHeight: 20,
+      lineHeight: 21,
     },
     msgTime: {
       fontSize: 11,
       fontWeight: '600',
       alignSelf: 'flex-end',
       marginTop: 2,
+      lineHeight: 14,
     },
     skeletonList: {
       paddingTop: 16,
@@ -270,6 +273,7 @@ function makeStyles(C) {
       fontWeight: '700',
       paddingHorizontal: 16,
       paddingBottom: 6,
+      lineHeight: 18,
     },
     inputRow: {
       flexDirection: 'row',
@@ -281,11 +285,13 @@ function makeStyles(C) {
     },
     input: {
       flex: 1,
+      minWidth: 0,
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: 13,
       fontWeight: '600',
+      lineHeight: 18,
     },
     sendBtn: {
       width: 44,

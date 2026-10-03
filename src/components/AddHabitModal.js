@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 import ColorPicker from './ColorPicker';
 import EmojiPicker from './EmojiPicker';
@@ -110,12 +111,14 @@ function makeStyles(C) {
       elevation: 4,
     },
     previewEmoji: {
-      fontSize: 30,
+      fontSize: 22,
+      lineHeight: 30,
     },
     previewName: {
       color: C.text,
       fontSize: 17,
       fontWeight: '700',
+      lineHeight: 24,
     },
     previewNameEmpty: {
       color: C.textMuted,
@@ -123,6 +126,7 @@ function makeStyles(C) {
     previewHint: {
       color: C.textMuted,
       fontSize: 13,
+      lineHeight: 18,
     },
     button: {
       height: 50,
@@ -141,10 +145,11 @@ function makeStyles(C) {
     },
     limitText: {
       flex: 1,
+      minWidth: 0,
       color: C.danger,
-      fontSize: 13,
-      lineHeight: 17,
+      fontSize: 13,
       fontWeight: '600',
+      lineHeight: 18,
     },
   });
 }

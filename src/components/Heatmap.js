@@ -7,7 +7,8 @@
 // animasyonu KALDIRILDI → sabit vurgu (scale 1.15).
 // ============================================================
 import { useEffect, useMemo, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 
 // Hex renk kodunu ("#22D3A5") istenen şeffaflıkta rgba'ya çevirir.
@@ -114,6 +115,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     legend: {
       flexDirection: 'row',
@@ -123,6 +125,7 @@ function makeStyles(C) {
     legendText: {
       color: C.textMuted,
       fontSize: 11,
+      lineHeight: 14,
     },
     legendCell: {
       width: 12,

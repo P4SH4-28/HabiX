@@ -8,7 +8,8 @@
 //  - weeklyComparison     → bu hafta vs geçen hafta kartı
 // ============================================================
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import AchievementsGrid from '../components/AchievementsGrid';
 import Heatmap from '../components/Heatmap';
 import StatCard from '../components/StatCard';
@@ -114,6 +115,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -125,6 +127,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       marginBottom: 4,
+      lineHeight: 18,
     },
     statsRow: {
       flexDirection: 'row',

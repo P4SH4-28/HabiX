@@ -3,7 +3,8 @@
 // Sol: hamburger (sekmeler) veya geri ok (alt ekranlar).
 // Orta: başlık. Sağ: senkron durum rozeti + isteğe bağlı içerik.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,8 +80,10 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
+    minWidth: 0,
     fontSize: 15,
     fontWeight: '700',
+    lineHeight: 21,
   },
   right: {
     flexDirection: 'row',

@@ -41,22 +41,22 @@ export function StreakWidget({ snapshot }) {
       <FlexWidget style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <TextWidget
           text="Seri"
-          style={{ fontSize: 13, fontWeight: '800', color: TEXT }}
+          style={{ fontSize: 13, lineHeight: 18, fontWeight: '800', color: TEXT }}
         />
         <TextWidget
           text={frozen ? '❄️' : '🔥'}
-          style={{ fontSize: 16 }}
+          style={{ fontSize: 15, lineHeight: 21 }}
         />
       </FlexWidget>
 
       <TextWidget
         text={String(s)}
-        style={{ fontSize: 44, fontWeight: '900', color: allDone ? GREEN : FIRE }}
+        style={{ fontSize: 48, lineHeight: 56, fontWeight: '800', color: allDone ? GREEN : FIRE }}
       />
 
       <TextWidget
         text={message}
-        style={{ fontSize: 12, fontWeight: '600', color: allDone ? GREEN : MUTED }}
+        style={{ fontSize: 11, lineHeight: 14, fontWeight: '600', color: allDone ? GREEN : MUTED }}
       />
     </FlexWidget>
   );

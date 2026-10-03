@@ -8,7 +8,8 @@
 // - Ease-out eğrisi: başlangıç hızlı, bitiş yumuşak (premium his).
 // ============================================================
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Text } from 'react-native';
+import { AccessibilityInfo, Animated, Easing } from 'react-native';
+import Text from './ui/Text';
 
 export default function AnimatedCounter({ value, duration = 520, style }) {
   const [display, setDisplay] = useState(value);

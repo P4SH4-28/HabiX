@@ -7,7 +7,8 @@
 // sırayla (stagger) belirir; kapanışta tersi akar (smooth).
 // ============================================================
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
@@ -228,6 +229,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: 'rgba(0,0,0,0.55)',
       flexDirection: 'row',
     },
@@ -252,17 +254,20 @@ function makeStyles(C) {
     },
     profileInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     profileName: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     profileLevel: {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '600',
+      lineHeight: 18,
     },
     profileLevelRow: {
       flexDirection: 'row',
@@ -295,16 +300,19 @@ function makeStyles(C) {
     },
     itemInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 1,
     },
     itemLabel: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     itemDesc: {
       color: C.textMuted,
       fontSize: 11,
+      lineHeight: 14,
     },
   });
 }

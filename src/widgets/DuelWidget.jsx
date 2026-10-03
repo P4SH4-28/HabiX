@@ -34,9 +34,9 @@ export function DuelWidget({ snapshot }) {
       <FlexWidget style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextWidget
           text="Düello Ayarla"
-          style={{ fontSize: 13, fontWeight: '800', color: TEXT }}
+          style={{ fontSize: 13, lineHeight: 18, fontWeight: '800', color: TEXT }}
         />
-        <TextWidget text="  🔥" style={{ fontSize: 15 }} />
+        <TextWidget text="  🔥" style={{ fontSize: 15, lineHeight: 21 }} />
       </FlexWidget>
 
       <FlexWidget
@@ -67,7 +67,7 @@ export function DuelWidget({ snapshot }) {
 
       <TextWidget
         text={active && opponent ? `vs ${opponent}` : 'rakip seç, savaş başlasın'}
-        style={{ fontSize: 10, color: active ? '#FF6B4A' : MUTED }}
+        style={{ fontSize: 11, lineHeight: 14, color: active ? '#FF6B4A' : MUTED }}
       />
     </FlexWidget>
   );

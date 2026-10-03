@@ -17,7 +17,8 @@
 //   h1 yok (AppHeader) · 5 tipografi ölçeği.
 // ============================================================
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import Button from '../components/ui/Button';
@@ -113,12 +114,12 @@ export default function AchievementsScreen() {
         <Card style={styles.summaryCard}>
           <IconTile icon="trophy" emoji="🏆" variant="gold" size={52} iconSize={24} />
           <View style={styles.summaryInfo}>
-            <Text style={styles.summaryTitle}>
+            <Text variant="bodyStrong" style={styles.summaryTitle}>
               {unlockedCount}/{ACHIEVEMENTS.length} başarım açıldı
             </Text>
             <View style={styles.summarySubRow}>
               <Icon emoji="🪙" size={12} color={C.gold} />
-              <Text style={styles.summarySub}>
+              <Text variant="small" style={styles.summarySub}>
                 Açtıkların toplam {totalReward} altın kazandırdı
               </Text>
             </View>
@@ -158,14 +159,14 @@ export default function AchievementsScreen() {
                 <View style={[styles.cellIcon, unlocked ? styles.cellIconOn : styles.cellIconOff]}>
                   <Icon emoji={unlocked ? a.icon : '🔒'} size={20} color={unlocked ? C.text : C.textMuted} />
                 </View>
-                <Text style={[styles.cellTitle, !unlocked && styles.cellTitleOff]} numberOfLines={2}>
+                <Text variant="micro" style={[styles.cellTitle, !unlocked && styles.cellTitleOff]} numberOfLines={2}>
                   {a.title}
                 </Text>
                 {unlocked ? (
                   date ? (
-                    <Text style={styles.cellDate}>{date}</Text>
+                    <Text variant="micro" style={styles.cellDate}>{date}</Text>
                   ) : (
-                    <Text style={styles.cellDate}>Açıldı</Text>
+                    <Text variant="micro" style={styles.cellDate}>Açıldı</Text>
                   )
                 ) : prog ? (
                   <View style={styles.cellProgRow}>
@@ -175,12 +176,12 @@ export default function AchievementsScreen() {
                       colors={[C.primary, C.primaryDark]}
                       accessibilityLabel={`${a.title} ilerlemesi`}
                     />
-                    <Text style={styles.cellProgText}>
+                    <Text variant="micro" style={styles.cellProgText}>
                       {Math.min(prog.cur, prog.target)}/{prog.target}
                     </Text>
                   </View>
                 ) : (
-                  <Text style={styles.cellHint}>Şart bekleniyor</Text>
+                  <Text variant="micro" style={styles.cellHint}>Şart bekleniyor</Text>
                 )}
               </Pressable>
             );
@@ -189,7 +190,7 @@ export default function AchievementsScreen() {
 
         <View style={styles.noteBox}>
           <Icon emoji="💡" size={13} color={C.primary} style={{ marginTop: 2 }} />
-          <Text style={styles.noteText}>
+          <Text variant="small" style={styles.noteText}>
             Başarımlar otomatik açılır; altın ödülü hemen envanterine eklenir ve
             ekranın üstünde kısa bir bildirim görürsün.
           </Text>
@@ -214,8 +215,8 @@ export default function AchievementsScreen() {
                 size={64}
                 iconSize={28}
               />
-              <Text style={styles.sheetTitle}>{selected?.title}</Text>
-              <Text style={styles.sheetDesc}>{selected?.desc}</Text>
+              <Text variant="h3" style={styles.sheetTitle}>{selected?.title}</Text>
+              <Text variant="small" style={styles.sheetDesc}>{selected?.desc}</Text>
 
               <View style={styles.sheetChips}>
                 <Pill size="sm" bg={C.gold + '22'} color={C.gold}>
@@ -233,15 +234,15 @@ export default function AchievementsScreen() {
               {selUnlocked ? (
                 <View style={styles.sheetDateRow}>
                   <Icon name="calendar-outline" size={14} color={C.textMuted} />
-                  <Text style={styles.sheetDateText}>
+                  <Text variant="small" style={styles.sheetDateText}>
                     {selDate ? `${selDate} tarihinde açıldı` : 'Kilit açma tarihi kaydedilmemiş'}
                   </Text>
                 </View>
               ) : selProg ? (
                 <View style={styles.sheetProgWrap}>
                   <View style={styles.sheetProgHead}>
-                    <Text style={styles.sheetProgLabel}>İLERLEME</Text>
-                    <Text style={styles.sheetProgValue}>
+                    <Text variant="micro" style={styles.sheetProgLabel}>İLERLEME</Text>
+                    <Text variant="micro" style={styles.sheetProgValue}>
                       {Math.min(selProg.cur, selProg.target)}/{selProg.target}
                     </Text>
                   </View>
@@ -253,7 +254,7 @@ export default function AchievementsScreen() {
                   />
                 </View>
               ) : (
-                <Text style={styles.sheetHint}>Şartını sağladığında otomatik açılır.</Text>
+                <Text variant="small" style={styles.sheetHint}>Şartını sağladığında otomatik açılır.</Text>
               )}
 
               <Button label="Kapat" variant="ghost" fullWidth onPress={close} />
@@ -269,6 +270,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -284,6 +286,7 @@ function makeStyles(C, type) {
     },
     summaryInfo: {
       flex: 1,
+      minWidth: 0,
       gap: 2,
     },
     summarySubRow: {
@@ -294,10 +297,12 @@ function makeStyles(C, type) {
     summaryTitle: {
       ...type.bodyStrong,
       color: C.text,
+      lineHeight: 21,
     },
     summarySub: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     // ---- grid ----
@@ -352,6 +357,7 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textAlign: 'center',
       fontSize: 11,
+      lineHeight: 14,
     },
     cellTitleOff: {
       color: C.textMuted,
@@ -360,6 +366,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.gold,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     cellProgRow: {
       width: '100%',
@@ -370,11 +377,13 @@ function makeStyles(C, type) {
       color: C.textMuted,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     cellHint: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 14,
     },
 
     // ---- not ----
@@ -392,12 +401,14 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       flex: 1,
+      minWidth: 0,
       lineHeight: 18,
     },
 
     // ---- modal ----
     backdrop: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: 'rgba(0,0,0,0.55)',
       justifyContent: 'center',
       padding: 24,
@@ -414,6 +425,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       textAlign: 'center',
+      lineHeight: 24,
     },
     sheetDesc: {
       ...type.small,
@@ -439,6 +451,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     sheetProgWrap: {
       width: '100%',
@@ -451,17 +464,20 @@ function makeStyles(C, type) {
     sheetProgLabel: {
       ...type.micro,
       color: C.textMuted,
+      lineHeight: 14,
     },
     sheetProgValue: {
       ...type.micro,
       color: C.primary,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
     sheetHint: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
+      lineHeight: 18,
     },
   });
 }

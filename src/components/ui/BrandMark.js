@@ -2,7 +2,8 @@
 // BrandMark.js — Auth/onboarding markası: amblem + isim.
 // v2: düz birincil zemin (gradient/glow yok) + ikon emoji tablosundan gelir.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 import Icon from './icons';
 
@@ -52,12 +53,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     letterSpacing: -0.5,
+    lineHeight: 30,
   },
   subtitle: {
     fontSize: 13,
     textAlign: 'center',
+    lineHeight: 18,
   },
 });

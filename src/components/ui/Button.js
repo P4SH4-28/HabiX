@@ -16,7 +16,8 @@
 //   colors[], start/end, haptic, textStyle, accessibilityLabel.
 // ============================================================
 import { memo, useEffect, useMemo } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import Text from './Text';
 import Animated, {
   cancelAnimation,
   Easing,

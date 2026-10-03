@@ -19,7 +19,8 @@
 //   5 tipografi ölçeği (h1 yok — başlık header'da).
 // ============================================================
 import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import Text from '../components/ui/Text';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
@@ -95,12 +96,12 @@ export default function QuestBoardScreen() {
       <Card key={quest.id} padding="sm" style={styles.questCard}>
         <View style={styles.questHead}>
           <Icon emoji={quest.emoji} size={18} color={C.primary} />
-          <Text style={styles.questTitle} numberOfLines={1}>
+          <Text variant="bodyStrong" style={styles.questTitle} numberOfLines={1}>
             {quest.title}
           </Text>
           <Pill size="sm">{diff.emoji} {diff.label}</Pill>
         </View>
-        <Text style={styles.questDesc} numberOfLines={2}>
+        <Text variant="small" style={styles.questDesc} numberOfLines={2}>
           {quest.desc}
         </Text>
         <View style={styles.rewardRow}>
@@ -123,7 +124,7 @@ export default function QuestBoardScreen() {
           accessibilityLabel={`${quest.title} ilerlemesi yüzde ${Math.round(pct)}`}
         />
         <View style={styles.questFoot}>
-          <Text style={styles.progressText}>
+          <Text variant="micro" style={styles.progressText}>
             {progress}/{quest.target}
             {ready ? ' · ödül hazır!' : ''}
           </Text>
@@ -166,7 +167,7 @@ export default function QuestBoardScreen() {
       }
     >
       {/* ---------- ÖZET ---------- */}
-      <Text style={styles.summary}>
+      <Text variant="small" style={styles.summary}>
         Görevler her gece yarısı yenilenir. Bugün{' '}
         <Text style={styles.summaryStrong}>
           {doneToday}/{allToday.length}
@@ -177,7 +178,7 @@ export default function QuestBoardScreen() {
       {offline ? (
         <View style={styles.offlineBox}>
           <Icon emoji="📡" size={14} color={C.danger} />
-          <Text style={styles.offlineText}>
+          <Text variant="small" style={styles.offlineText}>
             Sunucuya bağlanılamıyor — ödüller sunucu onayı gerektirdiği için şu an
             alınamaz. Bağlantı gelince yeniden dene.
           </Text>
@@ -202,7 +203,7 @@ export default function QuestBoardScreen() {
               <SectionHeader title="VIP Ekstra Görevler" />
               <View style={styles.vipBadgeRow}>
                 <Icon emoji="👑" size={13} color={C.gold} />
-                <Text style={styles.vipBadgeText}>
+                <Text variant="micro" style={styles.vipBadgeText}>
                   VIP aktif · {vipDaysLeft} gün kaldı · temel görevlerde ×1.5 ödül
                 </Text>
               </View>
@@ -212,9 +213,9 @@ export default function QuestBoardScreen() {
             <Card style={styles.vipPromo}>
               <View style={styles.vipPromoHead}>
                 <Icon emoji="👑" size={20} color={C.gold} />
-                <Text style={styles.vipPromoTitle}>VIP ol, +4 görev kazan</Text>
+                <Text variant="h3" style={styles.vipPromoTitle}>VIP ol, +4 görev kazan</Text>
               </View>
-              <Text style={styles.vipPromoText}>
+              <Text variant="small" style={styles.vipPromoText}>
                 +4 ekstra VIP görev, temel görevlerde ×1.5 ödül çarpanı ve Season Pass
                 VIP ödülleri. Altınla satın alınır.
               </Text>
@@ -229,7 +230,7 @@ export default function QuestBoardScreen() {
             </Card>
           )}
 
-          <Text style={styles.note}>
+          <Text variant="small" style={styles.note}>
             Tüm görevler otomatik sayaçlarla ölçülür (Yaptım yoktur); ödüller
             sunucu onayıyla verilir ve günde bir kez alınır.
           </Text>
@@ -255,6 +256,7 @@ function makeStyles(C, type) {
   return StyleSheet.create({
     container: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: C.background,
     },
     content: {
@@ -266,6 +268,7 @@ function makeStyles(C, type) {
     summary: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     summaryStrong: {
       color: C.text,
@@ -283,7 +286,9 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       flex: 1,
+      minWidth: 0,
       fontWeight: '600',
+      lineHeight: 18,
     },
 
     section: {
@@ -304,10 +309,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
+      lineHeight: 21,
     },
     questDesc: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
     rewardRow: {
       flexDirection: 'row',
@@ -325,6 +332,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
+      lineHeight: 14,
     },
 
     // ---- VIP ----
@@ -344,6 +352,7 @@ function makeStyles(C, type) {
     vipBadgeText: {
       ...type.micro,
       color: C.gold,
+      lineHeight: 14,
     },
     vipPromo: {
       gap: 10,
@@ -359,15 +368,18 @@ function makeStyles(C, type) {
     vipPromoTitle: {
       ...type.h3,
       color: C.text,
+      lineHeight: 24,
     },
     vipPromoText: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
+      lineHeight: 18,
     },
   });
 }

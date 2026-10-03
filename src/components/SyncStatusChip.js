@@ -8,7 +8,8 @@
 //   (kullanıcıya "Senkronize Et" butonu dayatılmaz; tıklama
 //   yalnızca isteğe bağlı anında denemedir).
 // ============================================================
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../context/DataContext';
 import { useTheme } from '../theme';
@@ -68,5 +69,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 11,
     fontWeight: '700',
+    lineHeight: 14,
   },
 });

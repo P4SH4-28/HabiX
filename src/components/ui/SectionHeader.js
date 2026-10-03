@@ -1,7 +1,8 @@
 // ============================================================
 // SectionHeader.js — Bölüm başlığı (metin + isteğe bağlı eylem).
 // ============================================================
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from './Text';
 import { useTheme } from '../../theme';
 
 export default function SectionHeader({ title, actionLabel, onAction, style }) {
@@ -34,10 +35,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     flexShrink: 1,
+    lineHeight: 24,
   },
   action: {
     fontSize: 13,
     fontWeight: '700',
     flexShrink: 0,
+    lineHeight: 18,
   },
 });

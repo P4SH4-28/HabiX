@@ -9,7 +9,8 @@
 // ============================================================
 import { useEffect, useMemo, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { Animated, Modal, Platform, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, Platform, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import Confetti from './Confetti';
 import GradientButton from './GradientButton';
 import Icon from './ui/icons';
@@ -84,6 +85,7 @@ function makeStyles(C) {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
+      minWidth: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.75)',
       alignItems: 'center',
       justifyContent: 'center',
@@ -112,18 +114,20 @@ function makeStyles(C) {
       fontSize: 15,
       fontWeight: '700',
       letterSpacing: 2,
+      lineHeight: 21,
     },
     bigLevel: {
       color: C.text,
-      fontSize: 96,
+      fontSize: 48,
       fontWeight: '700',
       marginVertical: 4,
+      lineHeight: 56,
     },
     subtitle: {
       color: C.textMuted,
       fontSize: 15,
       textAlign: 'center',
-      lineHeight: 22,
+      lineHeight: 21,
     },
     subtitleRow: {
       flexDirection: 'row',

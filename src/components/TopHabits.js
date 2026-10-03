@@ -5,7 +5,8 @@
 // göre orantılı bir ilerleme çubuğu gösterilir.
 // ============================================================
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { useTheme } from '../theme';
 import Progress from './ui/Progress';
 
@@ -56,6 +57,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
+      lineHeight: 21,
     },
     row: {
       flexDirection: 'row',
@@ -67,6 +69,7 @@ function makeStyles(C) {
       fontSize: 13,
       fontWeight: '700',
       width: 18,
+      lineHeight: 18,
     },
     emojiBox: {
       width: 36,
@@ -77,9 +80,11 @@ function makeStyles(C) {
     },
     emoji: {
       fontSize: 17,
+      lineHeight: 24,
     },
     info: {
       flex: 1,
+      minWidth: 0,
       gap: 5,
     },
     nameRow: {
@@ -93,11 +98,13 @@ function makeStyles(C) {
       fontSize: 13,
       fontWeight: '600',
       flexShrink: 1,
+      lineHeight: 18,
     },
     count: {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
   });
 }

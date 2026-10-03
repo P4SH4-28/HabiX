@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
 import Progress from './ui/Progress';
@@ -64,17 +65,20 @@ function makeStyles(C) {
     },
     levelNumber: {
       color: C.onPrimary,
-      fontSize: 28,
+      fontSize: 22,
       fontWeight: '700',
+      lineHeight: 30,
     },
     levelLabel: {
       color: C.onPrimary + 'CC',
       fontSize: 11,
       fontWeight: '700',
       letterSpacing: 1.5,
+      lineHeight: 14,
     },
     block: {
       flex: 1,
+      minWidth: 0,
       gap: 6,
     },
     header: {
@@ -86,16 +90,19 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '600',
+      lineHeight: 18,
     },
     value: {
       color: C.xp,
       fontSize: 13,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
+      lineHeight: 18,
     },
     hint: {
       color: C.textMuted,
       fontSize: 11,
+      lineHeight: 14,
     },
     hintCap: {
       color: C.danger,

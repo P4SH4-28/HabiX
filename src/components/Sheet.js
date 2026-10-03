@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import Text from './ui/Text';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../theme';
 
@@ -48,6 +49,7 @@ function makeStyles(C, radius) {
   return StyleSheet.create({
     overlay: {
       flex: 1,
+      minWidth: 0,
       justifyContent: 'flex-end',
     },
     frost: {
@@ -84,6 +86,7 @@ function makeStyles(C, radius) {
       color: C.text,
       fontSize: 17,
       fontWeight: '700',
+      lineHeight: 24,
     },
     closeBtn: {
       width: 30,
@@ -96,6 +99,7 @@ function makeStyles(C, radius) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
+      lineHeight: 18,
     },
   });
 }
