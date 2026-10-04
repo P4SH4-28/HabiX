@@ -2,7 +2,10 @@
 // Button.js — Premium buton primitive'i (v3)
 //
 //   variant: primary | secondary | ghost | danger
-//   size:    sm (40) | md (44) | lg (52)
+//   size:    sm (44) | md (46) | lg (52)
+//   NOT: box `minHeight` + sabit pv kullanır — sabit `height` DEĞİL.
+//   Sebep: height − 2*pv < Text lineHeight olursa overflow:hidden etiketi
+//   klipler ("yarım kaymış" metin). minHeight'da içerik kutuyu asla aşmaz.
 //   loading  → ActivityIndicator (metin yerine), layout ZIPLAMAZ
 //   disabled → soluk görünüm (0.45), basış kapalı
 //   icon     → React node veya emoji string; iconPosition left|right
@@ -31,10 +34,12 @@ import useReducedMotion from '../../hooks/useReducedMotion';
 import { DURATION, EASE, useTheme } from '../../theme';
 import Icon from './icons';
 
+// pv: satır içi dikey boşluk (grid 12). minHeight = 2*pv + en büyük lineHeight
+// (sm 13/20 → 44, md 15/22 → 46, lg 17/26 → 52): etiket hiçbir boyutta taşmaz.
 const SIZES = {
-  sm: { height: 40, pv: 12, ph: 14, font: 13, icon: 14 },
-  md: { height: 44, pv: 14, ph: 20, font: 15, icon: 16 },
-  lg: { height: 52, pv: 16, ph: 24, font: 17, icon: 18 },
+  sm: { height: 44, pv: 12, ph: 16, font: 13, icon: 14 },
+  md: { height: 46, pv: 12, ph: 20, font: 15, icon: 16 },
+  lg: { height: 52, pv: 12, ph: 24, font: 17, icon: 18 },
 };
 
 const SPRING = { damping: 18, stiffness: 340, mass: 0.8 };
@@ -108,7 +113,8 @@ function Button({
 
   const boxStyle = [
     styles.box,
-    { height: s.height, paddingVertical: s.pv, paddingHorizontal: s.ph, backgroundColor: bg },
+    // minHeight: içerik lineHeight'u ne olursa olsun kutu metni KLIPLER.
+    { minHeight: s.height, paddingVertical: s.pv, paddingHorizontal: s.ph, backgroundColor: bg },
     variant === 'secondary' && styles.outline,
     off && styles.off,
   ];
@@ -125,7 +131,7 @@ function Button({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel || (typeof label === 'string' ? label : undefined)}
         accessibilityState={{ disabled: off, busy: loading }}
-        // sm (36) ve md (44) boyutlarda dokunma alanını 44'e tamamlar:
+        // sm (44) tam dokunma hedefi; sadece 44 altındaki boyutlarda tamamlanır.
         // görsel ölçü değişmez, yalnız hedef büyür.
         hitSlop={
           s.height >= 44 ? undefined : { top: (44 - s.height) / 2, bottom: (44 - s.height) / 2, left: 4, right: 4 }

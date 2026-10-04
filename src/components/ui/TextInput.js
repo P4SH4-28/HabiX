@@ -31,7 +31,7 @@ import useReducedMotion from '../../hooks/useReducedMotion';
 import { DURATION, EASE, useTheme } from '../../theme';
 
 const FIELD_HEIGHT = 48;
-const LINE = 21; // body lineHeight
+const LINE = 22; // body lineHeight
 
 const TextInput = forwardRef(function AppTextInput(
   {
