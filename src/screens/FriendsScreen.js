@@ -125,7 +125,7 @@ export default function FriendsScreen() {
   const header = (
     <View style={styles.header}>
       <View style={styles.titleRow}>
-        <View>
+        <View style={styles.titleText}>
           <Text style={styles.screenTitle}>Arkadaşlar</Text>
           <Text style={styles.screenSub}>Arkadaşların liderlik tablosunda da görünür</Text>
         </View>
@@ -134,14 +134,20 @@ export default function FriendsScreen() {
           <Pressable
             style={styles.duelEntry}
             onPress={() => navigation.navigate('Duel')}
+            hitSlop={6}
             accessibilityRole="button"
-            accessibilityLabel="Düello merkezini aç"
+            accessibilityLabel="Düello başlat"
           >
-            <Icon emoji="⚔️" size={13} color={C.danger} />
-            <Text style={styles.duelEntryText}>Düello</Text>
+            <Icon emoji="⚔️" size={17} color={C.danger} />
           </Pressable>
-          <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}>
-            <Text style={styles.addButtonText}>+ Ekle</Text>
+          <Pressable
+            style={styles.addButton}
+            onPress={() => setModalVisible(true)}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Arkadaş ekle"
+          >
+            <Icon name="add" size={22} color={C.onPrimary} />
           </Pressable>
         </View>
       </View>
@@ -230,6 +236,11 @@ function makeStyles(C) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      gap: 10,
+    },
+    titleText: {
+      flex: 1,
+      minWidth: 0,
     },
     screenTitle: {
       color: C.text,
@@ -244,40 +255,28 @@ function makeStyles(C) {
       lineHeight: 20,
     },
     addButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: C.primary,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      minHeight: 44,
+      alignItems: 'center',
       justifyContent: 'center',
     },
     titleActions: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
+      flexShrink: 0,
     },
     duelEntry: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.danger + '66',
-      borderRadius: 12,
-      paddingHorizontal: 12,
-      minHeight: 44,
+      alignItems: 'center',
       justifyContent: 'center',
-    },
-    duelEntryText: {
-      color: C.danger,
-      fontSize: 13,
-      fontWeight: '700',
-      lineHeight: 20,
-    },
-    addButtonText: {
-      color: C.onPrimary,
-      fontSize: 15,
-      fontWeight: '700',
-      lineHeight: 22,
     },
     noteBox: {
       flexDirection: 'row',
