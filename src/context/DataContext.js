@@ -52,6 +52,7 @@ import {
   GOLD_RATES,
 } from '../data/shop';
 import { COLORS, getTheme } from '../theme';
+import { deviceLocale, setLocale } from '../i18n';
 import { refreshAndroidWidget, drainWidgetTasks, clearWidgetTasks } from '../services/widgetService';
 import { useAuth } from './AuthContext';
 import {
@@ -136,7 +137,7 @@ const INITIAL_STATE = {
     // XP KUMBARASI: günlük tavanı aşan XP burada birikir, günde 500'e kadar geri verilir.
     xpBank: 0,
   },
-    settings: { xpPerHabit: 25, pomodoroXp: 50, avatarId: 'av_fox', themeId: 'dark', devOffset: 0, frameId: null, reminderHour: null, osNotify: false, hourlyNotify: false, vipUntil: 0, bio: '', photoUrl: null },
+    settings: { xpPerHabit: 25, pomodoroXp: 50, avatarId: 'av_fox', themeId: 'dark', devOffset: 0, frameId: null, reminderHour: null, osNotify: false, hourlyNotify: false, vipUntil: 0, bio: '', photoUrl: null, language: null },
   friends: [],
   players: [],
   // Açılmış başarımların id listesi (AsyncStorage'a otomatik kaydedilir).
@@ -520,6 +521,14 @@ export function DataProvider({ children }) {
       JSON.stringify({ version: DATA_VERSION, ...data })
     ).catch((e) => console.warn('Veri kaydedilirken hata oluştu:', e));
   }, [data, loading, activeAccount]);
+
+  // ---------- Dil: kayıtlı tercih uygulanır (null = cihaz dili) ----------
+  // setLocale modül seviyesinde çalışır: React dışı kod (servis, toast) da
+  // aynı dili görür. Değişiklik anında yayılır (RTL hariç — bkz. i18n).
+  useEffect(() => {
+    if (loading) return;
+    setLocale(data.settings.language || deviceLocale());
+  }, [loading, data.settings.language]);
 
   // ---------- Senkronizasyon bekliyor takibi ----------
   // Yerel veri her değiştiğinde (oturum açıkken) "bekliyor" bayrağı
@@ -1917,6 +1926,15 @@ export function DataProvider({ children }) {
     });
   }, []);
 
+  // Uygulama dilini seçer: null = cihaz dili, 'tr' | 'en' | ... = elle seçim.
+  // Kalıcılık kaydetme etkisinde; yayılım yukarıdaki setLocale etkisinde.
+  const setLanguage = useCallback((lang) => {
+    setData((d) => ({
+      ...d,
+      settings: { ...d.settings, language: lang || null },
+    }));
+  }, []);
+
   // Avatar çerçevesi satın alır: altın yeterliyse ödeme yapılır ve
   // "ownedFrames"a eklenir. VIP çerçeveleri (Lottie auralar) yalnızca
   // aktif VIP kullanıcılara açıktır (Season Pass ödülü + dükkan görünümü).
@@ -2415,6 +2433,7 @@ export function DataProvider({ children }) {
     setReminderHour,
     setOsNotify,
     setHourlyNotify,
+    setLanguage,
     backupData,
     restoreData,
     backupTs,
@@ -2462,6 +2481,7 @@ export function DataProvider({ children }) {
     setReminderHour,
     setOsNotify,
     setHourlyNotify,
+    setLanguage,
     backupData,
     restoreData,
     backupTs,
@@ -2508,6 +2528,7 @@ export function DataProvider({ children }) {
     setReminderHour,
     setOsNotify,
     setHourlyNotify,
+    setLanguage,
     backupData,
     restoreData,
     backupTs,

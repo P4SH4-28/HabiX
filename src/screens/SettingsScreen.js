@@ -23,6 +23,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  I18nManager,
   Modal,
   Platform,
   Pressable,
@@ -52,6 +53,15 @@ import {
   scheduleDailyReminder,
 } from '../services/notifications';
 import { checkServerConnection } from '../services/connectionService';
+import {
+  LANG_LABELS,
+  LOCALES,
+  deviceLocale,
+  needsRTLRestart,
+  setLocale,
+  useT,
+  useLocale,
+} from '../i18n';
 import { RADIUS, getTheme, useTheme } from '../theme';
 
 // Saat çipleri 36px görsel yükseklikte; dokunma hedefini 44'e tamamla
@@ -187,12 +197,15 @@ export default function SettingsScreen() {
     resetAll,
     server,
     refreshServer,
+    setLanguage,
   } = useData();
   const { user: authUser, logout, changeName, changePassword, deleteAccount } = useAuth();
   const { colors: C, type } = useTheme();
   const styles = useMemo(() => makeStyles(C, type), [C, type]);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const t = useT();
+  const locale = useLocale();
 
   const reminderHour = data.settings.reminderHour;
   const osNotify = !!data.settings.osNotify;
@@ -205,6 +218,8 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState('');
   // Son senkron sonucu: 'online' | 'offline' | null.
   const [syncStatus, setSyncStatus] = useState(null);
+  // Dil listesi açık mı (ayarlar > dil satırı).
+  const [langOpen, setLangOpen] = useState(false);
 
   // OS bildirimi açıkken saat değişirse plan tazelenir; saat kapanırsa iptal.
   useEffect(() => {
@@ -253,6 +268,39 @@ export default function SettingsScreen() {
 
   const currentTheme = getTheme(data.settings.themeId || 'dark');
   const currentAvatar = getShopItem(data.settings.avatarId || 'av_fox');
+
+  // ---------- Dil ----------
+  // null = cihaz dili (Otomatik). Seçim anında uygulanır; AR <-> diğer yön
+  // değişiminde I18nManager.forceRTL yeniden başlatma ister → kullanıcıya
+  // kapatıp açma uyarısı gösterilir.
+  const effectiveLang = data.settings.language || locale;
+  const languageLabel = data.settings.language
+    ? `${LANG_LABELS[data.settings.language]?.flag || ''} ${
+        LANG_LABELS[data.settings.language]?.name || data.settings.language
+      }`.trim()
+    : `${LANG_LABELS[effectiveLang]?.flag || ''} ${t('settings.language.auto')}`.trim();
+
+  const languageOptions = [
+    { code: null, label: t('settings.language.auto'), flag: '🌐', active: !data.settings.language },
+    ...LOCALES.map((code) => ({
+      code,
+      label: LANG_LABELS[code]?.name || code,
+      flag: LANG_LABELS[code]?.flag || '',
+      active: data.settings.language === code,
+    })),
+  ];
+
+  const chooseLanguage = (lang) => {
+    setLanguage(lang);
+    setLangOpen(false);
+    const effective = lang || deviceLocale();
+    setLocale(effective);
+    if (needsRTLRestart()) {
+      Alert.alert(t('settings.language.restartTitle'), t('settings.language.restartMsg'), [
+        { text: t('common.ok') },
+      ]);
+    }
+  };
 
   const handleSync = async () => {
     setBusy('server');
@@ -448,6 +496,43 @@ export default function SettingsScreen() {
             />
           }
         />
+      </View>
+
+      {/* ---------- DİL ---------- */}
+      <SectionHeader title={t('settings.section.language')} />
+      <View style={styles.group}>
+        <Row
+          name="language"
+          label={t('settings.language.label')}
+          desc={t('settings.language.desc')}
+          onPress={() => setLangOpen((v) => !v)}
+          right={
+            <View style={styles.valueRow}>
+              <Text style={styles.valueText}>{languageLabel}</Text>
+              <Icon name={langOpen ? 'chevron-up' : 'chevron-forward'} size={16} color={C.textMuted} />
+            </View>
+          }
+        />
+        {langOpen ? (
+          <View style={styles.langGroup}>
+            {languageOptions.map((opt) => (
+              <Pressable
+                key={opt.code || 'auto'}
+                onPress={() => chooseLanguage(opt.code)}
+                style={({ pressed }) => [styles.langRow, pressed && styles.rowPressed]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: opt.active }}
+                accessibilityLabel={opt.label}
+              >
+                <Text style={styles.langFlag}>{opt.flag}</Text>
+                <Text style={[styles.langName, opt.active && styles.langNameActive]}>
+                  {opt.label}
+                </Text>
+                {opt.active ? <Icon name="checkmark" size={16} color={C.primary} /> : null}
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </View>
 
       {/* ---------- GÖRÜNÜM ---------- */}
@@ -672,6 +757,42 @@ function makeStyles(C, type) {
     valueEmoji: {
       fontSize: 22,
       lineHeight: 32,
+    },
+    valueText: {
+      ...type.small,
+      color: C.textMuted,
+      lineHeight: 20,
+      textAlign: 'right',
+    },
+    // ---- dil listesi ----
+    langGroup: {
+      gap: 2,
+      paddingVertical: 4,
+    },
+    langRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      minHeight: 44,
+      paddingHorizontal: 14,
+      borderRadius: RADIUS.md,
+    },
+    langFlag: {
+      fontSize: 20,
+      lineHeight: 28,
+      width: 28,
+      textAlign: 'center',
+    },
+    langName: {
+      ...type.body,
+      color: C.textMuted,
+      flex: 1,
+      minWidth: 0,
+      lineHeight: 22,
+    },
+    langNameActive: {
+      color: C.primary,
+      fontWeight: '700',
     },
     dot: {
       width: 10,

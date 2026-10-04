@@ -24,6 +24,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { DataProvider, useData } from './src/context/DataContext';
 import { MenuProvider } from './src/context/MenuContext';
+import { I18nProvider, useT } from './src/i18n';
 import { levelFromTotalXp } from './src/logic';
 import { initErrorReporter, setErrorHandler } from './src/services/errorReporter';
 import { initNotifications } from './src/services/notifications';
@@ -74,31 +75,33 @@ const TAB_ICONS = {
 };
 
 const TAB_TITLES = {
-  Home: 'Bugün',
-  Shop: 'Dükkan',
-  Progress: 'Gelişim',
-  Leaderboard: 'Liderlik',
-  Social: 'Sosyal',
+  Home: 'app.tab.home',
+  Shop: 'app.tab.shop',
+  Progress: 'app.tab.progress',
+  Leaderboard: 'app.tab.leaderboard',
+  Social: 'app.tab.social',
 };
 
 const STACK_TITLES = {
-  Pomodoro: 'Odak Zamanı',
-  QuestBoard: 'Günün Görevleri',
-  SeasonPass: 'Season Pass',
-  Inventory: 'Envanter',
-  Achievements: 'Başarımlar',
-  League: 'Haftalık Ligler',
-  Team: 'Takımım',
-  Duel: 'Düello',
-  Profile: 'Profilim',
-  Settings: 'Ayarlar',
-  Admin: 'Yönetici Paneli',
+  Pomodoro: 'app.stack.pomodoro',
+  QuestBoard: 'app.stack.questBoard',
+  SeasonPass: 'app.stack.seasonPass',
+  Inventory: 'app.stack.inventory',
+  Achievements: 'app.stack.achievements',
+  League: 'app.stack.league',
+  Team: 'app.stack.team',
+  Duel: 'app.stack.duel',
+  Profile: 'app.stack.profile',
+  Settings: 'app.stack.settings',
+  Admin: 'app.stack.admin',
 };
 
 // Ortak başlık çubuğu: sekmelerde hamburger (menü), alt ekranlarda geri oku.
 function AppHeader({ navigation, route }) {
+  const t = useT();
   const canGoBack = navigation.canGoBack();
-  const title = route?.name === 'Main' ? '' : route?.name ? (TAB_TITLES[route.name] || STACK_TITLES[route.name] || '') : '';
+  const key = route?.name ? TAB_TITLES[route.name] || STACK_TITLES[route.name] : null;
+  const title = route?.name === 'Main' || !key ? '' : t(key);
   return (
     <TopBar
       title={title}
@@ -110,6 +113,7 @@ function AppHeader({ navigation, route }) {
 function TabNavigator() {
   const { data, leaderboardMinLevel } = useData();
   const { user: authUser } = useAuth();
+  const t = useT();
   const leaderboardLocked = levelFromTotalXp(data.stats.totalXp).level < leaderboardMinLevel;
 
   return (
@@ -152,27 +156,27 @@ function TabNavigator() {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Bugün' }}
+        options={{ tabBarLabel: t('app.tab.home') }}
       />
       <Tab.Screen
         name="Shop"
         component={ShopScreen}
-        options={{ tabBarLabel: 'Dükkan' }}
+        options={{ tabBarLabel: t('app.tab.shop') }}
       />
       <Tab.Screen
         name="Progress"
         component={ProgressScreen}
-        options={{ tabBarLabel: 'Gelişim' }}
+        options={{ tabBarLabel: t('app.tab.progress') }}
       />
       <Tab.Screen
         name="Leaderboard"
         component={LeaderboardScreen}
-        options={{ tabBarLabel: 'Liderlik' }}
+        options={{ tabBarLabel: t('app.tab.leaderboard') }}
       />
       <Tab.Screen
         name="Social"
         component={SocialScreen}
-        options={{ tabBarLabel: 'Sosyal' }}
+        options={{ tabBarLabel: t('app.tab.social') }}
       />
     </Tab.Navigator>
   );
@@ -242,6 +246,7 @@ enableScreens();
 function Root() {
   const { data, loading, server, startPomodoro, claimQuest } = useData();
   const { user: authUser, status: authStatus } = useAuth();
+  const t = useT();
   // Bildirim handler'ı: ön plandayken gelen bildirimler ekran üstünden
   // gösterilir (initNotifications modül yüklendiğinde kurulur, güvenlidir).
   useEffect(() => {
@@ -323,12 +328,14 @@ function Root() {
       <ThemeProvider value={{ colors }}>
         <View style={[styles.root, styles.banCenter, { backgroundColor: colors.background }]}>
           <Text style={{ fontSize: 48, lineHeight: 56 }}>⛔</Text>
-          <Text style={[styles.banTitle, { color: colors.text }]}>Hesabın yasaklandı</Text>
+          <Text style={[styles.banTitle, { color: colors.text }]}>{t('app.banned.title')}</Text>
           {server.banReason ? (
-            <Text style={[styles.banReason, { color: colors.textMuted }]}>Gerekçe: {server.banReason}</Text>
+            <Text style={[styles.banReason, { color: colors.textMuted }]}>
+              {t('app.banned.reason', { reason: server.banReason })}
+            </Text>
           ) : null}
           <Text style={[styles.banHint, { color: colors.textMuted }]}>
-            Kurallara aykırı kullanım nedeniyle yönetici tarafından durduruldun.
+            {t('app.banned.hint')}
           </Text>
         </View>
       </ThemeProvider>
@@ -377,7 +384,9 @@ export default function App() {
       <ErrorBoundary>
         <AuthProvider>
           <DataProvider>
-            <Root />
+            <I18nProvider>
+              <Root />
+            </I18nProvider>
           </DataProvider>
         </AuthProvider>
         {/* Render dışı hatalar (zamanlayıcı, senkron vb.) bu overlay'le görünür. */}
