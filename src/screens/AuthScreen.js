@@ -1,27 +1,35 @@
 // ============================================================
-// AuthScreen — Kilit / giriş ekranı (ilk kurulum + geri dönüş)
+// AuthScreen — Kilit / giriş ekranı (tasarım sistemi v3)
 //   status "signup" → "Hoş geldin" + şifre/onya · status "login" → "Tekrar hoş geldin"
 //   "Şifremi unuttum" → kurtarma anahtarıyla şifre yenileme
 //   Kayıt sonrası kurtarma anahtarı tek sefer gösterilir (Modal)
-// KLAVYE: KeyboardAvoidingView behavior="padding" + ScrollView
-// keyboardShouldPersistTaps="handled". Odak state'ten bağımsızdır; handler'lar
-// useCallback ile sabittir (render'da yenisi üretilmez).
-// HINT: touched'a basılmadan hint satırı render edilmez.
+//
+// YENİ SİSTEM: Card (form yüzeyi) · TextInput (label/hint/error)
+//              Button (loading/disabled) · Text variant'ları
+//              spacing/typography token'ları (hardcoded font YOK)
+//   GLOW YOK · GRADIENT YOK · LOOP YOK.
+//
+// KLAVYE: KeyboardAvoidingView (iOS padding) + ScrollView
+// keyboardShouldPersistTaps="handled". Handler'lar useCallback ile sabit.
+// MODAL: karartmaya bas / Escape / Android back → kapanır; kart basılınca
+//        kapanmaz (kritik kurtarma anahtarı yanlışlıkla kaybolmasın).
 // Doğrulama/depolama AuthContext'tedir; şifreler loglanmaz.
 // ============================================================
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
-  View
+  View,
 } from 'react-native';
 import Text from '../components/ui/Text';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import TextInput from '../components/ui/TextInput';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../theme';
@@ -41,59 +49,20 @@ function nameHint(value, touched) {
   if (!touched) return '';
   return value.trim().length < 2 ? 'En az 2 karakter' : '✓ İsim hazır';
 }
-function hintTone(text) {
-  if (!text) return null;
-  return text.startsWith('✓') ? 'accent' : 'xp';
-}
 // "x7k3 q9mf" / "X7K3Q9MF" → "X7K3-Q9MF" (makeRecoveryKey biçimi).
 function normalizeRecoveryKey(value) {
   const body = String(value || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
   return body.length === 8 ? `${body.slice(0, 4)}-${body.slice(4)}` : body;
 }
 
-// Basit input: etiket + TextInput + koşullu ipucu satırı.
-// Stiller parent'tan gelir; handler'lar burada sabitlenir, böylece
-// her render'da yeni fonksiyon oluşmaz ve odak düşmez.
-function SimpleInput({ s, inputRef, nextRef, fieldKey, label, value, onChangeText, onTouch, onFocus, secure, hint, hintColor, ...rest }) {
-  const handleChange = useCallback((v) => { onChangeText(v); onTouch(fieldKey); }, [onChangeText, onTouch, fieldKey]);
-  const handleBlur = useCallback(() => onTouch(fieldKey), [onTouch, fieldKey]);
-  const handleSubmit = useCallback(() => {
-    if (nextRef && nextRef.current) nextRef.current.focus();
-    else Keyboard.dismiss();
-  }, [nextRef]);
-  return (
-    <View style={s.field}>
-      <Text style={s.label}>{label}</Text>
-      <TextInput ref={inputRef} value={value} onChangeText={handleChange} onBlur={handleBlur}
-        onFocus={onFocus} onSubmitEditing={handleSubmit} secureTextEntry={secure}
-        style={s.input} {...rest} />
-      {hint ? <Text style={hintColor ? [s.hint, { color: hintColor }] : s.hint}>{hint}</Text> : null}
-    </View>
-  );
-}
-
-// GradientButton yerine sade, dolu buton (loading + disabled korunur).
-function PrimaryButton({ s, label, onPress, loading, disabled }) {
-  const { colors: C } = useTheme();
-  const busy = loading && !disabled;
-  return (
-    <Pressable onPress={busy ? undefined : onPress} disabled={disabled || busy}
-      accessibilityRole="button" accessibilityState={{ disabled: !!disabled || busy, busy }}
-      style={({ pressed }) => [s.btn, pressed && s.btnPressed, (disabled || busy) && s.btnOff]}>
-      {busy ? <ActivityIndicator size="small" color={C.onPrimary} /> : null}
-      <Text style={s.btnLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
 export default function AuthScreen() {
-  const { colors: C, radius, type } = useTheme();
-  const styles = useMemo(() => makeStyles(C, radius, type), [C, radius, type]);
+  const { colors: C, radius, space, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, radius, space, type), [C, radius, space, type]);
   const insets = useSafeAreaInsets();
   const { status, register, confirmRegister, login, resetPassword } = useAuth();
 
-  const [mode, setMode] = useState(null);       // null | 'login' | 'signup'
-  const [view, setView] = useState('auth');     // 'auth' | 'recover'
+  const [mode, setMode] = useState(null); // null | 'login' | 'signup'
+  const [view, setView] = useState('auth'); // 'auth' | 'recover'
   const signup = mode === 'signup' ? true : mode === 'login' ? false : status === 'signup';
 
   const [name, setName] = useState('');
@@ -105,7 +74,7 @@ export default function AuthScreen() {
   const [busy, setBusy] = useState(false);
   const [recoveryKey, setRecoveryKey] = useState(null);
 
-  // Yalnızca odak aktarımı için ref'ler (boxRefs / measure / bringIntoView yok).
+  // Yalnızca odak aktarımı için ref'ler.
   const nameRef = useRef(null);
   const pwRef = useRef(null);
   const pw2Ref = useRef(null);
@@ -170,7 +139,7 @@ export default function AuthScreen() {
     setPassword3('');
   }, []);
   // Çıkışta kurtarma anahtarı "password" alanında kalıp şifre gibi
-  // gönderilebilirdi → temizlenir (name korunur, kullanıcıyı rahatsız etmez).
+  // gönderilebilirdi → temizlenir (name korunur).
   const goAuth = useCallback(() => {
     Keyboard.dismiss();
     setView('auth');
@@ -190,89 +159,199 @@ export default function AuthScreen() {
   useDismissOnEscape(!!recoveryKey, finishRegister);
 
   const isRecover = view === 'recover';
-  // Alanlara ortak, sabit referanslar (her render'da yeniden üretilmez).
-  const common = useMemo(
-    () => ({ s: styles, onTouch: markTouched, onFocus: clearError, placeholderTextColor: C.textMuted }),
-    [styles, markTouched, clearError, C.textMuted]
-  );
+
+  const focusNext = useCallback((ref) => {
+    if (ref && ref.current) ref.current.focus();
+    else Keyboard.dismiss();
+  }, []);
 
   const nameH = nameHint(name, touched.name);
   const pwH = isRecover ? '' : lengthHint(password, touched.password);
-  const pw2H = isRecover ? lengthHint(password2, touched.password2)
-    : signup ? matchHint(password, password2, touched.password2) : '';
+  const pw2H = isRecover
+    ? lengthHint(password2, touched.password2)
+    : signup
+      ? matchHint(password, password2, touched.password2)
+      : '';
   const pw3H = isRecover ? matchHint(password2, password3, touched.password3) : '';
 
-  const title = isRecover ? 'Kurtarma anahtarınla yenile'
-    : signup ? 'Hoş geldin' : 'Tekrar hoş geldin';
-  const desc = isRecover ? 'Kurtarma anahtarını gir, yeni şifreni belirle.'
-    : signup ? 'Alışkanlıklarını korumak için bir şifre oluştur.' : 'Devam etmek için şifreni gir.';
+  const title = isRecover
+    ? 'Kurtarma anahtarınla yenile'
+    : signup
+      ? 'Hoş geldin'
+      : 'Tekrar hoş geldin';
+  const desc = isRecover
+    ? 'Kurtarma anahtarını gir, yeni şifreni belirle.'
+    : signup
+      ? 'Alışkanlıklarını korumak için bir şifre oluştur.'
+      : 'Devam etmek için şifreni gir.';
   const primaryLabel = isRecover ? 'Şifreyi Sıfırla' : signup ? 'Şifreyi Oluştur' : 'Giriş Yap';
 
   return (
     <View style={styles.container}>
-      <KeyboardAvoidingView style={styles.flex} behavior="padding">
-        <ScrollView style={styles.flex} keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never"
-          contentContainerStyle={[styles.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 }]}>
-          <View style={styles.card}>
-            <Text style={styles.title} accessibilityRole="header">{title}</Text>
-            <Text style={styles.desc}>{desc}</Text>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.flex}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="never"
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 },
+          ]}
+        >
+          {/* Form yüzeyi: yeni Card primitive'i (padding lg). */}
+          <Card padding="lg" style={styles.formCard}>
+            {/* Card gap vermez → blok arası NEFES sarmalayıcıda (20). */}
+            <View style={styles.form}>
+            <View style={styles.headBlock}>
+              <Text variant="h1" style={styles.title} accessibilityRole="header">
+                {title}
+              </Text>
+              <Text variant="small" style={styles.desc}>
+                {desc}
+              </Text>
+            </View>
 
-            <SimpleInput {...common} inputRef={nameRef} nextRef={pwRef} fieldKey="name"
-              label="İsim" value={name} onChangeText={setName} returnKeyType="next"
-              autoCapitalize="words" autoCorrect={false} hint={nameH} hintColor={C[hintTone(nameH)]} />
+            <TextInput
+                ref={nameRef}
+                label="İsim"
+                value={name}
+                onChangeText={(v) => {
+                  setName(v);
+                  markTouched('name');
+                }}
+                onBlur={() => markTouched('name')}
+                onFocus={clearError}
+                onSubmitEditing={() => focusNext(pwRef)}
+                returnKeyType="next"
+                autoCapitalize="words"
+                autoCorrect={false}
+                hint={nameH}
+                error={touched.name && nameH && !nameH.startsWith('✓') ? nameH : undefined}
+                accessibilityLabel="İsim"
+              />
 
-            <SimpleInput {...common} inputRef={pwRef} nextRef={signup || isRecover ? pw2Ref : null}
-              fieldKey="password" label={isRecover ? 'Kurtarma anahtarı' : 'Şifre'} value={password}
-              onChangeText={setPassword} secure={!isRecover}
-              autoCapitalize={isRecover ? 'characters' : 'none'} autoCorrect={false}
-              placeholder={isRecover ? 'X7K3-Q9MF' : undefined}
-              returnKeyType={signup || isRecover ? 'next' : 'done'}
-              hint={pwH} hintColor={C[hintTone(pwH)]} />
+              <TextInput
+                ref={pwRef}
+                label={isRecover ? 'Kurtarma anahtarı' : 'Şifre'}
+                value={password}
+                onChangeText={(v) => {
+                  setPassword(v);
+                  markTouched('password');
+                }}
+                onBlur={() => markTouched('password')}
+                onFocus={clearError}
+                onSubmitEditing={() =>
+                  focusNext(signup || isRecover ? pw2Ref : null)
+                }
+                returnKeyType={signup || isRecover ? 'next' : 'done'}
+                secureTextEntry={!isRecover}
+                autoCapitalize={isRecover ? 'characters' : 'none'}
+                autoCorrect={false}
+                placeholder={isRecover ? 'X7K3-Q9MF' : undefined}
+                hint={pwH}
+                error={touched.password && pwH && !pwH.startsWith('✓') ? pwH : undefined}
+                accessibilityLabel={isRecover ? 'Kurtarma anahtarı' : 'Şifre'}
+              />
 
-            {signup || isRecover ? (
-              <SimpleInput {...common} inputRef={pw2Ref} nextRef={isRecover ? pw3Ref : null}
-                fieldKey="password2" label={isRecover ? 'Yeni şifre' : 'Şifre (tekrar)'}
-                value={password2} onChangeText={setPassword2} secure
-                returnKeyType={isRecover ? 'next' : 'done'}
-                hint={pw2H} hintColor={C[hintTone(pw2H)]} />
-            ) : null}
+              {signup || isRecover ? (
+                <TextInput
+                  ref={pw2Ref}
+                  label={isRecover ? 'Yeni şifre' : 'Şifre (tekrar)'}
+                  value={password2}
+                  onChangeText={(v) => {
+                    setPassword2(v);
+                    markTouched('password2');
+                  }}
+                  onBlur={() => markTouched('password2')}
+                  onFocus={clearError}
+                  onSubmitEditing={() => focusNext(isRecover ? pw3Ref : null)}
+                  returnKeyType={isRecover ? 'next' : 'done'}
+                  secureTextEntry
+                  hint={pw2H}
+                  error={touched.password2 && pw2H && !pw2H.startsWith('✓') ? pw2H : undefined}
+                  accessibilityLabel={isRecover ? 'Yeni şifre' : 'Şifre tekrar'}
+                />
+              ) : null}
 
-            {isRecover ? (
-              <SimpleInput {...common} inputRef={pw3Ref} nextRef={null} fieldKey="password3"
-                label="Yeni şifre (tekrar)" value={password3} onChangeText={setPassword3} secure
-                returnKeyType="done" hint={pw3H} hintColor={C[hintTone(pw3H)]} />
-            ) : null}
+              {isRecover ? (
+                <TextInput
+                  ref={pw3Ref}
+                  label="Yeni şifre (tekrar)"
+                  value={password3}
+                  onChangeText={(v) => {
+                    setPassword3(v);
+                    markTouched('password3');
+                  }}
+                  onBlur={() => markTouched('password3')}
+                  onFocus={clearError}
+                  onSubmitEditing={submitRecover}
+                  returnKeyType="done"
+                  secureTextEntry
+                  hint={pw3H}
+                  error={touched.password3 && pw3H && !pw3H.startsWith('✓') ? pw3H : undefined}
+                  accessibilityLabel="Yeni şifre tekrar"
+                />
+              ) : null}
 
-            {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
+              {error ? (
+                <Text variant="small" style={styles.error} accessibilityRole="alert">
+                  {error}
+                </Text>
+              ) : null}
 
-            <PrimaryButton s={styles} label={primaryLabel} loading={busy} disabled={busy}
-              onPress={isRecover ? submitRecover : submit} />
+              <Button
+                label={primaryLabel}
+                size="lg"
+                fullWidth
+                loading={busy}
+                disabled={busy}
+                onPress={isRecover ? submitRecover : submit}
+                accessibilityLabel={primaryLabel}
+              />
 
             {isRecover ? (
               <Pressable onPress={goAuth} accessibilityRole="button" style={styles.linkBox}>
-                <Text style={styles.link}>← Giriş ekranına dön</Text>
+                <Text variant="small" style={styles.link}>
+                  ← Giriş ekranına dön
+                </Text>
               </Pressable>
             ) : (
-              <>
+              <View style={styles.footBlock}>
                 {!signup ? (
                   <Pressable onPress={goRecover} accessibilityRole="button" style={styles.linkBox}>
-                    <Text style={styles.link}>Şifremi unuttum</Text>
+                    <Text variant="small" style={styles.link}>
+                      Şifremi unuttum
+                    </Text>
                   </Pressable>
                 ) : null}
-                <Text style={styles.footHint}>
-                  {signup ? 'Bu cihazda yalnızca bir hesap olabilir.' : 'Şifreni unuttuysan kurtarma anahtarınla sıfırlayabilirsin.'}
+                <Text variant="micro" style={styles.footHint}>
+                  {signup
+                    ? 'Bu cihazda yalnızca bir hesap olabilir.'
+                    : 'Şifreni unuttuysan kurtarma anahtarınla sıfırlayabilirsin.'}
                 </Text>
                 <Pressable onPress={toggleMode} accessibilityRole="button" style={styles.linkBox}>
-                  <Text style={styles.link}>{signup ? 'Hesabın var mı? Giriş yap' : 'Hesabın yok mu? Kayıt ol'}</Text>
+                  <Text variant="small" style={styles.link}>
+                    {signup ? 'Hesabın var mı? Giriş yap' : 'Hesabın yok mu? Kayıt ol'}
+                  </Text>
                 </Pressable>
-              </>
+              </View>
             )}
-          </View>
+            </View>
+          </Card>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <Modal visible={!!recoveryKey} transparent animationType="fade" onRequestClose={finishRegister}>
+      {/* ---------- Kurtarma anahtarı (tek sefer) ---------- */}
+      <Modal
+        visible={!!recoveryKey}
+        transparent
+        animationType="fade"
+        onRequestClose={finishRegister}
+      >
         {/* Kullanıcı geri bildirimi: karartmadaki boşluğa basın da kapansın. */}
         <Pressable
           style={styles.overlay}
@@ -281,17 +360,29 @@ export default function AuthScreen() {
           accessibilityLabel="Kurtarma anahtarı ekranını kapat"
         >
           <View
-            style={styles.modal}
+            style={styles.modalBox}
             // Karta basmak kapatmaz (kritik kurtarma anahtarı yanlışlıkla kaybolmasın).
             onStartShouldSetResponder={() => true}
           >
-            <Text style={styles.modalTitle}>Kurtarma anahtarın!</Text>
-            <View style={styles.keyPill}><Text style={styles.keyText}>{recoveryKey}</Text></View>
-            <Text style={styles.modalWarn}>
-              Bu anahtarı BİR YERE YAZ. Şifreni unutursan hesabına ancak bu anahtarla yeniden
-              girersin. Anahtar kaybolursa hesap kurtarılamaz.
-            </Text>
-            <PrimaryButton s={styles} label="Anladım, kaydettim" onPress={finishRegister} />
+            <Card padding="lg" style={styles.modalCard}>
+              <Text variant="h3" style={styles.modalTitle} accessibilityRole="header">
+                Kurtarma anahtarın!
+              </Text>
+              <View style={styles.keyPill}>
+                <Text style={styles.keyText}>{recoveryKey}</Text>
+              </View>
+              <Text variant="small" style={styles.modalWarn}>
+                Bu anahtarı BİR YERE YAZ. Şifreni unutursan hesabına ancak bu anahtarla yeniden
+                girersin. Anahtar kaybolursa hesap kurtarılamaz.
+              </Text>
+              <Button
+                label="Anladım, kaydettim"
+                size="lg"
+                fullWidth
+                onPress={finishRegister}
+                accessibilityLabel="Kurtarma anahtarını kaydettim"
+              />
+            </Card>
           </View>
         </Pressable>
       </Modal>
@@ -299,49 +390,46 @@ export default function AuthScreen() {
   );
 }
 
-function makeStyles(C, radius, type) {
+function makeStyles(C, radius, space, type) {
   return StyleSheet.create({
     container: { flex: 1, minWidth: 0, backgroundColor: C.background },
     flex: { flex: 1, minWidth: 0 },
+    // Bol nefes: 24 yatay, 32 dikey (32 grid'de).
     content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
-    // Form kartı: blok arası NEFES (input ↔ buton ↔ linkler yapışmasın).
-    card: {
-      backgroundColor: C.surface,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: C.border,
-      padding: 24,
-      gap: 20,
-    },
+    formCard: { alignSelf: 'stretch' },
+    headBlock: { gap: 12, alignItems: 'center' },
     title: { ...type.h1, color: C.text, textAlign: 'center' },
-    desc: { ...type.small, color: C.textMuted, textAlign: 'center', marginBottom: 8 },
-    field: { gap: 12 },
-    label: { ...type.micro, color: C.textMuted },
-    input: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: C.text, lineHeight: 22 },
-    hint: { ...type.micro, color: C.xp },
-    error: { ...type.small, color: C.danger, fontWeight: '600' },
-    btn: { backgroundColor: C.primary, borderRadius: radius.control, minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-    btnPressed: { opacity: 0.85 },
-    btnOff: { opacity: 0.5 },
-    btnLabel: { color: C.onPrimary, fontSize: 15, fontWeight: '600', letterSpacing: 0.2, lineHeight: 22 },
+    desc: { ...type.small, color: C.textMuted, textAlign: 'center' },
+    // Form blokları: 20 (grid) — input ↔ buton ↔ linkler yapışmasın.
+    form: { gap: 20 },
+    footBlock: { gap: 12, alignItems: 'center' },
+    error: { color: C.danger, fontWeight: '600', textAlign: 'center' },
     linkBox: { alignItems: 'center', paddingVertical: 8 },
-    link: { color: C.primary, fontSize: 13, fontWeight: '700', lineHeight: 20 },
-    footHint: { color: C.textMuted, fontSize: 11, textAlign: 'center', lineHeight: 16 },
-    overlay: { flex: 1, minWidth: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-    modal: { width: '100%', maxWidth: 380, backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 24, gap: 16, alignItems: 'center' },
-    modalTitle: { ...type.h1, textAlign: 'center' },
-    // Kayıp stil geri yüklendi (kurtarma anahtarı rozeti).
+    link: { color: C.primary, fontWeight: '700' },
+    footHint: { color: C.textMuted, textAlign: 'center' },
+    overlay: {
+      flex: 1,
+      minWidth: 0,
+      backgroundColor: 'rgba(0,0,0,0.65)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    modalBox: { width: '100%', maxWidth: 380 },
+    modalCard: { gap: 16, alignItems: 'center' },
+    modalTitle: { color: C.text, textAlign: 'center' },
+    // Kurtarma anahtarı rozeti.
     keyPill: {
       backgroundColor: C.surfaceLight,
       borderWidth: 1,
       borderColor: C.border,
       borderRadius: radius.control,
-      paddingHorizontal: 20,
-      paddingVertical: 12,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.md,
       alignSelf: 'stretch',
       alignItems: 'center',
     },
     keyText: { color: C.primary, fontSize: 22, fontWeight: '700', letterSpacing: 3, lineHeight: 32 },
-    modalWarn: { ...type.small, color: C.textMuted, textAlign: 'center' },
+    modalWarn: { color: C.textMuted, textAlign: 'center' },
   });
 }
