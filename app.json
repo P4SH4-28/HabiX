@@ -24,11 +24,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "509a3485-6dec-4ab1-940e-391321cfa60a"
-      }
-    },
     "plugins": [
       "expo-font",
       [
@@ -101,6 +96,12 @@
           "backgroundColor": "#000000"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "32bafad4-816b-41bf-8e7c-68c02f90d56b"
+      }
+    },
+    "owner": "p4sh4"
   }
 }
