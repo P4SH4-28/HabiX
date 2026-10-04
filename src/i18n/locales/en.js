@@ -29,17 +29,9 @@ export default {
   'settings.language.label': 'App language',
   'settings.language.desc': 'Menu and screen texts change instantly',
   'settings.language.auto': 'Automatic (device language)',
-  'settings.language.restartTitle': 'App restart required',
-  'settings.language.restartMsg':
-    'Close the app and open it again to apply the new direction (RTL).',
 
   'lang.tr': 'Türkçe',
   'lang.en': 'English',
-  'lang.de': 'Deutsch',
-  'lang.fr': 'Français',
-  'lang.es': 'Español',
-  'lang.ru': 'Русский',
-  'lang.ar': 'العربية',
 
   // ---------- Phase 1: shared components ----------
   'common.back': 'Back',

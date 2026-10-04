@@ -23,7 +23,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
-  I18nManager,
   Modal,
   Platform,
   Pressable,
@@ -57,7 +56,6 @@ import {
   LANG_LABELS,
   LOCALES,
   deviceLocale,
-  needsRTLRestart,
   setLocale,
   useT,
   useLocale,
@@ -270,9 +268,7 @@ export default function SettingsScreen() {
   const currentAvatar = getShopItem(data.settings.avatarId || 'av_fox');
 
   // ---------- Dil ----------
-  // null = cihaz dili (Otomatik). Seçim anında uygulanır; AR <-> diğer yön
-  // değişiminde I18nManager.forceRTL yeniden başlatma ister → kullanıcıya
-  // kapatıp açma uyarısı gösterilir.
+  // null = cihaz dili (Otomatik). Seçim anında uygulanır.
   const effectiveLang = data.settings.language || locale;
   const languageLabel = data.settings.language
     ? `${LANG_LABELS[data.settings.language]?.flag || ''} ${
@@ -293,13 +289,7 @@ export default function SettingsScreen() {
   const chooseLanguage = (lang) => {
     setLanguage(lang);
     setLangOpen(false);
-    const effective = lang || deviceLocale();
-    setLocale(effective);
-    if (needsRTLRestart()) {
-      Alert.alert(t('settings.language.restartTitle'), t('settings.language.restartMsg'), [
-        { text: t('common.ok') },
-      ]);
-    }
+    setLocale(lang || deviceLocale());
   };
 
   const handleSync = async () => {

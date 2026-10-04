@@ -1,5 +1,5 @@
 // ============================================================
-// src/i18n/index.js — Mini i18n (7 dil: tr kaynak + en/de/fr/es/ru/ar)
+// src/i18n/index.js — Mini i18n (2 dil: tr kaynak + en)
 //
 // TASARIM
 //   - Anahtarlar düz ve noktalı: 'settings.language.auto'
@@ -8,9 +8,6 @@
 //   - Modül store (currentLocale + subscribe): React DIŞINDAKİ kod da
 //     t() kullanabilir (servisler, DataContext toast'ları, notification).
 //   - useT(): useSyncExternalStore → dil değişince bileşen yeniden render.
-//   - RTL: yalnız ARAPÇA. forceRTL kalıcıdır ve SONRAKİ açılışta uygulanır;
-//     bu yüzden needsRTLRestart() true dönerse "uygulamayı kapatıp aç" uyarısı
-//     gösterilir (expo-updates kurulu değil → anlık reload yok).
 //
 // KULLANIM
 //   import { useT, t } from '../i18n';
@@ -19,30 +16,19 @@
 //   t('app.banned.reason', { reason })  // {{reason}} yerine konur
 // ============================================================
 import { createContext, useContext, useMemo, useSyncExternalStore } from 'react';
-import { I18nManager } from 'react-native';
-import ar from './locales/ar';
-import de from './locales/de';
 import en from './locales/en';
-import es from './locales/es';
-import fr from './locales/fr';
-import ru from './locales/ru';
 import tr from './locales/tr';
 
 // ---------- Diller ----------
-export const LOCALES = ['tr', 'en', 'de', 'fr', 'es', 'ru', 'ar'];
+export const LOCALES = ['tr', 'en'];
 
 // Arayüzde her dil KENDİ adıyla listelenir (seçim listesi + mevcut değer).
 export const LANG_LABELS = {
   tr: { flag: '🇹🇷', name: 'Türkçe' },
   en: { flag: '🇬🇧', name: 'English' },
-  de: { flag: '🇩🇪', name: 'Deutsch' },
-  fr: { flag: '🇫🇷', name: 'Français' },
-  es: { flag: '🇪🇸', name: 'Español' },
-  ru: { flag: '🇷🇺', name: 'Русский' },
-  ar: { flag: '🇸🇦', name: 'العربية' },
 };
 
-const DICTS = { tr, en, de, fr, es, ru, ar };
+const DICTS = { tr, en };
 
 const DEV =
   typeof __DEV__ !== 'undefined'
@@ -60,7 +46,6 @@ try {
 
 // ---------- Store ----------
 let currentLocale = 'tr';
-let wantRTL = false;
 const listeners = new Set();
 
 export function getLocale() {
@@ -84,37 +69,10 @@ function notify() {
   });
 }
 
-// RTL yalnızca Arapça içindir; izin baştan verilir ki forceRTL etkili olsun.
-try {
-  I18nManager.allowRTL(true);
-} catch (e) {
-  // Platform desteklemiyorsa sessiz geç.
-}
-
-/**
- * Geçerli dili ayarlar ve (gerekirse) RTL yönünü günceller.
- * forceRTL değişikliği cihazda ancak uygulama yeniden açıldığında görünür.
- */
+/** Geçerli dili kurar ve aboneleri bilgilendirir. */
 export function setLocale(locale) {
-  const next = LOCALES.includes(locale) ? locale : 'tr';
-  currentLocale = next;
-  const rtl = next === 'ar';
-  wantRTL = rtl;
-  try {
-    if (I18nManager.isRTL !== rtl) I18nManager.forceRTL(rtl);
-  } catch (e) {
-    // RTL desteklenmiyorsa yalnız dil değişir.
-  }
+  currentLocale = LOCALES.includes(locale) ? locale : 'tr';
   notify();
-}
-
-/** Seçili dil yönü ile cihazın mevcut yönü farklıysa yeniden başlatma gerekir. */
-export function needsRTLRestart() {
-  return I18nManager.isRTL !== wantRTL;
-}
-
-export function isRTLLocale(locale) {
-  return (locale || currentLocale) === 'ar';
 }
 
 /** Cihaz dili desteklenen listede değilse 'tr'. */
@@ -190,7 +148,7 @@ export function useT() {
 
 // ---------- Biçimlendirme ----------
 const DAY_FALLBACK = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-const DAY_FIRST = { tr: true, de: true, fr: true, ru: true, es: true, ar: true };
+const DAY_FIRST = { tr: true };
 
 function toDate(value) {
   return value instanceof Date ? value : new Date(value);
@@ -284,29 +242,13 @@ export function dayNameShort(value) {
   }
 }
 
-// Intl.PluralRules yoksa kullanılacak yedek kurallar (RU 3, AR 6 biçim).
+// Intl.PluralRules yoksa kullanılacak yedek kural (tek/çok biçim).
 function fallbackPlural(locale, n, forms) {
   const pick = (category) => {
     if (forms[category] !== undefined) return forms[category];
     if (forms.other !== undefined) return forms.other;
     return forms.one || '';
   };
-  if (locale === 'ru') {
-    const m10 = n % 10;
-    const m100 = n % 100;
-    if (m10 === 1 && m100 !== 11) return pick('one');
-    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return pick('few');
-    return pick('many');
-  }
-  if (locale === 'ar') {
-    if (n === 0) return pick('zero');
-    if (n === 1) return pick('one');
-    if (n === 2) return pick('two');
-    const m100 = n % 100;
-    if (m100 >= 3 && m100 <= 10) return pick('few');
-    if (m100 >= 11 && m100 <= 99) return pick('many');
-    return pick('other');
-  }
   return pick(n === 1 ? 'one' : 'other');
 }
 

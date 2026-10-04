@@ -524,7 +524,7 @@ export function DataProvider({ children }) {
 
   // ---------- Dil: kayıtlı tercih uygulanır (null = cihaz dili) ----------
   // setLocale modül seviyesinde çalışır: React dışı kod (servis, toast) da
-  // aynı dili görür. Değişiklik anında yayılır (RTL hariç — bkz. i18n).
+  // aynı dili görür. Değişiklik anında yayılır.
   useEffect(() => {
     if (loading) return;
     setLocale(data.settings.language || deviceLocale());

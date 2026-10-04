@@ -31,17 +31,9 @@ export default {
   'settings.language.label': 'Uygulama dili',
   'settings.language.desc': 'Menü ve ekran metinleri anında değişir',
   'settings.language.auto': 'Otomatik (cihaz dili)',
-  'settings.language.restartTitle': 'Uygulama yeniden başlatılmalı',
-  'settings.language.restartMsg':
-    'Yön değişikliğinin (RTL) uygulanması için uygulamayı kapatıp tekrar aç.',
 
   'lang.tr': 'Türkçe',
   'lang.en': 'English',
-  'lang.de': 'Deutsch',
-  'lang.fr': 'Français',
-  'lang.es': 'Español',
-  'lang.ru': 'Русский',
-  'lang.ar': 'العربية',
 
   // ---------- Faz 1: paylaşılan bileşenler ----------
   'common.back': 'Geri',
