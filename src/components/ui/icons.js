@@ -1,10 +1,11 @@
 import Text from './Text';
+import { Ionicons } from '@expo/vector-icons';
 // ============================================================
 // icons.js — Premium ikonografi yardımcıları.
 // UI'da kullanılan emoji'leri Ionicons adlarına eşler; dönüşüm tek
 // yerde tutulur. Emoji bilinmiyorsa (kullanıcı içeriği) emoji olarak
 // render edilir — avatar/dükkan/alışkanlık içerikleri bozulmaz.
-// ============================================================import { Ionicons } from '@expo/vector-icons';
+// ============================================================
 
 // Geçerli Ionicons adları kümesi (createIconSet `glyphMap`'i statik olarak
 // açar). `emoji` prop'uyla İKON ADI geçen çağrıları da yakalarız.
