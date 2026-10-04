@@ -25,6 +25,7 @@ import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../theme';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 // ---------- İpucu metinleri (touched yoksa boş döner → satır basılmaz) ----------
 function lengthHint(value, touched) {
@@ -185,6 +186,8 @@ export default function AuthScreen() {
     setRecoveryKey(null);
     confirmRegister();
   }, [confirmRegister]);
+  // Kurtarma anahtarı: Escape (web) ile de kapansın; back zaten onRequestClose.
+  useDismissOnEscape(!!recoveryKey, finishRegister);
 
   const isRecover = view === 'recover';
   // Alanlara ortak, sabit referanslar (her render'da yeniden üretilmez).
@@ -270,8 +273,18 @@ export default function AuthScreen() {
       </KeyboardAvoidingView>
 
       <Modal visible={!!recoveryKey} transparent animationType="fade" onRequestClose={finishRegister}>
-        <View style={styles.overlay}>
-          <View style={styles.modal}>
+        {/* Kullanıcı geri bildirimi: karartmadaki boşluğa basın da kapansın. */}
+        <Pressable
+          style={styles.overlay}
+          onPress={finishRegister}
+          accessibilityRole="button"
+          accessibilityLabel="Kurtarma anahtarı ekranını kapat"
+        >
+          <View
+            style={styles.modal}
+            // Karta basmak kapatmaz (kritik kurtarma anahtarı yanlışlıkla kaybolmasın).
+            onStartShouldSetResponder={() => true}
+          >
             <Text style={styles.modalTitle}>Kurtarma anahtarın!</Text>
             <View style={styles.keyPill}><Text style={styles.keyText}>{recoveryKey}</Text></View>
             <Text style={styles.modalWarn}>
@@ -280,7 +293,7 @@ export default function AuthScreen() {
             </Text>
             <PrimaryButton s={styles} label="Anladım, kaydettim" onPress={finishRegister} />
           </View>
-        </View>
+        </Pressable>
       </Modal>
     </View>
   );

@@ -16,7 +16,7 @@
 // KURALLAR: glow/gradient/blur/loop YOK · animasyon ≤300ms (Modal fade) ·
 //   h1 yok (AppHeader) · 5 tipografi ölçeği.
 // ============================================================
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Text from '../components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,6 +30,7 @@ import Pill from '../components/ui/Pill';
 import Progress from '../components/ui/Progress';
 import { ACHIEVEMENTS, computeAchievementState } from '../data/achievements';
 import { RADIUS, useTheme } from '../theme';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
@@ -93,7 +94,9 @@ export default function AchievementsScreen() {
 
   const [selected, setSelected] = useState(null);
 
-  const close = () => setSelected(null);
+  const close = useCallback(() => setSelected(null), []);
+  // Detay sayfası: Escape (web) ile de kapansın (back zaten onRequestClose).
+  useDismissOnEscape(!!selected, close);
 
   const selUnlocked = selected ? unlockedIds.includes(selected.id) : false;
   const selProg = selected ? progressFor(selected, state) : null;

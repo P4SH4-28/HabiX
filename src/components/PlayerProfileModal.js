@@ -16,6 +16,7 @@ import { sendFriendRequest } from '../services/friendService';
 import { useTheme } from '../theme';
 import AvatarCircle from './AvatarCircle';
 import Icon from './ui/icons';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 import {
   bestStreak,
   buildDailyCompletions,
@@ -38,6 +39,8 @@ export default function PlayerProfileModal({ player, onClose }) {
   const styles = useMemo(() => makeStyles(C), [C]);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+  // Escape (web) kapatır; Android back onRequestClose → onClose.
+  useDismissOnEscape(!!player, onClose);
   const activities = useMemo(() => player?.activities || [], [player]);
   // Canlı satırlarda id UUID olabilir; isimle de eşleşme denenir.
   const isFriend = data.friends.some(

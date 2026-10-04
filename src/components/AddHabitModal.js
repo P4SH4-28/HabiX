@@ -13,7 +13,7 @@
 // ANİMASYON: Reanimated height (measure → withTiming, ease-out 260ms);
 //   unmount'ta cancelAnimation. LOOP YOK · GLOW YOK · GRADIENT YOK.
 // ============================================================
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -41,21 +41,46 @@ const EXPAND_MS = 260;
 function Collapsible({ title, open, onToggle, strip, children }) {
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const easeOut = useMemo(() => Easing.bezier(...EASE.out), []);
 
-  // Grid yüksekliği ölçülür; animasyon 0 ↔ ölçüm değeri arasında oynar.
+  // Grid her zaman mount (mount anında zıplama YOK), clip'lenerek gizlenir.
   const [contentH, setContentH] = useState(0);
+  // Neden bu 3'lü? `height` animasyonu her frame'de Yoga layout ister → 30'luk
+  // grid'de kasıntı. Çözüm: height ANLIK değişir (layout 1-2x), görsel geçiş
+  // opacity + translateY ile UI thread/compositor'da akar (drop-frame yok).
   const h = useSharedValue(0);
+  const op = useSharedValue(0);
+  const ty = useSharedValue(12);
 
   useEffect(() => {
-    h.value = withTiming(open ? contentH : 0, {
-      duration: EXPAND_MS,
-      easing: Easing.bezier(...EASE.out),
-    });
+    if (open) {
+      h.value = contentH;
+      op.value = withTiming(1, { duration: EXPAND_MS, easing: easeOut });
+      ty.value = withTiming(0, { duration: EXPAND_MS, easing: easeOut });
+    } else {
+      // Önce 260ms görsel çıkış; completion'da clip kapanır (içerik sıçramaz).
+      op.value = withTiming(
+        0,
+        { duration: EXPAND_MS, easing: easeOut },
+        (finished) => {
+          if (finished) h.value = 0;
+        }
+      );
+      ty.value = withTiming(12, { duration: EXPAND_MS, easing: easeOut });
+    }
     // Prensip: animasyon başlatan bileşen unmount olurken iptal etmeli.
-    return () => cancelAnimation(h);
-  }, [open, contentH, h]);
+    return () => {
+      cancelAnimation(h);
+      cancelAnimation(op);
+      cancelAnimation(ty);
+    };
+  }, [open, contentH, easeOut, h, op, ty]);
 
-  const panelStyle = useAnimatedStyle(() => ({ height: h.value }));
+  const panelStyle = useAnimatedStyle(() => ({
+    height: h.value,
+    opacity: op.value,
+    transform: [{ translateY: ty.value }],
+  }));
 
   return (
     <View style={styles.wrap}>
@@ -131,33 +156,49 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
     onClose();
   };
 
-  const symbolStrip = EMOJIS.map((e) => (
-    <Pressable
-      key={e}
-      style={[styles.chip, emoji === e && styles.chipSelected]}
-      onPress={() => setEmoji(e)}
-      hitSlop={4}
-      accessibilityRole="button"
-      accessibilityLabel={`Sembol ${e}`}
-      accessibilityState={{ selected: emoji === e }}
-    >
-      <Text style={styles.emoji}>{e}</Text>
-    </Pressable>
-  ));
+  // Öğeler tek üretilir, hem şeritte hem expand grid'inde kullanılır
+  // (React element = immutable descriptor; iki yerde güvenli).
+  // useMemo: open/close animasyonu sırasında yeniden kurulmaz (mount sabit).
+  const selectEmoji = useCallback((e) => setEmoji(e), []);
+  const selectColor = useCallback((c) => setColor(c), []);
+  const toggleSymbols = useCallback(() => setSymbolsOpen((v) => !v), []);
+  const toggleColors = useCallback(() => setColorsOpen((v) => !v), []);
 
-  const colorStrip = HABIT_COLORS.map((c) => (
-    <Pressable
-      key={c}
-      style={[styles.swatch, { backgroundColor: c }, color === c && styles.swatchSelected]}
-      onPress={() => setColor(c)}
-      hitSlop={5}
-      accessibilityRole="button"
-      accessibilityLabel={`Renk ${c}`}
-      accessibilityState={{ selected: color === c }}
-    >
-      {color === c && <Text style={styles.check}>✓</Text>}
-    </Pressable>
-  ));
+  const symbolItems = useMemo(
+    () =>
+      EMOJIS.map((e) => (
+        <Pressable
+          key={e}
+          style={[styles.chip, emoji === e && styles.chipSelected]}
+          onPress={() => selectEmoji(e)}
+          hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={`Sembol ${e}`}
+          accessibilityState={{ selected: emoji === e }}
+        >
+          <Text style={styles.emoji}>{e}</Text>
+        </Pressable>
+      )),
+    [styles, emoji, selectEmoji]
+  );
+
+  const colorItems = useMemo(
+    () =>
+      HABIT_COLORS.map((c) => (
+        <Pressable
+          key={c}
+          style={[styles.swatch, { backgroundColor: c }, color === c && styles.swatchSelected]}
+          onPress={() => selectColor(c)}
+          hitSlop={5}
+          accessibilityRole="button"
+          accessibilityLabel={`Renk ${c}`}
+          accessibilityState={{ selected: color === c }}
+        >
+          {color === c && <Text style={styles.check}>✓</Text>}
+        </Pressable>
+      )),
+    [styles, color, selectColor]
+  );
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Yeni Alışkanlık">
@@ -184,44 +225,20 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
         <Collapsible
           title="Sembol"
           open={symbolsOpen}
-          onToggle={() => setSymbolsOpen((v) => !v)}
-          strip={symbolStrip}
+          onToggle={toggleSymbols}
+          strip={symbolItems}
         >
-          {EMOJIS.map((e) => (
-            <Pressable
-              key={e}
-              style={[styles.chip, emoji === e && styles.chipSelected]}
-              onPress={() => setEmoji(e)}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel={`Sembol ${e}`}
-              accessibilityState={{ selected: emoji === e }}
-            >
-              <Text style={styles.emoji}>{e}</Text>
-            </Pressable>
-          ))}
+          {symbolItems}
         </Collapsible>
 
         {/* 3) RENK: tek satır + ok → tam grid */}
         <Collapsible
           title="Renk"
           open={colorsOpen}
-          onToggle={() => setColorsOpen((v) => !v)}
-          strip={colorStrip}
+          onToggle={toggleColors}
+          strip={colorItems}
         >
-          {HABIT_COLORS.map((c) => (
-            <Pressable
-              key={c}
-              style={[styles.swatch, { backgroundColor: c }, color === c && styles.swatchSelected]}
-              onPress={() => setColor(c)}
-              hitSlop={5}
-              accessibilityRole="button"
-              accessibilityLabel={`Renk ${c}`}
-              accessibilityState={{ selected: color === c }}
-            >
-              {color === c && <Text style={styles.check}>✓</Text>}
-            </Pressable>
-          ))}
+          {colorItems}
         </Collapsible>
 
         {limitReached && (

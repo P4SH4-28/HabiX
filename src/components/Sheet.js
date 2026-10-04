@@ -3,13 +3,16 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../theme';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 // Alt-Sheet — glassmorphism tasarım.
 // - Arka plan: ince blur + karartma katmanı
 // - Panel: köşe 24, yarı saydam kenarlık, zarif tutma çubuğu
+// - Kapanma yolları: karartma (boşluk) · ✕ · Escape · Android back
 export default function Sheet({ visible, onClose, title, children }) {
   const { colors: C, radius } = useTheme();
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
+  useDismissOnEscape(visible, onClose);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>

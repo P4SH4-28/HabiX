@@ -9,7 +9,7 @@
 // ============================================================
 import { useEffect, useMemo, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { Animated, Modal, Platform, StyleSheet, View } from 'react-native';
+import { Animated, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import Confetti from './Confetti';
 import GradientButton from './GradientButton';
@@ -17,12 +17,14 @@ import Icon from './ui/icons';
 import { useData } from '../context/DataContext';
 import { celebrate } from '../services/effects';
 import { useTheme } from '../theme';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 export default function LevelUpModal() {
   const { levelUpEvent, dismissLevelUp } = useData();
   const { colors: C } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
   const visible = levelUpEvent !== null;
+  useDismissOnEscape(visible, dismissLevelUp);
 
   // Kart animasyonu: görünür olduğunda sıçrama (spring) ile büyür.
   const scale = useRef(new Animated.Value(0.5)).current;
@@ -55,8 +57,19 @@ export default function LevelUpModal() {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismissLevelUp}>
-      <View style={styles.backdrop}>
-        <Animated.View style={[styles.card, { opacity, transform: [{ scale }] }]}>
+      {/* Kullanıcı geri bildirimi: boşluğa basınca da kapansın (yalnız ✕ değil). */}
+      <Pressable
+        style={styles.backdrop}
+        onPress={dismissLevelUp}
+        accessibilityRole="button"
+        accessibilityLabel="Seviye atlama ekranını kapat"
+      >
+        <Animated.View
+          style={[styles.card, { opacity, transform: [{ scale }] }]}
+          // İçerik responder'ı: karta/butonlara basmak modal'ı KAPATMAZ;
+          // yalnız karartma alanı kapatır.
+          onStartShouldSetResponder={() => true}
+        >
           {/* Altın vurgu halkası (v2: nabız animasyonu yok) */}
           <View pointerEvents="none" style={styles.glowRing} />
           <Text style={styles.label}>SEVİYE ATLADIN!</Text>
@@ -76,7 +89,7 @@ export default function LevelUpModal() {
         </Animated.View>
         {/* Modal katmanı içinde konfeti (Level 1 kök overlayi bunu tekrarlamaz). */}
         <Confetti filter={(s) => s === 'levelup'} />
-      </View>
+      </Pressable>
     </Modal>
   );
 }

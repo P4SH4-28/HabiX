@@ -43,6 +43,7 @@ import SectionHeader from '../components/ui/SectionHeader';
 import TextInput from '../components/ui/TextInput';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 import { getShopItem } from '../data/shop';
 import {
   cancelDailyReminder,
@@ -122,6 +123,11 @@ function EditModal({ visible, title, fields, buttonLabel, onSubmit, onClose }) {
     setValues(fields.map(() => ''));
     setError('');
   };
+  // Escape (web): backdrop ile aynı kapanma yolu (back zaten onRequestClose).
+  useDismissOnEscape(visible, () => {
+    reset();
+    onClose();
+  });
 
   const submit = async () => {
     const result = await onSubmit(values);

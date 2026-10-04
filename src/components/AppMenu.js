@@ -18,6 +18,7 @@ import AvatarCircle from './AvatarCircle';
 import { levelFromTotalXp } from '../logic';
 import { useTheme } from '../theme';
 import Icon from './ui/icons';
+import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 const MENU_ITEMS = [
   { key: 'QuestBoard', icon: 'flag', label: 'Günün Görevleri', desc: 'Günlük 4+4 görev' },
@@ -127,6 +128,9 @@ export default function AppMenu() {
     },
     [fade, slide, closeMenu]
   );
+
+  // Escape (web) menüyü de kapatsın; Android back onRequestClose → closeAnim.
+  useDismissOnEscape(visible, closeAnim);
 
   useEffect(() => {
     if (visible) openAnim();
