@@ -12,17 +12,24 @@ import { Pressable, StyleSheet } from 'react-native';
 import Text from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../context/DataContext';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 
 export default function SyncStatusChip() {
   const { pendingCount, isOnline, isSyncing, refreshServer } = useData();
   const { colors: C } = useTheme();
+  const t = useT();
 
   // Koşul: yalnızca bekleyen değişiklik VARSA göster (kuyruk boşsa gizle).
   if (!pendingCount || pendingCount <= 0) return null;
 
   const offline = isOnline === false;
   const syncing = isSyncing;
+  const stateLabel = syncing
+    ? t('sync.stateSyncing')
+    : offline
+      ? t('sync.stateOffline')
+      : t('sync.stateOnline');
 
   return (
     <Pressable
@@ -30,7 +37,7 @@ export default function SyncStatusChip() {
       onPress={() => refreshServer()}
       hitSlop={10}
       accessibilityRole="button"
-      accessibilityLabel={`Senkron durumu: ${syncing ? 'eşitleniyor' : offline ? 'çevrimdışı' : 'bağlı'}, ${pendingCount} değişiklik bekliyor. Tekrar dene`}
+      accessibilityLabel={t('sync.a11y', { state: stateLabel, count: pendingCount })}
     >
       {syncing ? (
         <Ionicons name="sync" size={13} color={C.primary} />
@@ -47,10 +54,10 @@ export default function SyncStatusChip() {
         numberOfLines={1}
       >
         {syncing
-          ? `Eşitleniyor (${pendingCount})…`
+          ? t('sync.syncing', { count: pendingCount })
           : offline
-            ? `Çevrimdışı · ${pendingCount} değişiklik bekliyor`
-            : `${pendingCount} değişiklik eşitleniyor`}
+            ? t('sync.offline', { count: pendingCount })
+            : t('sync.online', { count: pendingCount })}
       </Text>
     </Pressable>
   );

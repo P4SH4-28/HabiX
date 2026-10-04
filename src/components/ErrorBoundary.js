@@ -11,29 +11,30 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Component } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 
 const LAST_ERROR_KEY = '@habit_tracker_last_error';
 
 // Hata nesnesini (Error veya errorReporter kaydı) görüntülenebilir forma çevirir.
-function toViewError(error) {
+// unknownLabel: yalnızca görüntüleme sırasında çevrilir (kayıtta tr saklanır).
+function toViewError(error, unknownLabel = 'Bilinmeyen hata') {
   if (error && typeof error === 'object') {
     return {
       message:
-        typeof error.message === 'string' && error.message
-          ? error.message
-          : 'Bilinmeyen hata',
+        typeof error.message === 'string' && error.message ? error.message : unknownLabel,
       stack: typeof error.stack === 'string' ? error.stack : '',
       source: typeof error.source === 'string' ? error.source : 'render',
     };
   }
-  return { message: String(error || 'Bilinmeyen hata'), stack: '', source: 'render' };
+  return { message: String(error || unknownLabel), stack: '', source: 'render' };
 }
 
 // Tam ekran hata görünümü: hata mesajı + stack + yeniden dene.
 export function FatalErrorView({ error, onRetry }) {
   const { colors: C } = useTheme();
-  const info = toViewError(error);
+  const t = useT();
+  const info = toViewError(error, t('error.unknown'));
   return (
     <View style={[styles.overlay, { backgroundColor: C.background }]}>
       <ScrollView
@@ -42,14 +43,11 @@ export function FatalErrorView({ error, onRetry }) {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.emoji}>⚠️</Text>
-        <Text style={[styles.title, { color: C.text }]}>Beklenmeyen bir hata oluştu</Text>
-        <Text style={[styles.subtitle, { color: C.textMuted }]}>
-          Uygulama kapandı ama bu ekran hatayı yakaladı. Aşağıdaki mesajı
-          geliştiriciye ilet; sorun buradan görülebilir.
-        </Text>
+        <Text style={[styles.title, { color: C.text }]}>{t('error.fatalTitle')}</Text>
+        <Text style={[styles.subtitle, { color: C.textMuted }]}>{t('error.fatalSubtitle')}</Text>
         <View style={[styles.msgBox, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.danger }]}>
           <Text style={[styles.source, { color: C.danger }]}>
-            Kaynak: {info.source || 'bilinmiyor'}
+            {t('error.source', { source: info.source || t('error.unknownSource') })}
           </Text>
           <Text selectable style={[styles.message, { color: C.text }]}>
             {info.message}
@@ -63,7 +61,7 @@ export function FatalErrorView({ error, onRetry }) {
           </View>
         ) : null}
         <Text selectable style={[styles.copyHint, { color: C.textMuted }]}>
-          📋 Mesajı seçip kopyala: {info.message}
+          {`📋 ${t('error.copyHint', { message: info.message })}`}
         </Text>
       </ScrollView>
       <View style={styles.footer}>
@@ -71,7 +69,7 @@ export function FatalErrorView({ error, onRetry }) {
           style={[styles.retryBtn, { backgroundColor: C.primary, color: C.onPrimary }]}
           onPress={onRetry}
         >
-          Yeniden Dene
+          {t('error.retry')}
         </Text>
       </View>
     </View>

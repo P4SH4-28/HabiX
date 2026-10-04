@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { calcStreak } from '../logic';
 import { useData } from '../context/DataContext';
+import { t } from '../i18n';
 import { useTheme } from '../theme';
 
 // Silme onayı: mobilde doğal Alert, web'de tarayıcının confirm kutusu.
@@ -21,8 +22,8 @@ export function confirmDialog(title, message, onOk) {
     if (window.confirm(message)) onOk();
   } else {
     Alert.alert(title, message, [
-      { text: 'İptal', style: 'cancel' },
-      { text: 'Sil', style: 'destructive', onPress: onOk },
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: onOk },
     ]);
   }
 }
@@ -36,6 +37,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
   const completedToday = habit.completedDates.includes(today);
   const frozen = !!freezeDay && !completedToday;
   const streak = calcStreak(habit.completedDates, today, freezeDay);
+  const statusText = completedToday ? t('habit.doneToday') : t('habit.notDoneToday');
 
   // Tamamlanma animasyonu: ilk "yapıldı" geçişinde ✓ spring ile gelir,
   // çevresinde accent renkli glow bir kez parlarken söner.
@@ -70,13 +72,13 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
         pressed && { transform: [{ scale: 0.985 }] },
       ]}
       onLongPress={() =>
-        confirmDialog('Alışkanlığı sil', `"${habit.name}" silinecek. Emin misin?`, () =>
+        confirmDialog(t('habit.deleteTitle'), t('habit.deleteMsg', { name: habit.name }), () =>
           onDelete(habit.id)
         )
       }
       accessibilityRole="button"
-      accessibilityLabel={`${habit.name}, ${completedToday ? 'bugün tamamlandı' : 'bugün henüz yapılmadı'}, seri ${streak}`}
-      accessibilityHint="Uzun bas: alışkanlığı sil"
+      accessibilityLabel={t('habit.a11yCard', { name: habit.name, status: statusText, streak })}
+      accessibilityHint={t('habit.a11yHint')}
     >
       {/* Alışkanlığın rengiyle boyanmış emoji rozeti */}
       <View style={[styles.emojiBox, { backgroundColor: habit.color + '1F' }]}>
@@ -90,7 +92,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
         hitSlop={8}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: !!completedToday }}
-        accessibilityLabel={`${habit.name} tamamlandı`}
+        accessibilityLabel={t('habit.a11yChecked', { name: habit.name })}
       >
         <View>
           <Animated.View
@@ -117,9 +119,7 @@ const HabitCard = React.memo(function HabitCard({ habit, today, onToggle, onDele
         <Text style={[styles.name, completedToday && styles.nameDone]} numberOfLines={1}>
           {habit.name}
         </Text>
-        <Text style={styles.meta}>
-          {completedToday ? 'Bugün tamamlandı' : 'Bugün henüz yapılmadı'}
-        </Text>
+        <Text style={styles.meta}>{statusText}</Text>
       </View>
 
       {/* 🔥/❄️ Seri sayacı pill'i */}

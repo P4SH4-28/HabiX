@@ -9,12 +9,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMenu } from '../context/MenuContext';
+import { useT } from '../i18n';
 import SyncStatusChip from './SyncStatusChip';
 import { useTheme } from '../theme';
 
 export default function TopBar({ title, onBack, right }) {
   const { colors: C } = useTheme();
   const { openMenu } = useMenu();
+  const t = useT();
   const insets = useSafeAreaInsets();
 
   return (
@@ -34,7 +36,7 @@ export default function TopBar({ title, onBack, right }) {
           onPress={onBack || openMenu}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel={onBack ? 'Geri' : 'Menüyü aç'}
+          accessibilityLabel={onBack ? t('common.back') : t('common.openMenu')}
         >
           <Ionicons
             name={onBack ? 'arrow-back' : 'menu'}

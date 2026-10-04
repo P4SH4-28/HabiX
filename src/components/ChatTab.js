@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import AvatarCircle from './AvatarCircle';
 import { fetchChatHistory, sendChatMessage, subscribeChat } from '../services/socialService';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import EmptyState from './ui/EmptyState';
 import ErrorState from './ui/ErrorState';
@@ -40,6 +41,7 @@ export default function ChatTab() {
   const { user: authUser } = useAuth();
   const { data } = useData();
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
 
   const me = authUser?.name || 'Kullanıcı';
@@ -100,10 +102,10 @@ export default function ChatTab() {
     } else {
       setError(
         r.error === 'slow_down'
-          ? 'Çok hızlı yazıyorsun — biraz bekle'
+          ? t('chat.errSlow')
           : r.error === 'message_too_long'
-            ? 'Mesaj 500 karakterden uzun olamaz'
-            : 'Mesaj gönderilemedi (çevrimdışı mısın?)'
+            ? t('chat.errTooLong')
+            : t('chat.errSend')
       );
     }
   };
@@ -161,16 +163,16 @@ export default function ChatTab() {
             </View>
           ) : fetchFailed ? (
             <ErrorState
-              title="Sohbet yüklenemedi"
-              message="Bağlantını kontrol edip tekrar deneyebilirsin."
-              retryLabel="Tekrar Dene"
+              title={t('chat.loadErrorTitle')}
+              message={t('chat.loadErrorMsg')}
+              retryLabel={t('common.retry')}
               onRetry={retryFetch}
             />
           ) : (
             <EmptyState
               emoji="💬"
-              title="Henüz mesaj yok"
-              subtitle="Genel sohbete ilk mesajı sen at — topluluğa merhaba de!"
+              title={t('chat.emptyTitle')}
+              subtitle={t('chat.emptySub')}
               compact
             />
           )
@@ -186,7 +188,7 @@ export default function ChatTab() {
       <View style={[styles.inputRow, { borderTopColor: C.border }]}>
         <TextInput
           style={[styles.input, { backgroundColor: C.surface, color: C.text }]}
-          placeholder="Mesaj yaz…"
+          placeholder={t('chat.placeholder')}
           placeholderTextColor={C.textMuted}
           value={text}
           onChangeText={setText}
@@ -200,7 +202,7 @@ export default function ChatTab() {
           onPress={handleSend}
           disabled={!text.trim() || sending}
           accessibilityRole="button"
-          accessibilityLabel="Mesaj gönder"
+          accessibilityLabel={t('chat.send')}
           accessibilityState={{ disabled: !text.trim() || sending, busy: sending }}
         >
           {sending ? (

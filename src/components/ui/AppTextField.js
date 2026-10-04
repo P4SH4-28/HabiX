@@ -20,6 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
+import { useT } from '../../i18n';
 import Icon from './icons';
 
 const FOCUS_MS = 180;
@@ -43,6 +44,7 @@ export default function AppTextField({
   ...rest
 }) {
   const { colors: C, radius, type, space } = useTheme();
+  const t = useT();
   const [innerFocus, setInnerFocus] = useState(false);
   const [hidden, setHidden] = useState(true);
   const controlled = focusedProp !== undefined;
@@ -148,7 +150,7 @@ export default function AppTextField({
               onPress={toggleSecure}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel={hidden ? 'Şifreyi göster' : 'Şifreyi gizle'}
+              accessibilityLabel={hidden ? t('common.showPassword') : t('common.hidePassword')}
               accessibilityState={{ hidden }}
               style={styles.reveal}
             >

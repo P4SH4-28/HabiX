@@ -10,28 +10,36 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import IconTile from './ui/IconTile';
 import Progress from './ui/Progress';
 
-// Kalan süreyi "3g 4s" / "1s 12dk" biçiminde gösterir.
-function formatRemaining(endsAt) {
+// Kalan süreyi "3g 4s" / "1s 12dk" biçiminde gösterir (dil duyarlı).
+function formatRemaining(endsAt, t) {
   const ms = Date.parse(endsAt) - Date.now();
-  if (!Number.isFinite(ms) || ms <= 0) return 'bitti';
+  if (!Number.isFinite(ms) || ms <= 0) return t('time.ended');
   const days = Math.floor(ms / 86400000);
   const hours = Math.floor((ms % 86400000) / 3600000);
   const mins = Math.floor((ms % 3600000) / 60000);
-  if (days > 0) return `${days}g ${hours}s`;
-  if (hours > 0) return `${hours}s ${mins}dk`;
-  return `${mins}dk`;
+  if (days > 0) return t('time.dh', { d: days, h: hours });
+  if (hours > 0) return t('time.hm', { h: hours, m: mins });
+  return t('time.m', { m: mins });
+}
+
+// Süre doldu mu (bağımsız hesap: çevrilmiş metinle karşılaştırma yapılmaz).
+function isFinished(endsAt) {
+  const ms = Date.parse(endsAt) - Date.now();
+  return !Number.isFinite(ms) || ms <= 0;
 }
 
 export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
 
-  const remaining = formatRemaining(duel.endsAt);
-  const finished = remaining === 'bitti';
+  const remaining = formatRemaining(duel.endsAt, t);
+  const finished = isFinished(duel.endsAt);
 
   if (duel.status === 'pending' && !duel.isChallenger) {
     // Gelen davet: kabul / red.
@@ -39,26 +47,24 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
       <View style={[styles.card, { borderWidth: 1, borderColor: C.accent }]}>
         <IconTile icon="swords" emoji="⚔️" variant="danger" size={54} iconSize={24} />
         <View style={styles.body}>
-          <Text style={styles.title}>{duel.opponent} seni düelloya davet etti!</Text>
-          <Text style={styles.desc}>
-            7 günlük XP yarışı — kazanan +100 XP ve +50 altın kazanır.
-          </Text>
+          <Text style={styles.title}>{t('duel.inviteTitle', { name: duel.opponent })}</Text>
+          <Text style={styles.desc}>{t('duel.inviteDesc')}</Text>
           <View style={styles.actions}>
             <Pressable
               style={styles.acceptBtn}
               onPress={() => onAccept(duel.id)}
               accessibilityRole="button"
-              accessibilityLabel={`${duel.opponent} düello davetini kabul et`}
+              accessibilityLabel={t('duel.a11yAccept', { name: duel.opponent })}
             >
-              <Text style={styles.acceptText}>Kabul Et</Text>
+              <Text style={styles.acceptText}>{t('common.accept')}</Text>
             </Pressable>
             <Pressable
               style={styles.declineBtn}
               onPress={() => onDecline(duel.id)}
               accessibilityRole="button"
-              accessibilityLabel={`${duel.opponent} düello davetini reddet`}
+              accessibilityLabel={t('duel.a11yDecline', { name: duel.opponent })}
             >
-              <Text style={styles.declineText}>Reddet</Text>
+              <Text style={styles.declineText}>{t('common.decline')}</Text>
             </Pressable>
           </View>
         </View>
@@ -78,33 +84,33 @@ export default function DuelCard({ duel, onAccept, onDecline, onFinish }) {
       <View style={styles.body}>
         <Text style={styles.title}>
           {duel.status === 'pending'
-            ? `${duel.opponent}'e düello daveti gönderildi`
-            : `Düello: ${duel.opponent}`}
+            ? t('duel.sentTitle', { name: duel.opponent })
+            : t('duel.title', { name: duel.opponent })}
         </Text>
         <Text style={styles.desc}>
-          {duel.status === 'pending' ? 'Kabul edilmesi bekleniyor…' : `Kalan süre: ${remaining}`}
+          {duel.status === 'pending' ? t('duel.waiting') : t('duel.timeLeft', { remaining })}
         </Text>
         {duel.status === 'active' && (
           <>
             <View style={styles.scoreRow}>
-              <Text style={styles.scoreText}>Sen: +{myGain} XP</Text>
-              <Text style={styles.scoreText}>{duel.opponent}: +{theirGain} XP</Text>
+              <Text style={styles.scoreText}>{t('duel.scoreYou', { xp: myGain })}</Text>
+              <Text style={styles.scoreText}>{t('duel.scoreOpp', { name: duel.opponent, xp: theirGain })}</Text>
             </View>
             <Progress
               value={myPct / 100}
               height={8}
               colors={[C.primary, C.primaryDark]}
-              accessibilityLabel={`Düello ilerlemesi yüzde ${Math.round(myPct)}`}
+              accessibilityLabel={t('duel.a11yProgress', { pct: Math.round(myPct) })}
             />
             {finished ? (
               <Pressable
                 style={styles.acceptBtn}
                 onPress={() => onFinish(duel.id)}
                 accessibilityRole="button"
-                accessibilityLabel="Düello sonucunu gör"
+                accessibilityLabel={t('duel.a11yResult')}
               >
                 <View style={styles.finishBtnContent}>
-                  <Text style={styles.acceptText}>Sonucu Gör</Text>
+                  <Text style={styles.acceptText}>{t('duel.seeResult')}</Text>
                   <IconTile icon="trophy" emoji="🏆" variant="gold" size={18} iconSize={10} />
                 </View>
               </Pressable>

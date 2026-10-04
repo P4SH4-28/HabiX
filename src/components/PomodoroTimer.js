@@ -17,6 +17,7 @@ import { StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { useData } from '../context/DataContext';
 import { formatDuration, POMODORO_DURATION_MS } from '../logic';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import GradientButton from './GradientButton';
 import { IconTile, Pill, Progress, SoftButton } from './ui';
@@ -31,6 +32,7 @@ export default function PomodoroTimer() {
     completePomodoro,
   } = useData();
   const { colors: C, radius } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
   const pomodoro = data.pomodoro;
   const xpReward = data.settings.pomodoroXp || 50;
@@ -69,9 +71,9 @@ export default function PomodoroTimer() {
       <View style={styles.header}>
         <IconTile icon="timer" emoji="🍅" variant="accent" size={46} />
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>Odak Zamanı</Text>
+          <Text style={styles.title}>{t('pomodoro.title')}</Text>
           <View style={styles.metaRow}>
-            <Text style={styles.subtitle}>25 dk seans</Text>
+            <Text style={styles.subtitle}>{t('pomodoro.session')}</Text>
             <Pill icon="⚡" size="sm" bg={C.gold + '1A'} color={C.gold}>
               +{xpReward} XP
             </Pill>
@@ -91,13 +93,13 @@ export default function PomodoroTimer() {
             ? [C.accent, C.primary]
             : [C.surfaceLight, C.surfaceLight]
         }
-        accessibilityLabel={`Seans ilerlemesi yüzde ${Math.round(progress * 100)}`}
+        accessibilityLabel={t('pomodoro.progressLabel', { pct: Math.round(progress * 100) })}
       />
 
       <View style={styles.buttons}>
         {pomodoro.state === 'idle' && (
           <GradientButton
-            label="Başlat"
+            label={t('common.start')}
             icon="▶"
             onPress={startPomodoro}
             style={styles.btnFlex}
@@ -106,7 +108,7 @@ export default function PomodoroTimer() {
         {pomodoro.state === 'running' && (
           <>
             <SoftButton
-              label="Duraklat"
+              label={t('pomodoro.pause')}
               icon="⏸"
               onPress={pausePomodoro}
               style={styles.btnFlex}
@@ -117,7 +119,7 @@ export default function PomodoroTimer() {
         {pomodoro.state === 'paused' && (
           <>
             <GradientButton
-              label="Devam"
+              label={t('pomodoro.resume')}
               icon="▶"
               onPress={resumePomodoro}
               style={styles.btnFlex}

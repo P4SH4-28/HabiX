@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 
 // Hex renk kodunu ("#22D3A5") istenen şeffaflıkta rgba'ya çevirir.
 function hexToRgba(hex, alpha) {
@@ -21,6 +22,7 @@ function hexToRgba(hex, alpha) {
 
 export default function Heatmap({ daily }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   // Son 35 günü al (5 hafta).
   const cells = daily.slice(-35);
@@ -45,17 +47,17 @@ export default function Heatmap({ daily }) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.title}>Son 5 Hafta</Text>
+        <Text style={styles.title}>{t('progress.last5Weeks')}</Text>
         {/* Açıklama: açık renk az tamamlama, koyu renk çok tamamlama */}
         <View style={styles.legend}>
-          <Text style={styles.legendText}>Az</Text>
+          <Text style={styles.legendText}>{t('progress.low')}</Text>
           {[0, 0.33, 0.66, 1].map((p) => (
             <View
               key={p}
               style={[styles.legendCell, { backgroundColor: hexToRgba(C.accent, 0.2 + p * 0.8) }]}
             />
           ))}
-          <Text style={styles.legendText}>Çok</Text>
+          <Text style={styles.legendText}>{t('progress.high')}</Text>
         </View>
       </View>
       <View style={styles.grid}>

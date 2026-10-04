@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 import Progress from './ui/Progress';
 
 // Günlük XP göstergesi (anti-farm şeffaflığı): bugünkü kazanılan XP,
@@ -10,6 +11,7 @@ import Progress from './ui/Progress';
 // Premium: gradient seviye rozeti + animasyonlu dolu çubuk + soft glow.
 export default function XpBar({ level, curXp, nextThreshold, todayXp = null, todayCap = null }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const percent = Math.min(100, (curXp / nextThreshold) * 100);
   const capReached = todayCap != null && todayXp != null && todayXp >= todayCap;
@@ -20,11 +22,11 @@ export default function XpBar({ level, curXp, nextThreshold, todayXp = null, tod
         style={styles.badge}
       >
         <Text style={styles.levelNumber}>{level}</Text>
-        <Text style={styles.levelLabel}>SEVİYE</Text>
+        <Text style={styles.levelLabel}>{t('xp.level')}</Text>
       </LinearGradient>
       <View style={styles.block}>
         <View style={styles.header}>
-          <Text style={styles.label}>Deneyim</Text>
+          <Text style={styles.label}>{t('xp.label')}</Text>
           <Text style={styles.value}>
             {curXp} / {nextThreshold} XP
           </Text>
@@ -33,16 +35,20 @@ export default function XpBar({ level, curXp, nextThreshold, todayXp = null, tod
           value={percent / 100}
           height={12}
           colors={capReached ? [C.danger, '#B91C5C'] : [C.xp, C.accent]}
-          accessibilityLabel={`Seviye ilerlemesi yüzde ${Math.round(percent)}`}
+          accessibilityLabel={t('xp.progressLabel', { pct: Math.round(percent) })}
         />
         {todayCap != null && todayXp != null ? (
           <Text style={[styles.hint, capReached && styles.hintCap]}>
             {capReached
-              ? `Bugünün XP sınırı doldu (${todayXp}/${todayCap})`
-              : `Bugünkü XP: ${todayXp}/${todayCap} · Sonraki seviyeye ${nextThreshold - curXp} XP kaldı`}
+              ? t('xp.capFull', { cur: todayXp, cap: todayCap })
+              : t('xp.todayWithNext', {
+                  cur: todayXp,
+                  cap: todayCap,
+                  left: nextThreshold - curXp,
+                })}
           </Text>
         ) : (
-          <Text style={styles.hint}>Sonraki seviyeye {nextThreshold - curXp} XP kaldı</Text>
+          <Text style={styles.hint}>{t('xp.nextLevelLeft', { left: nextThreshold - curXp })}</Text>
         )}
       </View>
     </View>

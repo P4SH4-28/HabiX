@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { useData } from '../context/DataContext';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import AvatarCircle from './AvatarCircle';
 import Icon from './ui/icons';
@@ -11,6 +12,7 @@ import Sheet from './Sheet';
 // rozetle gösterir; açınca Onayla/Reddet listesi çıkar.
 export default function NotificationBell() {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const { server, acceptRequest, declineRequest } = useData();
   const [visible, setVisible] = useState(false);
@@ -36,7 +38,7 @@ export default function NotificationBell() {
         onPress={() => setVisible(true)}
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel={count > 0 ? `Bildirimler, ${count} bekleyen istek` : 'Bildirimler, bekleyen istek yok'}
+        accessibilityLabel={count > 0 ? t('notif.a11y', { count }) : t('notif.a11yEmpty')}
       >
         <Icon emoji="🔔" size={18} color={C.text} />
         {count > 0 && (
@@ -46,14 +48,12 @@ export default function NotificationBell() {
         )}
       </Pressable>
 
-      <Sheet visible={visible} onClose={() => setVisible(false)} title="Gelen İstekler">
+      <Sheet visible={visible} onClose={() => setVisible(false)} title={t('notif.title')}>
         {count === 0 ? (
           <View style={styles.emptyBox}>
             <Icon emoji="🔕" size={40} color={C.textMuted} />
-            <Text style={styles.emptyText}>Bekleyen istek yok</Text>
-            <Text style={styles.emptySub}>
-              Birisi sana istek gönderince burada görünür.
-            </Text>
+            <Text style={styles.emptyText}>{t('notif.emptyTitle')}</Text>
+            <Text style={styles.emptySub}>{t('notif.emptySub')}</Text>
           </View>
         ) : (
           server.requests.map((r) => (
@@ -83,14 +83,14 @@ export default function NotificationBell() {
                   onPress={() => onAccept(r.requestId)}
                   disabled={busy === r.requestId}
                 >
-                  <Text style={styles.acceptText}>Onayla</Text>
+                  <Text style={styles.acceptText}>{t('common.accept')}</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.declineButton, busy === r.requestId && styles.disabled]}
                   onPress={() => onDecline(r.requestId)}
                   disabled={busy === r.requestId}
                 >
-                  <Text style={styles.declineText}>Reddet</Text>
+                  <Text style={styles.declineText}>{t('common.decline')}</Text>
                 </Pressable>
               </View>
             </View>

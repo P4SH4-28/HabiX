@@ -7,43 +7,47 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 
 export default function WeeklyCompare({ weekly }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   // Trend bilgisi temaya bağlı renkler kullandığı için bileşen içinde üretilir.
   const trend = (
     weekly.trend === 'up'
-      ? { arrow: '▲', color: C.accent, text: 'Geçen haftadan daha iyi' }
+      ? { arrow: '▲', color: C.accent, text: t('progress.trendBetter') }
       : weekly.trend === 'down'
-        ? { arrow: '▼', color: C.danger, text: 'Geçen haftanın gerisinde' }
-        : { arrow: '■', color: C.textMuted, text: 'Geçen haftayla aynı' }
+        ? { arrow: '▼', color: C.danger, text: t('progress.trendWorse') }
+        : { arrow: '■', color: C.textMuted, text: t('progress.trendSame') }
   );
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Haftalık Karşılaştırma</Text>
+      <Text style={styles.title}>{t('progress.weeklyCompare')}</Text>
       <View style={styles.columns}>
         {/* Geçen hafta (7-14 gün önce) */}
         <View style={styles.column}>
-          <Text style={styles.columnLabel}>Geçen Hafta</Text>
+          <Text style={styles.columnLabel}>{t('progress.lastWeek')}</Text>
           <Text style={styles.columnValue}>{weekly.lastWeek}</Text>
-          <Text style={styles.columnHint}>tamamlama</Text>
+          <Text style={styles.columnHint}>{t('progress.completions')}</Text>
         </View>
         {/* Bu hafta (son 7 gün) */}
         <View style={[styles.column, styles.columnHighlight]}>
-          <Text style={[styles.columnLabel, styles.labelHighlight]}>Bu Hafta</Text>
+          <Text style={[styles.columnLabel, styles.labelHighlight]}>{t('progress.thisWeek')}</Text>
           <Text style={[styles.columnValue, styles.valueHighlight]}>
             {weekly.currentWeek}
           </Text>
-          <Text style={styles.columnHint}>tamamlama</Text>
+          <Text style={styles.columnHint}>{t('progress.completions')}</Text>
         </View>
       </View>
       {/* Trend satırı: ok + fark + açıklama */}
       <View style={styles.trendRow}>
         <Text style={[styles.arrow, { color: trend.color }]}>{trend.arrow}</Text>
         <Text style={[styles.trendText, { color: trend.color }]}>
-          {weekly.diff > 0 ? `+${weekly.diff}` : weekly.diff} tamamlama
+          {t('progress.trendDiff', {
+            diff: weekly.diff > 0 ? `+${weekly.diff}` : String(weekly.diff),
+          })}
         </Text>
         <Text style={styles.trendHint}>{trend.text}</Text>
       </View>

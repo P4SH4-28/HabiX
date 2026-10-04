@@ -9,7 +9,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
-import { dayNameShort } from '../logic';
+import { useT } from '../i18n';
+import { dayNameShort } from '../i18n';
 import { useTheme } from '../theme';
 import AnimatedCounter from './AnimatedCounter';
 
@@ -17,6 +18,7 @@ const DAY_COUNT = 7;
 
 export default function WeekChart({ daily, today, total }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const days = daily.slice(-DAY_COUNT);
 
@@ -39,7 +41,7 @@ export default function WeekChart({ daily, today, total }) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Haftalık Tamamlama</Text>
+      <Text style={styles.title}>{t('progress.weeklyCompletion')}</Text>
       <View style={styles.chart}>
         {days.map(({ key, date, done, pct }, i) => {
           const isToday = key === today;

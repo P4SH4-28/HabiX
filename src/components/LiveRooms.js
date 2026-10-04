@@ -25,15 +25,16 @@ import {
   subscribeRooms,
 } from '../services/socialService';
 import { serverNow } from '../services/serverClock';
+import { t, useT } from '../i18n';
 import { useTheme } from '../theme';
 import EmptyState from './ui/EmptyState';
 
 function timeAgo(iso) {
   const diff = Math.max(0, (serverNow() - Date.parse(iso)) / 1000);
-  if (diff < 60) return 'şimdi';
-  if (diff < 3600) return `${Math.floor(diff / 60)} dk önce`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} sa önce`;
-  return `${Math.floor(diff / 86400)} gün önce`;
+  if (diff < 60) return t('time.now');
+  if (diff < 3600) return t('time.minutesAgo', { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t('time.hoursAgo', { n: Math.floor(diff / 3600) });
+  return t('time.daysAgo', { n: Math.floor(diff / 86400) });
 }
 
 // Modül seviyesi sabit referans (FlatList renderItem'ı her render'da
@@ -44,6 +45,7 @@ export default function LiveRooms() {
   const { user: authUser } = useAuth();
   const { server } = useData();
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
 
   const me = authUser?.name || 'Kullanıcı';
@@ -108,7 +110,7 @@ export default function LiveRooms() {
       const refreshed = await fetchRooms();
       if (refreshed.ok) applyRooms(refreshed.data?.rooms);
     } else {
-      setError(r.error === 'room_not_found' ? 'Oda artık yok' : 'Odaya katılınamadı');
+      setError(r.error === 'room_not_found' ? t('room.errGone') : t('room.errJoin'));
     }
   }, [busyId, me, applyRooms]);
 
@@ -124,7 +126,7 @@ export default function LiveRooms() {
       const refreshed = await fetchRooms();
       if (refreshed.ok) applyRooms(refreshed.data?.rooms);
     } else {
-      setError('Odadan ayrılamadı');
+      setError(t('room.errLeave'));
     }
   }, [busyId, me, applyRooms]);
 
@@ -145,7 +147,7 @@ export default function LiveRooms() {
       const refreshed = await fetchRooms();
       if (refreshed.ok) applyRooms(refreshed.data?.rooms);
     } else {
-      setError(r.error === 'invalid_room_name' ? 'Oda adı 2-40 karakter olmalı' : 'Oda kurulamadı');
+      setError(r.error === 'invalid_room_name' ? t('room.errNameInvalid') : t('room.errCreate'));
     }
   };
 
@@ -163,12 +165,13 @@ export default function LiveRooms() {
             </Text>
             {isMine && (
               <View style={[styles.mineChip, { backgroundColor: C.primary + '22' }]}>
-                <Text style={[styles.mineChipText, { color: C.primary }]}>İçindesin</Text>
+                <Text style={[styles.mineChipText, { color: C.primary }]}>{t('room.inRoom')}</Text>
               </View>
             )}
           </View>
           <Text style={styles.roomMeta}>
-            {item.host === me ? 'Senin odan' : `Kurucu: ${item.host}`} • {timeAgo(item.last_active_at)}
+            {item.host === me ? t('room.yourRoom') : t('room.host', { name: item.host })} •{' '}
+            {timeAgo(item.last_active_at)}
           </Text>
         </View>
         <View style={styles.roomSide}>
@@ -178,7 +181,7 @@ export default function LiveRooms() {
             <ActivityIndicator size="small" color={C.primary} />
           ) : isMine ? (
             <Pressable style={styles.leaveBtn} onPress={() => handleLeave(item.id)}>
-              <Text style={styles.leaveBtnText}>Ayrıl</Text>
+              <Text style={styles.leaveBtnText}>{t('room.leave')}</Text>
             </Pressable>
           ) : (
             <Pressable
@@ -186,7 +189,7 @@ export default function LiveRooms() {
               onPress={() => handleJoin(item)}
               disabled={!!busyId}
             >
-              <Text style={[styles.joinBtnText, { color: C.onPrimary }]}>Katıl</Text>
+              <Text style={[styles.joinBtnText, { color: C.onPrimary }]}>{t('room.join')}</Text>
             </Pressable>
           )}
         </View>
@@ -200,7 +203,7 @@ export default function LiveRooms() {
       <View style={styles.createRow}>
         <TextInput
           style={[styles.input, { backgroundColor: C.surface, borderColor: C.border, color: C.text }]}
-          placeholder="Oda adı (örn: Sabah Odak Grubu)"
+          placeholder={t('room.namePlaceholder')}
           placeholderTextColor={C.textMuted}
           value={newName}
           onChangeText={setNewName}
@@ -214,7 +217,7 @@ export default function LiveRooms() {
           {busyId === 'create' ? (
             <ActivityIndicator size="small" color={C.background} />
           ) : (
-            <Text style={[styles.createBtnText, { color: C.background }]}>Oluştur</Text>
+            <Text style={[styles.createBtnText, { color: C.background }]}>{t('room.create')}</Text>
           )}
         </Pressable>
       </View>
@@ -225,7 +228,7 @@ export default function LiveRooms() {
 
       {server.connected === false && (
         <Text style={[styles.offline, { color: C.textMuted }]}>
-          📡 Çevrimdışısın — canlı odalar sunucu bağlantısı ister.
+          {`📡 ${t('room.offline')}`}
         </Text>
       )}
 
@@ -241,9 +244,11 @@ export default function LiveRooms() {
         removeClippedSubviews
         ListHeaderComponent={
           <View style={styles.headerRow}>
-            <Text style={styles.sectionTitle}>Canlı Odalar</Text>
+            <Text style={styles.sectionTitle}>{t('room.title')}</Text>
             <View style={[styles.countChip, { backgroundColor: C.surface }]}>
-              <Text style={[styles.countText, { color: C.textMuted }]}>{rooms.length} oda</Text>
+              <Text style={[styles.countText, { color: C.textMuted }]}>
+                {t('room.count', { count: rooms.length })}
+              </Text>
             </View>
           </View>
         }
@@ -253,8 +258,8 @@ export default function LiveRooms() {
           ) : (
             <EmptyState
               emoji="🍅"
-              title="Şu an aktif oda yok"
-              subtitle="İlk odayı sen kur — arkadaşların katılıp birlikte odaklanabilsin!"
+              title={t('room.emptyTitle')}
+              subtitle={t('room.emptySub')}
               compact
             />
           )

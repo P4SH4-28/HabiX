@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Text from './ui/Text';
 import { EMOJIS, HABIT_COLORS, EASE, useTheme } from '../theme';
+import { useT } from '../i18n';
 import Button from './ui/Button';
 import Icon from './ui/icons';
 import AppTextField from './ui/AppTextField';
@@ -40,8 +41,10 @@ const EXPAND_MS = 260;
 // ------------------------------------------------------------
 function Collapsible({ title, open, onToggle, strip, children }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const easeOut = useMemo(() => Easing.bezier(...EASE.out), []);
+  const toggleA11y = open ? t('habit.a11yOptionsHide', { title }) : t('habit.a11yOptionsShow', { title });
 
   // Grid her zaman mount (mount anında zıplama YOK), clip'lenerek gizlenir.
   const [contentH, setContentH] = useState(0);
@@ -90,7 +93,7 @@ function Collapsible({ title, open, onToggle, strip, children }) {
           onPress={onToggle}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel={`${title} seçeneklerini ${open ? 'gizle' : 'aç'}`}
+          accessibilityLabel={toggleA11y}
           accessibilityState={{ expanded: open }}
           style={({ pressed }) => [styles.headToggle, pressed && styles.pressed]}
         >
@@ -110,7 +113,7 @@ function Collapsible({ title, open, onToggle, strip, children }) {
           onPress={onToggle}
           hitSlop={6}
           accessibilityRole="button"
-          accessibilityLabel={`${title} seçeneklerini ${open ? 'gizle' : 'aç'}`}
+          accessibilityLabel={toggleA11y}
           accessibilityState={{ expanded: open }}
           style={({ pressed }) => [styles.stripToggle, open && styles.stripToggleOpen, pressed && styles.pressed]}
         >
@@ -134,6 +137,7 @@ function Collapsible({ title, open, onToggle, strip, children }) {
 
 export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0, maxHabits = 10 }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('💧');
@@ -173,7 +177,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
           onPress={() => selectEmoji(e)}
           hitSlop={4}
           accessibilityRole="button"
-          accessibilityLabel={`Sembol ${e}`}
+          accessibilityLabel={t('habit.symbolA11y', { emoji: e })}
           accessibilityState={{ selected: emoji === e }}
         >
           <Text style={styles.emoji}>{e}</Text>
@@ -191,7 +195,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
           onPress={() => selectColor(c)}
           hitSlop={5}
           accessibilityRole="button"
-          accessibilityLabel={`Renk ${c}`}
+          accessibilityLabel={t('habit.colorA11y', { color: c })}
           accessibilityState={{ selected: color === c }}
         >
           {color === c && <Text style={styles.check}>✓</Text>}
@@ -201,7 +205,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
   );
 
   return (
-    <Sheet visible={visible} onClose={onClose} title="Yeni Alışkanlık">
+    <Sheet visible={visible} onClose={onClose} title={t('habit.newTitle')}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.form}
@@ -209,21 +213,21 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
         {/* 1) ÜST: isim */}
         <AppTextField
           icon="create-outline"
-          placeholder="Alışkanlık adı..."
+          placeholder={t('habit.namePlaceholder')}
           value={name}
-          onChangeText={(t) => setName(t.slice(0, NAME_MAX))}
+          onChangeText={(v) => setName(v.slice(0, NAME_MAX))}
           onSubmitEditing={submit}
           returnKeyType="done"
           autoFocus
           maxLength={NAME_MAX}
-          error={tooShort ? 'En az 2 karakter olmalı.' : undefined}
-          hint={`${trimmed.length}/${NAME_MAX} karakter · En az 2 karakter olmalı`}
-          accessibilityLabel="Alışkanlık adı"
+          error={tooShort ? t('habit.nameTooShort') : undefined}
+          hint={t('habit.nameHint', { len: trimmed.length, max: NAME_MAX })}
+          accessibilityLabel={t('habit.nameLabel')}
         />
 
         {/* 2) SEMBOL: tek satır + ok → tam grid */}
         <Collapsible
-          title="Sembol"
+          title={t('common.symbol')}
           open={symbolsOpen}
           onToggle={toggleSymbols}
           strip={symbolItems}
@@ -233,7 +237,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
 
         {/* 3) RENK: tek satır + ok → tam grid */}
         <Collapsible
-          title="Renk"
+          title={t('common.color')}
           open={colorsOpen}
           onToggle={toggleColors}
           strip={colorItems}
@@ -246,8 +250,7 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
             <View style={styles.limitRow}>
               <Icon emoji="⛔" size={15} color={C.danger} />
               <Text variant="small" style={styles.limitText}>
-                En fazla {maxHabits} alışkanlık oluşturabilirsin. Yeni eklemek için mevcut
-                birini sil.
+                {t('habit.limitMsg', { max: maxHabits })}
               </Text>
             </View>
           </View>
@@ -260,10 +263,10 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
           </View>
           <View style={styles.previewTexts}>
             <Text variant="h3" style={[styles.previewName, !trimmed && styles.previewNameEmpty]} numberOfLines={1}>
-              {trimmed || 'Alışkanlık adı'}
+              {trimmed || t('habit.nameLabel')}
             </Text>
             <Text variant="small" style={styles.previewHint}>
-              {trimmed ? 'Harika görünüyor!' : 'Yukarıdan bir ad yaz'}
+              {trimmed ? t('habit.previewGreat') : t('habit.previewType')}
             </Text>
           </View>
         </View>
@@ -273,8 +276,8 @@ export default function AddHabitModal({ visible, onClose, onAdd, habitsCount = 0
           icon="✨"
           label={
             limitReached
-              ? `Limit doldu (${habitsCount}/${maxHabits})`
-              : 'Alışkanlığı Ekle'
+              ? t('habit.limitFull', { cur: habitsCount, max: maxHabits })
+              : t('habit.add')
           }
           colors={[color, color]}
           fullWidth

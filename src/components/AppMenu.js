@@ -14,21 +14,23 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useMenu } from '../context/MenuContext';
+import { useT } from '../i18n';
 import AvatarCircle from './AvatarCircle';
 import { levelFromTotalXp } from '../logic';
 import { useTheme } from '../theme';
 import Icon from './ui/icons';
 import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
+// Öğelerin görünen metinleri çeviri anahtarlarıdır; render'da t() ile çözülür.
 const MENU_ITEMS = [
-  { key: 'QuestBoard', icon: 'flag', label: 'Günün Görevleri', desc: 'Günlük 4+4 görev' },
-  { key: 'Pomodoro', icon: 'timer', label: 'Odak Zamanı', desc: 'Seans başlat ve odaklan' },
-  { key: 'SeasonPass', icon: 'ticket', label: 'Season Pass', desc: 'Seviye ödülleri ve VIP' },
-  { key: 'Inventory', icon: 'cube', label: 'Envanter', desc: 'Eşyalarını kullan' },
-  { key: 'Achievements', icon: 'trophy', label: 'Başarımlar', desc: 'Kupa ve ödüller' },
-  { key: 'League', icon: 'podium', label: 'Haftalık Ligler', desc: 'Lig rütben ve ödül' },
-  { key: 'Team', icon: 'people', label: 'Takımım', desc: 'Kulüp kur veya katıl' },
-  { key: 'Settings', icon: 'settings', label: 'Ayarlar', desc: 'Profil, yedek ve tercihler' },
+  { key: 'QuestBoard', icon: 'flag', labelKey: 'menu.questBoard', descKey: 'menu.questBoardDesc' },
+  { key: 'Pomodoro', icon: 'timer', labelKey: 'menu.pomodoro', descKey: 'menu.pomodoroDesc' },
+  { key: 'SeasonPass', icon: 'ticket', labelKey: 'menu.seasonPass', descKey: 'menu.seasonPassDesc' },
+  { key: 'Inventory', icon: 'cube', labelKey: 'menu.inventory', descKey: 'menu.inventoryDesc' },
+  { key: 'Achievements', icon: 'trophy', labelKey: 'menu.achievements', descKey: 'menu.achievementsDesc' },
+  { key: 'League', icon: 'podium', labelKey: 'menu.league', descKey: 'menu.leagueDesc' },
+  { key: 'Team', icon: 'people', labelKey: 'menu.team', descKey: 'menu.teamDesc' },
+  { key: 'Settings', icon: 'settings', labelKey: 'menu.settings', descKey: 'menu.settingsDesc' },
 ];
 
 const PANEL_WIDTH = 340; // maxWidth ile uyumlu (78% cap)
@@ -36,6 +38,7 @@ const PANEL_WIDTH = 340; // maxWidth ile uyumlu (78% cap)
 export default function AppMenu() {
   const { visible, closeMenu } = useMenu();
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const navigation = useNavigation();
   const { user: authUser } = useAuth();
@@ -50,12 +53,12 @@ export default function AppMenu() {
 
   const items = useMemo(
     () => [
-      ...MENU_ITEMS,
+      ...MENU_ITEMS.map((m) => ({ ...m, label: t(m.labelKey), desc: t(m.descKey) })),
       ...(authUser?.isAdmin
-        ? [{ key: 'Admin', icon: 'shield-checkmark', label: 'Yönetici Paneli', desc: 'Kullanıcı yönetimi' }]
+        ? [{ key: 'Admin', icon: 'shield-checkmark', label: t('menu.admin'), desc: t('menu.adminDesc') }]
         : []),
     ],
-    [authUser?.isAdmin]
+    [authUser?.isAdmin, t]
   );
 
   const levelInfo = levelFromTotalXp(data.stats.totalXp);
@@ -161,11 +164,11 @@ export default function AppMenu() {
             />
             <View style={styles.profileInfo}>
               <Text style={styles.profileName} numberOfLines={1}>
-                {authUser?.name || 'Oyuncu'}
+                {authUser?.name || t('menu.player')}
               </Text>
               <View style={styles.profileLevelRow}>
                 <Text style={styles.profileLevel}>
-                  Seviye {levelInfo.level} • {' '}
+                  {t('common.levelWithNumber', { level: levelInfo.level })} •{' '}
                 </Text>
                 <Icon emoji="🪙" size={12} color={C.gold} />
                 <Text style={styles.profileLevel}>{data.stats.gold || 0}</Text>
@@ -176,7 +179,7 @@ export default function AppMenu() {
               onPress={() => closeAnim()}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel="Menüyü kapat"
+              accessibilityLabel={t('common.closeMenu')}
             >
               <Ionicons name="close" size={20} color={C.textMuted} />
             </Pressable>

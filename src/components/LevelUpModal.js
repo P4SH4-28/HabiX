@@ -16,12 +16,14 @@ import GradientButton from './GradientButton';
 import Icon from './ui/icons';
 import { useData } from '../context/DataContext';
 import { celebrate } from '../services/effects';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import useDismissOnEscape from '../hooks/useDismissOnEscape';
 
 export default function LevelUpModal() {
   const { levelUpEvent, dismissLevelUp } = useData();
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const visible = levelUpEvent !== null;
   useDismissOnEscape(visible, dismissLevelUp);
@@ -62,7 +64,7 @@ export default function LevelUpModal() {
         style={styles.backdrop}
         onPress={dismissLevelUp}
         accessibilityRole="button"
-        accessibilityLabel="Seviye atlama ekranını kapat"
+        accessibilityLabel={t('levelUp.close')}
       >
         <Animated.View
           style={[styles.card, { opacity, transform: [{ scale }] }]}
@@ -72,17 +74,20 @@ export default function LevelUpModal() {
         >
           {/* Altın vurgu halkası (v2: nabız animasyonu yok) */}
           <View pointerEvents="none" style={styles.glowRing} />
-          <Text style={styles.label}>SEVİYE ATLADIN!</Text>
+          <Text style={styles.label}>{t('levelUp.label')}</Text>
           <Text style={styles.bigLevel}>{levelUpEvent?.level}</Text>
           <View style={styles.subtitleRow}>
             <Text style={styles.subtitle}>
-              Tebrikler! Artık <Text style={styles.highlight}>Seviye {levelUpEvent?.level}</Text>{' '}
-              oldun.
+              {t('levelUp.subtitleBefore')}
+              <Text style={styles.highlight}>
+                {t('levelUp.subtitleLevel', { level: levelUpEvent?.level })}
+              </Text>
+              {t('levelUp.subtitleAfter')}
             </Text>
             <Icon emoji="🚀" size={15} color={C.gold} />
           </View>
           <GradientButton
-            label="Devam Et"
+            label={t('levelUp.continue')}
             onPress={dismissLevelUp}
             style={styles.button}
           />

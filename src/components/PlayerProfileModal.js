@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { sendFriendRequest } from '../services/friendService';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import AvatarCircle from './AvatarCircle';
 import Icon from './ui/icons';
@@ -36,6 +37,7 @@ export default function PlayerProfileModal({ player, onClose }) {
   const { data, today, refreshServer } = useData();
   const { user: authUser } = useAuth();
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
@@ -67,16 +69,16 @@ export default function PlayerProfileModal({ player, onClose }) {
     const res = await sendFriendRequest(authUser?.name, player.name);
     setSending(false);
     if (!res.ok) {
-      setSendResult({ ok: false, text: res.error || 'İstek gönderilemedi' });
+      setSendResult({ ok: false, text: res.error || t('friend.sendFailed') });
       return;
     }
     if (res.state === 'already_friends') {
-      setSendResult({ ok: true, icon: '✅', text: 'Zaten arkadaşsınız' });
+      setSendResult({ ok: true, icon: '✅', text: t('friend.alreadyFriends') });
       await refreshServer();
     } else if (res.state === 'already_pending') {
-      setSendResult({ ok: true, icon: '⏳', text: 'İstek zaten beklemede' });
+      setSendResult({ ok: true, icon: '⏳', text: t('friend.alreadyPending') });
     } else {
-      setSendResult({ ok: true, icon: '✅', text: 'İstek gönderildi' });
+      setSendResult({ ok: true, icon: '✅', text: t('friend.sent') });
     }
   };
 
@@ -93,7 +95,7 @@ export default function PlayerProfileModal({ player, onClose }) {
               hitSlop={12}
               style={styles.closeButton}
               accessibilityRole="button"
-              accessibilityLabel="Profili kapat"
+              accessibilityLabel={t('profile.closeA11y')}
             >
               <Ionicons name="close" size={20} color={C.textMuted} />
             </Pressable>
@@ -117,7 +119,7 @@ export default function PlayerProfileModal({ player, onClose }) {
               {isFriend && (
                 <View style={styles.friendBadge}>
                   <Icon emoji="✅" size={11} color={C.accent} />
-                  <Text style={styles.friendBadgeText}>Arkadaşın</Text>
+                  <Text style={styles.friendBadgeText}>{t('profile.friendBadge')}</Text>
                 </View>
               )}
               <View style={styles.headerStats}>
@@ -145,13 +147,13 @@ export default function PlayerProfileModal({ player, onClose }) {
             <View style={styles.statsRow}>
               <StatCard
                 icon="✅"
-                label="Toplam Aktivite"
+                label={t('profile.totalActivity')}
                 value={stats.total}
                 color={C.accent}
               />
               <StatCard
                 icon="🔥"
-                label="En İyi Seri"
+                label={t('profile.bestStreak')}
                 value={stats.best}
                 color={C.xp}
               />
@@ -168,7 +170,7 @@ export default function PlayerProfileModal({ player, onClose }) {
               <View style={[styles.actionButton, styles.actionDone]}>
                 <View style={styles.actionContent}>
                   <Icon emoji="✅" size={15} color={C.accent} />
-                  <Text style={styles.actionDoneText}>Arkadaş listenizde</Text>
+                  <Text style={styles.actionDoneText}>{t('profile.inFriends')}</Text>
                 </View>
               </View>
             ) : (
@@ -177,7 +179,7 @@ export default function PlayerProfileModal({ player, onClose }) {
                 onPress={sendRequest}
                 disabled={sending}
                 accessibilityRole="button"
-                accessibilityLabel={`${player.name} arkadaşlık isteği gönder`}
+                accessibilityLabel={t('profile.addFriendA11y', { name: player.name })}
                 accessibilityState={{ disabled: sending, busy: sending }}
               >
                 {sending ? (
@@ -192,7 +194,7 @@ export default function PlayerProfileModal({ player, onClose }) {
                 ) : (
                   <View style={styles.actionContent}>
                     <Ionicons name="person-add" size={16} color={C.onPrimary} />
-                    <Text style={styles.actionText}>İstek Gönder</Text>
+                    <Text style={styles.actionText}>{t('friend.send')}</Text>
                   </View>
                 )}
               </Pressable>

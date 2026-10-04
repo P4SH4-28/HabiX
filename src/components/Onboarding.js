@@ -12,39 +12,42 @@ import BackgroundPattern from './BackgroundPattern';
 import GradientButton from './GradientButton';
 import SoftButton from './ui/SoftButton';
 import IconTile from './ui/IconTile';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 
 const ONBOARDED_KEY = '@habit_tracker_onboarded';
 
+// Sayfa metinleri çeviri anahtarlarıdır; render'da t() ile çözülür.
 const PAGES = [
   {
     name: 'body',
     variant: 'primary',
-    title: 'Alışkanlıklarını takip et',
-    text: 'Günlük alışkanlıklarını ekle, her gün işaretle, serini koru. Kaçırdığın her gün altın cezası keser — düzen şart!',
+    titleKey: 'onboarding.p1Title',
+    textKey: 'onboarding.p1Text',
   },
   {
     name: 'flash',
     variant: 'xp',
-    title: 'XP, Altın ve Seviyeler',
-    text: 'Tamamlanan her görev XP ve altın kazandırır. Seviye atla, dükkandan avatar ve tema satın al, kendini ödüllendir.',
+    titleKey: 'onboarding.p2Title',
+    textKey: 'onboarding.p2Text',
   },
   {
     name: 'timer',
     variant: 'accent',
-    title: 'Pomodoro ve Görevler',
-    text: 'Odak seanslarıyla üretkenliğini artır, günlük görevlerden ödüller topla ve arkadaşlarınla liderlikte yarış.',
+    titleKey: 'onboarding.p3Title',
+    textKey: 'onboarding.p3Text',
   },
   {
     name: 'leaf',
     variant: 'violet',
-    title: 'Kişisel gelişim yolculuğun',
-    text: 'Bu uygulama senin kişisel gelişim yolculuğun. Hile yaparsan sadece kendi geleceğini kandırırsın.',
+    titleKey: 'onboarding.p4Title',
+    textKey: 'onboarding.p4Text',
   },
 ];
 
 export default function Onboarding({ onComplete }) {
   const { colors: C, radius } = useTheme();
+  const t = useT();
   const [page, setPage] = useState(0);
   const [visible, setVisible] = useState(false);
 
@@ -87,8 +90,8 @@ export default function Onboarding({ onComplete }) {
         ]}
       >
         <IconTile name={p.name} variant={p.variant} size={96} />
-        <Text style={[styles.title, { color: C.text }]}>{p.title}</Text>
-        <Text style={[styles.text, { color: C.textMuted }]}>{p.text}</Text>
+        <Text style={[styles.title, { color: C.text }]}>{t(p.titleKey)}</Text>
+        <Text style={[styles.text, { color: C.textMuted }]}>{t(p.textKey)}</Text>
 
         <View style={styles.dots}>
           {PAGES.map((_, i) => (
@@ -104,14 +107,14 @@ export default function Onboarding({ onComplete }) {
         </View>
 
         <GradientButton
-          label={last ? 'Başla' : 'Devam et'}
+          label={last ? t('onboarding.start') : t('onboarding.next')}
           onPress={() => (last ? finish() : setPage((x) => x + 1))}
           style={styles.nextButton}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
 
-        <SoftButton label="Atla" variant="subtle" size="sm" onPress={finish} style={styles.skip} />
+        <SoftButton label={t('onboarding.skip')} variant="subtle" size="sm" onPress={finish} style={styles.skip} />
       </View>
     </View>
   );

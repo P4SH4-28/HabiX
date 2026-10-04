@@ -13,6 +13,7 @@ import Text from './ui/Text';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { searchProfiles, sendFriendRequest } from '../services/friendService';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 import AvatarCircle from './AvatarCircle';
 import Icon from './ui/icons';
@@ -23,6 +24,7 @@ import Sheet from './Sheet';
 // profillere arkadaşlık isteği gönderir (onay → karşılıklı arkadaşlık).
 export default function AddFriendModal({ visible, onClose }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const { data, refreshServer } = useData();
   const { user: authUser } = useAuth();
@@ -57,7 +59,7 @@ export default function AddFriendModal({ visible, onClose }) {
       setSearching(false);
       setSearched(true);
       setResults(r.ok ? r.results || [] : []);
-      if (!r.ok) setFeedback({ name: null, text: r.error || 'Arama yapılamadı', ok: false });
+      if (!r.ok) setFeedback({ name: null, text: r.error || t('friend.searchFailed'), ok: false });
     }, 300);
     return () => clearTimeout(timerRef.current);
   }, [query, visible]);
@@ -68,43 +70,40 @@ export default function AddFriendModal({ visible, onClose }) {
     const res = await sendFriendRequest(meName, username);
     setBusy(null);
     if (!res.ok) {
-      setFeedback({ name: username, text: res.error || 'İstek gönderilemedi', ok: false });
+      setFeedback({ name: username, text: res.error || t('friend.sendFailed'), ok: false });
       return;
     }
     if (res.state === 'already_friends') {
-      setFeedback({ name: username, icon: '✅', ok: true, text: 'Zaten arkadaşsınız' });
+      setFeedback({ name: username, icon: '✅', ok: true, text: t('friend.alreadyFriends') });
       await refreshServer();
     } else if (res.state === 'already_pending') {
-      setFeedback({ name: username, icon: '⏳', ok: true, text: 'İstek zaten beklemede' });
+      setFeedback({ name: username, icon: '⏳', ok: true, text: t('friend.alreadyPending') });
     } else {
-      setFeedback({ name: username, icon: '✅', ok: true, text: 'İstek gönderildi' });
+      setFeedback({ name: username, icon: '✅', ok: true, text: t('friend.sent') });
     }
   };
 
   const isFriend = (name) => data.friends.some((f) => f.name === name);
 
   return (
-    <Sheet visible={visible} onClose={onClose} title="Arkadaş Ekle">
+    <Sheet visible={visible} onClose={onClose} title={t('friend.title')}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <TextInput
           style={styles.input}
-          placeholder="Kullanıcı adı ara (örn. zeynep)"
+          placeholder={t('friend.searchPlaceholder')}
           placeholderTextColor={C.textMuted}
           value={query}
           onChangeText={setQuery}
           autoFocus
           autoCapitalize="none"
         />
-        <Text style={styles.hint}>
-          Arkadaşın uygulamaya kayıtlı olmalı; kullanıcı adıyla aranır. Onay aldıktan sonra
-          ikiniz de arkadaş listesinde görünürsünüz.
-        </Text>
+        <Text style={styles.hint}>{t('friend.hint')}</Text>
 
         <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
           {searching && (
             <View style={styles.centerBox}>
               <ActivityIndicator color={C.primary} />
-              <Text style={styles.centerText}>Aranıyor...</Text>
+              <Text style={styles.centerText}>{t('friend.searching')}</Text>
             </View>
           )}
           {!searching &&
@@ -125,7 +124,7 @@ export default function AddFriendModal({ visible, onClose }) {
                     </View>
                     {friend ? (
                       <View style={[styles.tag, styles.tagDone]}>
-                        <Text style={styles.tagDoneText}>Arkadaş ✓</Text>
+                        <Text style={styles.tagDoneText}>{t('friend.isFriend')}</Text>
                       </View>
                     ) : (
                       <Pressable
@@ -139,7 +138,7 @@ export default function AddFriendModal({ visible, onClose }) {
                         {busy === r.username ? (
                           <ActivityIndicator size="small" color={C.onPrimary} />
                         ) : (
-                          <Text style={styles.sendButtonText}>İstek Gönder</Text>
+                          <Text style={styles.sendButtonText}>{t('friend.send')}</Text>
                         )}
                       </Pressable>
                     )}
@@ -149,10 +148,8 @@ export default function AddFriendModal({ visible, onClose }) {
           {!searching && searched && results.length === 0 && (
             <View style={styles.centerBox}>
               <IconTile icon="search" emoji="🔍" variant="primary" size={52} iconSize={22} />
-              <Text style={styles.centerText}>Sonuç bulunamadı.</Text>
-              <Text style={styles.centerSub}>
-                İsmin tam doğru yazıldığından ve kişinin uygulamaya giriş yaptığından emin ol.
-              </Text>
+              <Text style={styles.centerText}>{t('friend.noResults')}</Text>
+              <Text style={styles.centerSub}>{t('friend.noResultsHint')}</Text>
             </View>
           )}
         </ScrollView>

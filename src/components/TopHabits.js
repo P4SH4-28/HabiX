@@ -8,16 +8,18 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 import Progress from './ui/Progress';
 
 export default function TopHabits({ items }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const maxCount = items.length > 0 ? items[0].count : 1;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>En Çok Tamamlananlar</Text>
+      <Text style={styles.title}>{t('progress.topCompleted')}</Text>
       {items.map(({ habit, count }, i) => (
         <View key={habit.id} style={styles.row}>
           <Text style={styles.rank}>{i + 1}</Text>
@@ -29,14 +31,14 @@ export default function TopHabits({ items }) {
               <Text style={styles.name} numberOfLines={1}>
                 {habit.name}
               </Text>
-              <Text style={styles.count}>{count} kez</Text>
+              <Text style={styles.count}>{t('progress.timesCount', { count })}</Text>
             </View>
             {/* Çubuk genişliği ilk sıradaki alışkanlığa oranlanır (animasyonlu ortak Progress) */}
             <Progress
               value={maxCount > 0 ? count / maxCount : 0}
               height={8}
               colors={[habit.color, habit.color]}
-              accessibilityLabel={`${habit.name} sıralama ilerlemesi`}
+              accessibilityLabel={t('progress.rankingProgress', { name: habit.name })}
             />
           </View>
         </View>

@@ -8,9 +8,11 @@ import { StyleSheet, View } from 'react-native';
 import Text from './ui/Text';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 
 export default function AchievementsGrid({ unlockedIds }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const unlockedSet = new Set(unlockedIds || []);
   const unlockedCount = unlockedSet.size;
@@ -18,7 +20,7 @@ export default function AchievementsGrid({ unlockedIds }) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.title}>🏆 Başarımlar</Text>
+        <Text style={styles.title}>{`🏆 ${t('achievement.title')}`}</Text>
         <Text style={styles.counter}>
           {unlockedCount}/{ACHIEVEMENTS.length}
         </Text>

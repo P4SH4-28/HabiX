@@ -8,20 +8,26 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Text from './Text';
 import { useTheme } from '../../theme';
+import { useT } from '../../i18n';
 import IconTile from './IconTile';
 import SoftButton from './SoftButton';
 
 export default function ErrorState({
-  title = 'Bağlantı sorunu',
-  message = 'Bir şeyler ters gitti. Tekrar deneyebilirsin.',
-  retryLabel = 'Tekrar dene',
+  title,
+  message,
+  retryLabel,
   onRetry,
   compact = false,
   style,
 }) {
   const { colors: C } = useTheme();
+  const t = useT();
   const styles = useMemo(() => makeStyles(C), [C]);
   const ringSize = compact ? 76 : 96;
+  // Varsayılanlar bileşen içinde çözülür: dışarıdan undefined gelirse çevrilir.
+  const shownTitle = title ?? t('error.defaultTitle');
+  const shownMessage = message ?? t('error.defaultMessage');
+  const shownRetry = retryLabel ?? t('common.retry');
 
   return (
     <View
@@ -36,16 +42,16 @@ export default function ErrorState({
       >
         <IconTile name="cloud-offline-outline" variant="danger" size={compact ? 38 : 46} />
       </View>
-      <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
-      <Text style={[styles.message, compact && styles.messageCompact]}>{message}</Text>
+      <Text style={[styles.title, compact && styles.titleCompact]}>{shownTitle}</Text>
+      <Text style={[styles.message, compact && styles.messageCompact]}>{shownMessage}</Text>
       {onRetry ? (
         <SoftButton
-          label={retryLabel}
+          label={shownRetry}
           icon="🔄"
           variant="ghost"
           onPress={onRetry}
           style={styles.action}
-          accessibilityLabel={retryLabel}
+          accessibilityLabel={shownRetry}
         />
       ) : null}
     </View>
