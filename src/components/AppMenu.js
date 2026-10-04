@@ -261,13 +261,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     profileLevel: {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     profileLevelRow: {
       flexDirection: 'row',
@@ -307,12 +307,12 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     itemDesc: {
       color: C.textMuted,
       fontSize: 11,
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

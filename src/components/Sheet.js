@@ -86,7 +86,7 @@ function makeStyles(C, radius) {
       color: C.text,
       fontSize: 17,
       fontWeight: '700',
-      lineHeight: 24,
+      lineHeight: 26,
     },
     closeBtn: {
       width: 30,
@@ -99,7 +99,7 @@ function makeStyles(C, radius) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

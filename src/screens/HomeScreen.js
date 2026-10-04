@@ -494,9 +494,9 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      paddingHorizontal: 20,
-      paddingTop: 16,
-      gap: 16,
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      gap: 24,
     },
 
     // ---- header ----
@@ -514,12 +514,12 @@ function makeStyles(C, type) {
     greeting: {
       ...type.h1,
       color: C.text,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     dateText: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     headerActions: {
       flexDirection: 'row',
@@ -543,19 +543,19 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- bugünkü ilerleme ----
     pctValue: {
       ...type.stat,
       color: C.success,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     statsRow: {
       flexDirection: 'row',
@@ -572,13 +572,13 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     statValue: {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
 
     // ---- seviye ----
@@ -598,13 +598,13 @@ function makeStyles(C, type) {
     levelNum: {
       ...type.stat,
       color: C.onPrimary,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     levelLabel: {
       ...type.micro,
       color: C.onPrimary,
       opacity: 0.85,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     levelInfo: {
       flex: 1,
@@ -615,7 +615,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.gold,
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- görev ----
@@ -626,7 +626,7 @@ function makeStyles(C, type) {
     },
     status: {
       ...type.micro,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- alışkanlık satırı (swipe) ----
@@ -649,7 +649,7 @@ function makeStyles(C, type) {
       ...type.small,
       fontWeight: '600',
       color: C.onPrimary,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     slide: {
       // translateX Reanimated shared value ile sürülür
@@ -667,12 +667,12 @@ function makeStyles(C, type) {
     habitName: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     habitStreak: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     checkbox: {
       width: 26,
@@ -699,7 +699,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     chipGrid: {
       flexDirection: 'row',
@@ -718,13 +718,13 @@ function makeStyles(C, type) {
     },
     chipEmoji: {
       fontSize: 17,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     chipText: {
       ...type.small,
       color: C.text,
       flexShrink: 1,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- FAB ----

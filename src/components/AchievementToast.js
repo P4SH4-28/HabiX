@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 22,
-    lineHeight: 30,
+    lineHeight: 32,
   },
   text: {
     color: '#0B0E14',
     fontSize: 15,
     fontWeight: '700',
     flexShrink: 1,
-    lineHeight: 21,
+    lineHeight: 22,
   },
   pressed: {
     opacity: 0.85,

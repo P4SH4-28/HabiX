@@ -442,9 +442,9 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 12,
-      paddingBottom: 24,
+      padding: 24,
+      gap: 24,
+      paddingBottom: 32,
     },
 
     // ---- üst ----
@@ -457,7 +457,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 4,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     balanceChip: {
       flexDirection: 'row',
@@ -469,27 +469,27 @@ function makeStyles(C, type) {
       fontSize: 22,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 30,
+      lineHeight: 32,
     },
     profileCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 16,
     },
     profileName: {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 17,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     profileHint: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 3,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     photoActions: {
-      gap: 6,
+      gap: 8,
       alignItems: 'stretch',
     },
 
@@ -498,7 +498,7 @@ function makeStyles(C, type) {
     // tek satıra sığmıyordu ve son chip ekran dışına taşıp kırpılıyordu.
     filterRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 12,
       flexWrap: 'wrap',
     },
     filterChip: {
@@ -520,7 +520,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       flexShrink: 1,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     filterTextActive: {
       color: C.primary,
@@ -528,23 +528,23 @@ function makeStyles(C, type) {
 
     // ---- nasıl ----
     howCard: {
-      gap: 8,
+      gap: 12,
     },
     howHead: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: 8,
     },
     howTitle: {
       ...type.small,
       color: C.text,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     howGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
+      gap: 8,
     },
     howItem: {
       ...type.micro,
@@ -553,19 +553,20 @@ function makeStyles(C, type) {
       borderRadius: 8,
       paddingHorizontal: 8,
       paddingVertical: 4,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- grid ----
+    // 2 sütun + geniş kartlar arası nefes: 2*46% + gap16 ≤ içerik (320px'te de sığar).
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: 16,
     },
     card: {
-      width: '48%',
+      width: '46%',
       alignItems: 'center',
-      gap: 8,
+      gap: 12,
       position: 'relative',
       // Grid kartı dar → içerik taşmasın, metin kırpılsın.
       minWidth: 0,
@@ -598,25 +599,25 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textAlign: 'center',
       flexShrink: 1,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     cardDesc: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
       minHeight: 44,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     cardSub: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     stateChip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 8,
       backgroundColor: C.gold + '22',
       borderRadius: RADIUS.md,
       paddingHorizontal: 12,
@@ -628,7 +629,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.gold,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- tema swatch ----
@@ -661,7 +662,7 @@ function makeStyles(C, type) {
     swatchEmoji: {
       fontSize: 22,
       marginTop: 8,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     frameAvatar: {
       width: 60,
@@ -673,16 +674,16 @@ function makeStyles(C, type) {
     },
     frameAvatarEmoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
 
     // ---- vip ----
     vipHint: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 12,
       backgroundColor: C.gold + '1A',
       borderRadius: 16,
-      padding: 14,
+      padding: 16,
       alignItems: 'flex-start',
     },
     vipHintText: {
@@ -690,7 +691,7 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

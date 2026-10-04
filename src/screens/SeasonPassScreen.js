@@ -321,8 +321,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- sezon başlığı + tier ----
@@ -333,28 +333,28 @@ function makeStyles(C, type) {
       flexDirection: 'row',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
-      gap: 10,
+      gap: 12,
     },
     seasonTitleWrap: {
       flex: 1,
       minWidth: 0,
-      gap: 2,
+      gap: 4,
     },
     seasonName: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     seasonSub: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     tierRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 14,
+      gap: 16,
     },
     levelCircle: {
       width: 56,
@@ -369,42 +369,42 @@ function makeStyles(C, type) {
     levelText: {
       ...type.stat,
       color: C.primary,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     tierInfo: {
       flex: 1,
       minWidth: 0,
-      gap: 6,
+      gap: 8,
     },
     tierLabels: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 8,
+      gap: 12,
     },
     tierLabelStrong: {
       ...type.micro,
       color: C.text,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     tierLabel: {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- VIP ----
     vipActiveCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 16,
       backgroundColor: C.gold + '0D',
       borderColor: C.gold + '33',
       borderWidth: 1,
     },
     vipBuyCard: {
-      gap: 12,
+      gap: 16,
       backgroundColor: C.gold + '0D',
       borderColor: C.gold + '33',
       borderWidth: 1,
@@ -412,61 +412,64 @@ function makeStyles(C, type) {
     vipHead: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 12,
+      gap: 16,
     },
     vipInfo: {
       flex: 1,
       minWidth: 0,
-      gap: 2,
+      gap: 4,
     },
     vipActiveTitle: {
       ...type.h3,
       color: C.gold,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     vipBuyTitle: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     vipText: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     vipBuyFoot: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 10,
+      gap: 12,
     },
     priceRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 8,
     },
     priceText: {
       ...type.h3,
       color: C.gold,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
     warnRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 8,
     },
     warnText: {
       ...type.micro,
       color: C.danger,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- sütun başlıkları ----
     colHead: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: 12,
+      // Başlıklar FREE/VIP SÜTUNLARININ üstünde durmalı: ekran blok gap'i
+      // (24) sütunları kutulardan koparırdı — başlık listeye yapıştırılır.
+      marginBottom: -8,
     },
     colNumSpacer: {
       width: 34,
@@ -476,7 +479,7 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     colLabelVip: {
       color: C.gold,
@@ -484,23 +487,23 @@ function makeStyles(C, type) {
 
     // ---- tier listesi ----
     tierList: {
-      gap: 8,
+      gap: 12,
     },
     tierItem: {
       flexDirection: 'row',
       alignItems: 'stretch',
-      gap: 10,
+      gap: 12,
     },
     tierNumCol: {
       width: 34,
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 2,
+      gap: 4,
     },
     tierNum: {
       ...type.bodyStrong,
       fontVariant: ['tabular-nums'],
-      lineHeight: 21,
+      lineHeight: 22,
     },
     tierNumCurrent: {
       color: C.primary,
@@ -515,16 +518,16 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       flexDirection: 'row',
-      gap: 8,
+      gap: 12,
     },
     box: {
       flex: 1,
       minWidth: 0,
-      minHeight: 104,
+      minHeight: 112,
       borderRadius: 16,
       borderWidth: 1,
-      padding: 10,
-      gap: 6,
+      padding: 12,
+      gap: 8,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -551,13 +554,13 @@ function makeStyles(C, type) {
       textTransform: 'none',
       letterSpacing: 0,
       fontWeight: '600',
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

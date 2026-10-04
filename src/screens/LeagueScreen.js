@@ -325,8 +325,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- lig kartı ----
@@ -361,13 +361,13 @@ function makeStyles(C, type) {
     },
     leagueName: {
       ...type.h3,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     leagueXp: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     weekWrap: {
       alignItems: 'flex-end',
@@ -376,13 +376,13 @@ function makeStyles(C, type) {
     weekLabel: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     weekCount: {
       ...type.bodyStrong,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 21,
+      lineHeight: 22,
     },
     leagueProgress: {
       gap: 6,
@@ -391,27 +391,27 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- ödül ----
     rewardCard: {
-      gap: 8,
+      gap: 12,
     },
     rewardHead: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: 8,
     },
     rewardTitle: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     rewardDesc: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- sticky sıra ----
@@ -423,52 +423,52 @@ function makeStyles(C, type) {
       backgroundColor: C.surfaceLight,
       borderColor: C.primary + '55',
       borderWidth: 1,
-      gap: 6,
+      gap: 12,
     },
     selfLabel: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     selfRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 12,
     },
     selfRank: {
       ...type.stat,
       fontVariant: ['tabular-nums'],
-      lineHeight: 30,
+      lineHeight: 32,
     },
     selfName: {
       ...type.bodyStrong,
       color: C.text,
       flex: 1,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     selfXp: {
       ...type.bodyStrong,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 21,
+      lineHeight: 22,
     },
 
     // ---- sıralama ----
     rankCard: {
-      gap: 4,
+      gap: 8,
     },
     legendRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 14,
-      paddingVertical: 4,
-      paddingHorizontal: 4,
+      gap: 16,
+      paddingVertical: 8,
+      paddingHorizontal: 8,
     },
     legendItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 8,
     },
     legendDot: {
       width: 8,
@@ -478,14 +478,14 @@ function makeStyles(C, type) {
     legendText: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     rankRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      paddingVertical: 9,
-      paddingHorizontal: 10,
+      gap: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
       borderRadius: 12,
       borderLeftWidth: 3,
       borderLeftColor: 'transparent',
@@ -506,7 +506,7 @@ function makeStyles(C, type) {
       width: 22,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     rankName: {
       ...type.small,
@@ -514,7 +514,7 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     rankNameMe: {
       fontWeight: '700',
@@ -525,16 +525,16 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- eşik tablosu ----
     tierRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
+      gap: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
       borderRadius: 12,
     },
     tierRowCurrent: {
@@ -544,13 +544,13 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       flex: 1,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     tierMin: {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     tierReward: {
       flexDirection: 'row',
@@ -562,13 +562,13 @@ function makeStyles(C, type) {
       color: C.gold,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

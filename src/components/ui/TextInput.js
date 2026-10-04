@@ -157,7 +157,7 @@ function makeStyles(C, radius, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 6,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     field: {
       flexDirection: 'row',
@@ -178,20 +178,20 @@ function makeStyles(C, radius, type) {
       padding: 0,
       margin: 0,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     inputMultiline: { textAlignVertical: 'top' },
     error: {
       ...type.small,
       color: C.danger,
       marginTop: 6,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
       marginTop: 6,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

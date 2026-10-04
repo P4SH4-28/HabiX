@@ -119,15 +119,15 @@ function makeStyles(C) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
       paddingBottom: 60,
     },
     screenSub: {
       color: C.textMuted,
       fontSize: 13,
       marginBottom: 4,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     statsRow: {
       flexDirection: 'row',

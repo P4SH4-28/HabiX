@@ -72,21 +72,21 @@ function makeStyles(C) {
       fontSize: 15,
       fontWeight: '700',
       textAlign: 'center',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     titleCompact: {
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     subtitle: {
       color: C.textMuted,
       fontSize: 13,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     subtitleCompact: {
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     action: {
       marginTop: 6,

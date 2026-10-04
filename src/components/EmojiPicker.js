@@ -37,7 +37,7 @@ function makeStyles(C) {
     color: C.textMuted,
     fontSize: 13,
     fontWeight: '600',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   grid: {
     flexDirection: 'row',
@@ -60,7 +60,7 @@ function makeStyles(C) {
   },
   emoji: {
     fontSize: 22,
-    lineHeight: 30,
+    lineHeight: 32,
   },
 });
 }

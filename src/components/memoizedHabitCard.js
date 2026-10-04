@@ -151,7 +151,7 @@ function makeStyles(C, radius) {
     },
     emoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     checkbox: {
       width: 34,
@@ -183,7 +183,7 @@ function makeStyles(C, radius) {
       color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     info: {
       flex: 1,
@@ -194,7 +194,7 @@ function makeStyles(C, radius) {
       color: C.text,
       fontSize: 15,
       fontWeight: '600',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     nameDone: {
       textDecorationLine: 'line-through',
@@ -203,7 +203,7 @@ function makeStyles(C, radius) {
     meta: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     streakBadge: {
       flexDirection: 'row',
@@ -216,13 +216,13 @@ function makeStyles(C, radius) {
     },
     streakIcon: {
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     streakText: {
       color: C.text,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

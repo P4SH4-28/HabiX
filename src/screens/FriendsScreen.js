@@ -235,13 +235,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
-      lineHeight: 30,
+      lineHeight: 32,
     },
     screenSub: {
       color: C.textMuted,
       fontSize: 13,
       marginTop: 2,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     addButton: {
       backgroundColor: C.primary,
@@ -271,13 +271,13 @@ function makeStyles(C) {
       color: C.danger,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     addButtonText: {
       color: C.onPrimary,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     noteBox: {
       flexDirection: 'row',
@@ -293,11 +293,11 @@ function makeStyles(C) {
     noteText: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     content: {
-      padding: 20,
-      gap: 10,
+      padding: 24,
+      gap: 24,
       paddingBottom: 60,
     },
     row: {
@@ -314,7 +314,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 17,
       fontWeight: '700',
-      lineHeight: 24,
+      lineHeight: 26,
     },
     duelBtn: {
       backgroundColor: C.surfaceLight,
@@ -334,7 +334,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     metaRow: {
       flexDirection: 'row',
@@ -348,7 +348,7 @@ function makeStyles(C) {
     metaText: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     statusDot: {
       width: 10,

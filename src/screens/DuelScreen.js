@@ -389,8 +389,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 12,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- VS ----
@@ -411,7 +411,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     vsRow: {
       flexDirection: 'row',
@@ -432,7 +432,7 @@ function makeStyles(C, type) {
       ...type.stat,
       color: C.textMuted,
       letterSpacing: 1,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     vsName: {
       ...type.small,
@@ -440,13 +440,13 @@ function makeStyles(C, type) {
       fontWeight: '700',
       maxWidth: '100%',
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     vsGain: {
       ...type.small,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     vsScoreRow: {
       flexDirection: 'row',
@@ -458,7 +458,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     vsScoreRight: {
       textAlign: 'right',
@@ -478,13 +478,13 @@ function makeStyles(C, type) {
     inviteTitle: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     inviteDesc: {
       ...type.small,
       color: C.textMuted,
       marginTop: 2,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     inviteActions: {
       flexDirection: 'row',
@@ -500,13 +500,13 @@ function makeStyles(C, type) {
     pendingTitle: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     pendingSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- geçmiş ----
@@ -519,14 +519,14 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     histSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- kural notu ----
@@ -546,7 +546,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

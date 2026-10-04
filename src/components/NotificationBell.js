@@ -114,7 +114,7 @@ function makeStyles(C) {
     },
     bell: {
       fontSize: 17,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     badge: {
       position: 'absolute',
@@ -132,7 +132,7 @@ function makeStyles(C) {
       color: '#FFFFFF',
       fontSize: 11,
       fontWeight: '700',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     emptyBox: {
       alignItems: 'center',
@@ -141,18 +141,18 @@ function makeStyles(C) {
     },
     emptyEmoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     emptyText: {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     emptySub: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     row: {
       flexDirection: 'row',
@@ -168,7 +168,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     rowMeta: {
       flexDirection: 'row',
@@ -178,14 +178,14 @@ function makeStyles(C) {
     rowMetaText: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     rowMetaDot: {
       color: C.textMuted,
       fontSize: 13,
       opacity: 0.5,
       marginHorizontal: 2,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     actions: {
       flexDirection: 'row',
@@ -201,7 +201,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     declineButton: {
       backgroundColor: C.surfaceLight,
@@ -213,7 +213,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     disabled: {
       opacity: 0.5,

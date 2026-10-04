@@ -152,7 +152,7 @@ function makeStyles(C, radius) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     metaRow: {
       flexDirection: 'row',
@@ -162,7 +162,7 @@ function makeStyles(C, radius) {
     subtitle: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     timer: {
       color: C.text,

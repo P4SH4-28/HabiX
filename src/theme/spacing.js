@@ -8,9 +8,9 @@
 // xs   4  → İkon ↔ metin arası mikro boşluk, iç içe minik öğeler.
 // sm   8  → Aynı satırdaki öğeler arası, buton/ikon-label arası.
 // md   12 → Kart içindeki blok arası; sm kart padding'i.
-// lg   16 → KART İÇ PADDING'i (varsayılan) + kartlar arası.
-// xl   20 → Ekran kenar boşluğu (gutter); lg kart padding'i.
-// xxl  24 → Bölüm başlığı üstü büyük nefes payı.
+// lg   16 → Kart iç padding'i (sm kart) + satır iç boşluğu.
+// xl   20 → VARSAYILAN KART İÇ PADDING'i; ekran gutter'ı (eski 16'dan aşağı taşındı).
+// xxl  24 → EKRAN KENAR boşluğu + bölüm başlığı üstü nefes payı.
 // 3xl  32 → Ekran başına/ayraç arası (hero altında).
 // 4xl  40 → Bölüm sonu / büyük sahne boşluğu (ekran başına ≤2).
 // 5xl  48 → Sahne tamponu (modal üstü, hero altı) — EN BÜYÜK.
@@ -36,6 +36,6 @@ export const SPACE = {
 export const SPACE_STEPS = [4, 8, 12, 16, 20, 24, 32, 40, 48];
 
 // Varsayılan kart iç padding (sık kullanılan sabit — token'a bağlı).
-export const CARD_PADDING = 16;
+export const CARD_PADDING = 20;
 
 export default SPACE;

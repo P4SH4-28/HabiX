@@ -414,8 +414,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 16,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- üst satır ----
@@ -459,7 +459,7 @@ function makeStyles(C, type) {
       color: C.text,
       marginTop: 10,
       textAlign: 'center',
-      lineHeight: 30,
+      lineHeight: 32,
     },
     levelRow: {
       flexDirection: 'row',
@@ -470,13 +470,13 @@ function makeStyles(C, type) {
     levelText: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     username: {
       ...type.small,
       color: C.textMuted,
       opacity: 0.8,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- bio ----
@@ -494,7 +494,7 @@ function makeStyles(C, type) {
     bioText: {
       ...type.body,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     bioHintRow: {
       flexDirection: 'row',
@@ -505,7 +505,7 @@ function makeStyles(C, type) {
     bioHintText: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- statlar ----
@@ -527,7 +527,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
     statLabel: {
       ...type.micro,
@@ -535,7 +535,7 @@ function makeStyles(C, type) {
       textAlign: 'center',
       letterSpacing: 0,
       flexShrink: 1,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- link satırı ----
@@ -552,12 +552,12 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- seviye özeti ----
@@ -575,7 +575,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.primary,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
     xpProgress: {
       marginTop: 12,
@@ -598,7 +598,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
     summaryCellLabel: {
       ...type.micro,
@@ -606,7 +606,7 @@ function makeStyles(C, type) {
       textAlign: 'center',
       letterSpacing: 0,
       flexShrink: 1,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     achBtn: {
       marginTop: 14,
@@ -624,12 +624,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     activityDate: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- aksiyonlar ----

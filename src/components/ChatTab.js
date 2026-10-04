@@ -244,19 +244,19 @@ function makeStyles(C) {
     msgName: {
       fontSize: 11,
       fontWeight: '700',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     msgText: {
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     msgTime: {
       fontSize: 11,
       fontWeight: '600',
       alignSelf: 'flex-end',
       marginTop: 2,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     skeletonList: {
       paddingTop: 16,
@@ -273,7 +273,7 @@ function makeStyles(C) {
       fontWeight: '700',
       paddingHorizontal: 16,
       paddingBottom: 6,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     inputRow: {
       flexDirection: 'row',
@@ -291,7 +291,7 @@ function makeStyles(C) {
       paddingVertical: 10,
       fontSize: 13,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     sendBtn: {
       width: 44,

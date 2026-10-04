@@ -33,12 +33,12 @@ export function QuickTaskWidget({ snapshot }) {
       clickAction="OPEN_APP"
     >
       <FlexWidget style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <TextWidget text="Günün Görevleri" style={{ fontSize: 13, lineHeight: 18, fontWeight: '800', color: TEXT }} />
-        <TextWidget text={`${doneCount}/${tasks.length}`} style={{ fontSize: 11, lineHeight: 14, color: MUTED }} />
+        <TextWidget text="Günün Görevleri" style={{ fontSize: 13, lineHeight: 20, fontWeight: '800', color: TEXT }} />
+        <TextWidget text={`${doneCount}/${tasks.length}`} style={{ fontSize: 11, lineHeight: 16, color: MUTED }} />
       </FlexWidget>
 
       {tasks.length === 0 ? (
-        <TextWidget text="Bugün için görev yok" style={{ fontSize: 11, lineHeight: 14, color: MUTED }} />
+        <TextWidget text="Bugün için görev yok" style={{ fontSize: 11, lineHeight: 16, color: MUTED }} />
       ) : (
         tasks.map((t) => (
           <FlexWidget
@@ -53,11 +53,11 @@ export function QuickTaskWidget({ snapshot }) {
               marginBottom: 4,
             }}
           >
-            <TextWidget text={`${t.emoji || '📋'} `} style={{ fontSize: 11, lineHeight: 14 }} />
+            <TextWidget text={`${t.emoji || '📋'} `} style={{ fontSize: 11, lineHeight: 16 }} />
             <TextWidget
               text={t.title}
               style={{
-                fontSize: 11, lineHeight: 14,
+                fontSize: 11, lineHeight: 16,
                 color: t.done ? MUTED : TEXT,
                 textDecorationLine: t.done ? 'line-through' : 'none',
                 flexGrow: 1,
@@ -77,7 +77,7 @@ export function QuickTaskWidget({ snapshot }) {
               }}
               clickAction={t.done ? 'OPEN_APP' : `TASK_DONE:${t.id}`}
             >
-              {t.done ? <TextWidget text="✓" style={{ fontSize: 13, lineHeight: 18, color: '#0B0E14', fontWeight: '800' }} /> : null}
+              {t.done ? <TextWidget text="✓" style={{ fontSize: 13, lineHeight: 20, color: '#0B0E14', fontWeight: '800' }} /> : null}
             </FlexWidget>
           </FlexWidget>
         ))

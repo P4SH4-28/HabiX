@@ -259,8 +259,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- başlık ----
@@ -274,13 +274,13 @@ function makeStyles(C, type) {
       ...type.h1,
       color: C.text,
       flexShrink: 1,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     subtitle: {
       ...type.small,
       color: C.textMuted,
       marginTop: -6,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- özet ----
@@ -293,12 +293,12 @@ function makeStyles(C, type) {
     h3: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     pctValue: {
       ...type.stat,
       color: C.success,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     statsRow: {
       flexDirection: 'row',
@@ -315,13 +315,13 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     statValue: {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
 
     // ---- alışkanlık satırı: HabitSwipeRow (HomeScreen'den import) ----

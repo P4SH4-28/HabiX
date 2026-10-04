@@ -2,7 +2,7 @@
 // Button.js — Premium buton primitive'i (v3)
 //
 //   variant: primary | secondary | ghost | danger
-//   size:    sm (36) | md (44) | lg (52)
+//   size:    sm (40) | md (44) | lg (52)
 //   loading  → ActivityIndicator (metin yerine), layout ZIPLAMAZ
 //   disabled → soluk görünüm (0.45), basış kapalı
 //   icon     → React node veya emoji string; iconPosition left|right
@@ -32,7 +32,7 @@ import { DURATION, EASE, useTheme } from '../../theme';
 import Icon from './icons';
 
 const SIZES = {
-  sm: { height: 36, pv: 12, ph: 12, font: 13, icon: 14 },
+  sm: { height: 40, pv: 12, ph: 14, font: 13, icon: 14 },
   md: { height: 44, pv: 14, ph: 20, font: 15, icon: 16 },
   lg: { height: 52, pv: 16, ph: 24, font: 17, icon: 18 },
 };

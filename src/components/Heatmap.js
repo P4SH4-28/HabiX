@@ -115,7 +115,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     legend: {
       flexDirection: 'row',
@@ -125,7 +125,7 @@ function makeStyles(C) {
     legendText: {
       color: C.textMuted,
       fontSize: 11,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     legendCell: {
       width: 12,

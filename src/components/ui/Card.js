@@ -3,7 +3,7 @@
 //
 //   variant: default (surface + 1px border) | elevated (gölge, bordersız)
 //            | outline (saydam + 1px border) | filled (surfaceLight)
-//   padding: none (0) | sm (12) | md (16, varsayılan) | lg (20)
+//   padding: none (0) | sm (16) | md (20, varsayılan) | lg (24)
 //   radius : lg (16) — TÜM kartlar aynı
 //   onPress → press scale 0.98 / 100ms (reduce-motion'da kapalı,
 //             unmount'ta cancelAnimation)
@@ -23,7 +23,7 @@ import Animated, {
 import useReducedMotion from '../../hooks/useReducedMotion';
 import { DURATION, EASE, SHADOWS, useTheme } from '../../theme';
 
-const PADDINGS = { none: 0, sm: 12, md: 16, lg: 20 };
+const PADDINGS = { none: 0, sm: 16, md: 20, lg: 24 };
 
 function Card({
   children,

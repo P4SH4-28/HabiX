@@ -94,7 +94,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     chart: {
       flexDirection: 'row',
@@ -119,13 +119,13 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     totalSlash: {
       color: C.textMuted,
       fontSize: 11,
       opacity: 0.6,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     valueToday: {
       color: C.primary,
@@ -146,7 +146,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     dayLabelToday: {
       color: C.primary,

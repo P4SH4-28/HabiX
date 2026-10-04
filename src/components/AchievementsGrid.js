@@ -68,13 +68,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     counter: {
       color: C.gold,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     grid: {
       flexDirection: 'row',
@@ -106,7 +106,7 @@ function makeStyles(C) {
     },
     icon: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     iconLocked: {
       opacity: 0.8,
@@ -116,7 +116,7 @@ function makeStyles(C) {
       fontSize: 11,
       fontWeight: '700',
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     badgeTitleLocked: {
       color: C.textMuted,
@@ -126,14 +126,14 @@ function makeStyles(C) {
       fontSize: 11,
       textAlign: 'center',
       marginTop: 2,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     badgeReward: {
       color: C.gold,
       fontSize: 11,
       fontWeight: '700',
       marginTop: 3,
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

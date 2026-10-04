@@ -57,7 +57,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     row: {
       flexDirection: 'row',
@@ -69,7 +69,7 @@ function makeStyles(C) {
       fontSize: 13,
       fontWeight: '700',
       width: 18,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     emojiBox: {
       width: 36,
@@ -80,7 +80,7 @@ function makeStyles(C) {
     },
     emoji: {
       fontSize: 17,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     info: {
       flex: 1,
@@ -98,13 +98,13 @@ function makeStyles(C) {
       fontSize: 13,
       fontWeight: '600',
       flexShrink: 1,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     count: {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

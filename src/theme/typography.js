@@ -9,11 +9,11 @@
 // GÖVDE: hiyerarşi h1 > h3 > body > small > micro. Arada yeni boyut YOK.
 //
 // ---------- 6 BOYUT (NE ZAMAN KULLANILIR) ----------
-// micro     11/14   → Chip/etiket/metadata/mini sayaç. UPPERCASE.
-// small     13/18   → Yardımcı metin, açıklama, ipucu, hata yazısı.
-// body      15/21   → Gövde metni (varsayılan okuma), input metni.
-// h3        17/24   → Bölüm/kart başlığı.
-// h1        22/30   → Ekran başlığı / sayısal vurgu. EKRAN BAŞI 1 ADET.
+// micro     11/16   → Chip/etiket/metadata/mini sayaç. UPPERCASE.
+// small     13/20   → Yardımcı metin, açıklama, ipucu, hata yazısı.
+// body      15/22   → Gövde metni (varsayılan okuma), input metni.
+// h3        17/26   → Bölüm/kart başlığı.
+// h1        22/32   → Ekran başlığı / sayısal vurgu. EKRAN BAŞI 1 ADET.
 // displayXl 48/56   → Hero/timer sayısı. Başlık/gövdede YASAK.
 // ============================================================
 
@@ -21,15 +21,15 @@ export const TYPE = {
   // ---------- 6 BOYUT ----------
   micro: {
     fontSize: 11,
-    lineHeight: 14,
+    lineHeight: 16,
     fontWeight: '600',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
-  small: { fontSize: 13, lineHeight: 18, fontWeight: '400', letterSpacing: 0 },
-  body: { fontSize: 15, lineHeight: 21, fontWeight: '400', letterSpacing: 0 },
-  h3: { fontSize: 17, lineHeight: 24, fontWeight: '600', letterSpacing: -0.1 },
-  h1: { fontSize: 22, lineHeight: 30, fontWeight: '700', letterSpacing: -0.3 },
+  small: { fontSize: 13, lineHeight: 20, fontWeight: '400', letterSpacing: 0.2 },
+  body: { fontSize: 15, lineHeight: 22, fontWeight: '400', letterSpacing: 0 },
+  h3: { fontSize: 17, lineHeight: 26, fontWeight: '600', letterSpacing: -0.3 },
+  h1: { fontSize: 22, lineHeight: 32, fontWeight: '700', letterSpacing: -0.5 },
 
   // ---------- Hero/timer sayısı (İSTİSNA — sadece burada) ----------
   displayXl: {
@@ -41,21 +41,21 @@ export const TYPE = {
   },
 
   // ---------- ALIAS (eski anahtarlar → 6 boyut, import kırılmaz) ----------
-  display: { fontSize: 22, lineHeight: 30, fontWeight: '700', letterSpacing: -0.3 },
-  h2: { fontSize: 15, lineHeight: 21, fontWeight: '700', letterSpacing: -0.1 },
-  title: { fontSize: 15, lineHeight: 21, fontWeight: '700', letterSpacing: -0.1 },
-  bodyStrong: { fontSize: 15, lineHeight: 21, fontWeight: '600', letterSpacing: 0 },
-  caption: { fontSize: 13, lineHeight: 18, fontWeight: '400', letterSpacing: 0 },
+  display: { fontSize: 22, lineHeight: 32, fontWeight: '700', letterSpacing: -0.5 },
+  h2: { fontSize: 15, lineHeight: 22, fontWeight: '700', letterSpacing: 0 },
+  title: { fontSize: 15, lineHeight: 22, fontWeight: '700', letterSpacing: 0 },
+  bodyStrong: { fontSize: 15, lineHeight: 22, fontWeight: '600', letterSpacing: 0 },
+  caption: { fontSize: 13, lineHeight: 20, fontWeight: '400', letterSpacing: 0.2 },
   label: {
     fontSize: 11,
-    lineHeight: 14,
+    lineHeight: 16,
     fontWeight: '600',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   // Sayısal vurgu (h1 ölçeği + tabular)
-  stat: { fontSize: 22, lineHeight: 30, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  statSm: { fontSize: 22, lineHeight: 30, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  stat: { fontSize: 22, lineHeight: 32, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  statSm: { fontSize: 22, lineHeight: 32, fontWeight: '700', fontVariant: ['tabular-nums'] },
 };
 
 // İzinli weight'ler (lint/test kontrolü için).

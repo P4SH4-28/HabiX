@@ -41,7 +41,7 @@ function makeStyles(C) {
     color: C.textMuted,
     fontSize: 13,
     fontWeight: '600',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   row: {
     flexDirection: 'row',
@@ -72,7 +72,7 @@ function makeStyles(C) {
     fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowRadius: 2,
-    lineHeight: 21,
+    lineHeight: 22,
   },
 });
 }

@@ -55,11 +55,11 @@ const styles = StyleSheet.create({
     minWidth: 0,
     fontSize: 15,
     fontWeight: '700',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   subtitle: {
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   rightSlot: {
     marginLeft: 'auto',

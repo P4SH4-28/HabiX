@@ -49,13 +49,13 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
-      lineHeight: 30,
+      lineHeight: 32,
     },
     label: {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

@@ -402,19 +402,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     marginTop: 12,
-    lineHeight: 30,
+    lineHeight: 32,
   },
   banReason: {
     fontSize: 15,
     fontWeight: '600',
     marginTop: 8,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   banHint: {
     fontSize: 13,
     marginTop: 8,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

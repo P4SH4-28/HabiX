@@ -112,13 +112,13 @@ function makeStyles(C) {
     },
     previewEmoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     previewName: {
       color: C.text,
       fontSize: 17,
       fontWeight: '700',
-      lineHeight: 24,
+      lineHeight: 26,
     },
     previewNameEmpty: {
       color: C.textMuted,
@@ -126,7 +126,7 @@ function makeStyles(C) {
     previewHint: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     button: {
       height: 50,
@@ -149,7 +149,7 @@ function makeStyles(C) {
       color: C.danger,
       fontSize: 13,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

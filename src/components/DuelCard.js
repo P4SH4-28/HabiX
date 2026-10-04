@@ -135,12 +135,12 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     desc: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     actions: {
       flexDirection: 'row',
@@ -158,7 +158,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     finishBtnContent: {
       flexDirection: 'row',
@@ -175,7 +175,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     scoreRow: {
       flexDirection: 'row',
@@ -186,7 +186,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 11,
       fontWeight: '600',
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

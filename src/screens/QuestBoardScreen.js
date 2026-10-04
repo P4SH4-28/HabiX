@@ -260,15 +260,15 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- özet ----
     summary: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     summaryStrong: {
       color: C.text,
@@ -288,7 +288,7 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     section: {
@@ -309,12 +309,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     questDesc: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     rewardRow: {
       flexDirection: 'row',
@@ -332,7 +332,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- VIP ----
@@ -352,7 +352,7 @@ function makeStyles(C, type) {
     vipBadgeText: {
       ...type.micro,
       color: C.gold,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     vipPromo: {
       gap: 10,
@@ -368,18 +368,18 @@ function makeStyles(C, type) {
     vipPromoTitle: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     vipPromoText: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

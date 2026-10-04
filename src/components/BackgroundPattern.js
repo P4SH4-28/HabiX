@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
     width: '12.5%',
     fontSize: 17,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
   },
 });

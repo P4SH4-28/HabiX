@@ -63,7 +63,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     columns: {
       flexDirection: 'row',
@@ -87,7 +87,7 @@ function makeStyles(C) {
       fontSize: 11,
       fontWeight: '700',
       textTransform: 'uppercase',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     labelHighlight: {
       color: C.primary,
@@ -96,7 +96,7 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 22,
       fontWeight: '700',
-      lineHeight: 30,
+      lineHeight: 32,
     },
     valueHighlight: {
       color: C.primary,
@@ -104,7 +104,7 @@ function makeStyles(C) {
     columnHint: {
       color: C.textMuted,
       fontSize: 11,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     trendRow: {
       flexDirection: 'row',
@@ -114,12 +114,12 @@ function makeStyles(C) {
     arrow: {
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     trendText: {
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     trendHint: {
       color: C.textMuted,
@@ -127,7 +127,7 @@ function makeStyles(C) {
       flex: 1,
       minWidth: 0,
       textAlign: 'right',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

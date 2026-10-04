@@ -308,8 +308,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 16,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- üst satır ----
@@ -325,13 +325,13 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginBottom: 8,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     hint: {
       ...type.small,
       color: C.textMuted,
       marginTop: 8,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- halka ----
@@ -367,7 +367,7 @@ function makeStyles(C, type) {
     timeSub: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- kontroller ----
@@ -395,13 +395,13 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- seans satırı ----
@@ -416,12 +416,12 @@ function makeStyles(C, type) {
       color: C.text,
       flex: 1,
       minWidth: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     sessionWhen: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

@@ -191,8 +191,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 10,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- üst ----
@@ -205,7 +205,7 @@ function makeStyles(C, type) {
     topLabel: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     balanceChip: {
       flexDirection: 'row',
@@ -217,7 +217,7 @@ function makeStyles(C, type) {
       fontSize: 22,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 30,
+      lineHeight: 32,
     },
 
     // ---- aktif ----
@@ -234,18 +234,18 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     activeText: {
       ...type.micro,
       color: C.success,
       marginTop: 2,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     activeEmpty: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- liste ----
@@ -269,19 +269,19 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     itemCount: {
       ...type.micro,
       color: C.gold,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     itemDesc: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     activeChip: {
       backgroundColor: C.primary + '22',
@@ -293,7 +293,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.primary,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- not ----
@@ -313,7 +313,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

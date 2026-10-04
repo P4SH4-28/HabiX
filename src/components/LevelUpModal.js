@@ -114,7 +114,7 @@ function makeStyles(C) {
       fontSize: 15,
       fontWeight: '700',
       letterSpacing: 2,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     bigLevel: {
       color: C.text,
@@ -127,7 +127,7 @@ function makeStyles(C) {
       color: C.textMuted,
       fontSize: 15,
       textAlign: 'center',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     subtitleRow: {
       flexDirection: 'row',

@@ -136,12 +136,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
-    lineHeight: 30,
+    lineHeight: 32,
   },
   text: {
     fontSize: 15,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   dots: {
     flexDirection: 'row',

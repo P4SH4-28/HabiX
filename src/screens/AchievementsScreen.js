@@ -274,8 +274,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 12,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- özet ----
@@ -297,12 +297,12 @@ function makeStyles(C, type) {
     summaryTitle: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     summarySub: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- grid ----
@@ -357,7 +357,7 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textAlign: 'center',
       fontSize: 11,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     cellTitleOff: {
       color: C.textMuted,
@@ -366,7 +366,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.gold,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     cellProgRow: {
       width: '100%',
@@ -377,13 +377,13 @@ function makeStyles(C, type) {
       color: C.textMuted,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     cellHint: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- not ----
@@ -402,7 +402,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- modal ----
@@ -425,13 +425,13 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       textAlign: 'center',
-      lineHeight: 24,
+      lineHeight: 26,
     },
     sheetDesc: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     sheetChips: {
       flexDirection: 'row',
@@ -451,7 +451,7 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     sheetProgWrap: {
       width: '100%',
@@ -464,20 +464,20 @@ function makeStyles(C, type) {
     sheetProgLabel: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     sheetProgValue: {
       ...type.micro,
       color: C.primary,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     sheetHint: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

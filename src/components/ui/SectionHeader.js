@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     flexShrink: 1,
-    lineHeight: 24,
+    lineHeight: 26,
   },
   action: {
     fontSize: 13,
     fontWeight: '700',
     flexShrink: 0,
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

@@ -139,13 +139,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginTop: 12,
-    lineHeight: 30,
+    lineHeight: 32,
   },
   subtitle: {
     fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   msgBox: {
     borderRadius: 16,
@@ -156,12 +156,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     marginBottom: 6,
-    lineHeight: 14,
+    lineHeight: 16,
   },
   message: {
     fontSize: 15,
     fontWeight: '700',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   stackBox: {
     borderRadius: 12,
@@ -171,12 +171,12 @@ const styles = StyleSheet.create({
   stack: {
     fontFamily: 'monospace',
     fontSize: 11,
-    lineHeight: 14,
+    lineHeight: 16,
   },
   copyHint: {
     fontSize: 13,
     marginTop: 14,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   footer: {
     padding: 24,
@@ -189,6 +189,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     overflow: 'hidden',
-    lineHeight: 21,
+    lineHeight: 22,
   },
 });

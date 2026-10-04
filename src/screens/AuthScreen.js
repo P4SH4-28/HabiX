@@ -86,8 +86,8 @@ function PrimaryButton({ s, label, onPress, loading, disabled }) {
 }
 
 export default function AuthScreen() {
-  const { colors: C, radius } = useTheme();
-  const styles = useMemo(() => makeStyles(C, radius), [C, radius]);
+  const { colors: C, radius, type } = useTheme();
+  const styles = useMemo(() => makeStyles(C, radius, type), [C, radius, type]);
   const insets = useSafeAreaInsets();
   const { status, register, confirmRegister, login, resetPassword } = useAuth();
 
@@ -210,7 +210,7 @@ export default function AuthScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <ScrollView style={styles.flex} keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never"
-          contentContainerStyle={[styles.content, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }]}>
+          contentContainerStyle={[styles.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 }]}>
           <View style={styles.card}>
             <Text style={styles.title} accessibilityRole="header">{title}</Text>
             <Text style={styles.desc}>{desc}</Text>
@@ -286,30 +286,49 @@ export default function AuthScreen() {
   );
 }
 
-function makeStyles(C, radius) {
+function makeStyles(C, radius, type) {
   return StyleSheet.create({
     container: { flex: 1, minWidth: 0, backgroundColor: C.background },
     flex: { flex: 1, minWidth: 0 },
     content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
-    title: { color: C.text, fontSize: 22, fontWeight: '700', letterSpacing: -0.4, textAlign: 'center', lineHeight: 30, },
-    desc: { color: C.textMuted, fontSize: 13, textAlign: 'center', marginBottom: 4, lineHeight: 18, },
-    field: { gap: 6 },
-    label: { color: C.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', lineHeight: 14, },
-    input: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: C.text, lineHeight: 21, },
-    hint: { color: C.xp, fontSize: 11, lineHeight: 14,
+    // Form kartı: blok arası NEFES (input ↔ buton ↔ linkler yapışmasın).
+    card: {
+      backgroundColor: C.surface,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: C.border,
+      padding: 24,
+      gap: 20,
     },
-    error: { color: C.danger, fontSize: 13, fontWeight: '600', lineHeight: 18, },
-    btn: { backgroundColor: C.primary, borderRadius: radius.control, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 },
+    title: { ...type.h1, color: C.text, textAlign: 'center' },
+    desc: { ...type.small, color: C.textMuted, textAlign: 'center', marginBottom: 8 },
+    field: { gap: 12 },
+    label: { ...type.micro, color: C.textMuted },
+    input: { backgroundColor: C.surfaceLight, borderWidth: 1, borderColor: C.border, borderRadius: radius.control, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: C.text, lineHeight: 22 },
+    hint: { ...type.micro, color: C.xp },
+    error: { ...type.small, color: C.danger, fontWeight: '600' },
+    btn: { backgroundColor: C.primary, borderRadius: radius.control, minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
     btnPressed: { opacity: 0.85 },
     btnOff: { opacity: 0.5 },
-    btnLabel: { color: C.onPrimary, fontSize: 15, fontWeight: '700', lineHeight: 21, },
+    btnLabel: { color: C.onPrimary, fontSize: 15, fontWeight: '600', letterSpacing: 0.2, lineHeight: 22 },
     linkBox: { alignItems: 'center', paddingVertical: 8 },
-    link: { color: C.primary, fontSize: 13, fontWeight: '700', lineHeight: 18, },
-    footHint: { color: C.textMuted, fontSize: 11, textAlign: 'center', lineHeight: 14, },
+    link: { color: C.primary, fontSize: 13, fontWeight: '700', lineHeight: 20 },
+    footHint: { color: C.textMuted, fontSize: 11, textAlign: 'center', lineHeight: 16 },
     overlay: { flex: 1, minWidth: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-    modal: { width: '100%', maxWidth: 380, backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 24, gap: 14, alignItems: 'center' },
-    modalTitle: { color: C.text, fontSize: 22, fontWeight: '700', textAlign: 'center', lineHeight: 30, },
-    keyText: { color: C.primary, fontSize: 22, fontWeight: '700', letterSpacing: 3, lineHeight: 30, },
-    modalWarn: { color: C.textMuted, fontSize: 13, textAlign: 'center', lineHeight: 18, },
+    modal: { width: '100%', maxWidth: 380, backgroundColor: C.surface, borderRadius: radius.card, borderWidth: 1, borderColor: C.border, padding: 24, gap: 16, alignItems: 'center' },
+    modalTitle: { ...type.h1, textAlign: 'center' },
+    // Kayıp stil geri yüklendi (kurtarma anahtarı rozeti).
+    keyPill: {
+      backgroundColor: C.surfaceLight,
+      borderWidth: 1,
+      borderColor: C.border,
+      borderRadius: radius.control,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      alignSelf: 'stretch',
+      alignItems: 'center',
+    },
+    keyText: { color: C.primary, fontSize: 22, fontWeight: '700', letterSpacing: 3, lineHeight: 32 },
+    modalWarn: { ...type.small, color: C.textMuted, textAlign: 'center' },
   });
 }

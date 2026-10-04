@@ -620,8 +620,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 10,
+      padding: 24,
+      gap: 24,
     },
     group: {
       gap: 8,
@@ -651,12 +651,12 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     rowDesc: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     valueRow: {
       flexDirection: 'row',
@@ -665,7 +665,7 @@ function makeStyles(C, type) {
     },
     valueEmoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     dot: {
       width: 10,
@@ -688,12 +688,12 @@ function makeStyles(C, type) {
     profileName: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     profileSub: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- saat şeridi ----
@@ -736,13 +736,13 @@ function makeStyles(C, type) {
       color: C.textMuted,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     hourChipOffText: {
       ...type.micro,
       color: C.textMuted,
       fontWeight: '700',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     hourChipTextActive: {
       color: C.onPrimary,
@@ -768,13 +768,13 @@ function makeStyles(C, type) {
       color: C.text,
       textAlign: 'center',
       marginBottom: 4,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     error: {
       ...type.small,
       color: C.danger,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- hakkında ----
@@ -787,13 +787,13 @@ function makeStyles(C, type) {
     aboutTitle: {
       ...type.bodyStrong,
       color: C.textMuted,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     aboutText: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }

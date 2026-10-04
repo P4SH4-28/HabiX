@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
     fontSize: 15,
     fontWeight: '700',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   right: {
     flexDirection: 'row',

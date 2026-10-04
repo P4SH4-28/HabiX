@@ -421,8 +421,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 12,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- takım kartı ----
@@ -442,12 +442,12 @@ function makeStyles(C, type) {
     teamName: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     teamMeta: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     teamPills: {
       flexDirection: 'row',
@@ -458,7 +458,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.primary,
       fontWeight: '700',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     teamActions: {
       flexDirection: 'row',
@@ -488,19 +488,19 @@ function makeStyles(C, type) {
       ...type.small,
       color: C.text,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     goalXp: {
       ...type.small,
       color: C.primary,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     goalHint: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- üyeler ----
@@ -523,7 +523,7 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     memberLeader: {
       color: C.gold,
@@ -542,7 +542,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- kur formu ----
@@ -558,19 +558,19 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 17,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     createSub: {
       ...type.small,
       color: C.textMuted,
       marginTop: 2,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     emojiLabel: {
       ...type.micro,
       color: C.textMuted,
       marginBottom: -6,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     emojiRow: {
       flexDirection: 'row',
@@ -593,7 +593,7 @@ function makeStyles(C, type) {
     },
     emojiPickText: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
 
     // ---- açık takımlar ----
@@ -613,12 +613,12 @@ function makeStyles(C, type) {
     openName: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     openMeta: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- not ----
@@ -637,7 +637,7 @@ function makeStyles(C, type) {
       color: C.textMuted,
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

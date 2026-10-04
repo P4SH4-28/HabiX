@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     letterSpacing: -0.5,
-    lineHeight: 30,
+    lineHeight: 32,
   },
   subtitle: {
     fontSize: 13,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

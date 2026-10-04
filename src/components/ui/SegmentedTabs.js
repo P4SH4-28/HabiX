@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '700',
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

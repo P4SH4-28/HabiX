@@ -412,8 +412,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 14,
+      padding: 24,
+      gap: 24,
       paddingBottom: 24,
     },
 
@@ -427,13 +427,13 @@ function makeStyles(C, type) {
     lockTitle: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     lockText: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     lockBarHead: {
       flexDirection: 'row',
@@ -443,20 +443,20 @@ function makeStyles(C, type) {
     lockBarLabel: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     lockBarValue: {
       ...type.micro,
       color: C.gold,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     lockHint: {
       ...type.small,
       color: C.textMuted,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- uyarı ----
@@ -474,7 +474,7 @@ function makeStyles(C, type) {
       flex: 1,
       minWidth: 0,
       fontWeight: '600',
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- podium ----
@@ -504,13 +504,13 @@ function makeStyles(C, type) {
       color: C.text,
       fontWeight: '700',
       maxWidth: '100%',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     podiumXp: {
       ...type.small,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- liste ----
@@ -533,7 +533,7 @@ function makeStyles(C, type) {
       width: 24,
       textAlign: 'center',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
     rowInfo: {
       flex: 1,
@@ -549,7 +549,7 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       flexShrink: 1,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     meTag: {
       color: C.primary,
@@ -564,20 +564,20 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     rowXp: {
       ...type.small,
       color: C.xp,
       fontWeight: '700',
       fontVariant: ['tabular-nums'],
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     note: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
 
     // ---- sticky bottom ----
@@ -598,7 +598,7 @@ function makeStyles(C, type) {
       color: C.primary,
       minWidth: 52,
       textAlign: 'center',
-      lineHeight: 30,
+      lineHeight: 32,
     },
     selfInfo: {
       flex: 1,
@@ -608,7 +608,7 @@ function makeStyles(C, type) {
     selfName: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     selfMeta: {
       flexDirection: 'row',
@@ -618,7 +618,7 @@ function makeStyles(C, type) {
       ...type.h3,
       color: C.text,
       fontVariant: ['tabular-nums'],
-      lineHeight: 24,
+      lineHeight: 26,
     },
   });
 }

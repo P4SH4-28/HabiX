@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: LABEL_SIZE,
-    lineHeight: 14,
+    lineHeight: 16,
     fontWeight: '700',
     textAlign: 'center',
     maxWidth: '100%',

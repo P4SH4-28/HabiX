@@ -192,14 +192,14 @@ function makeStyles(C) {
       paddingHorizontal: 16,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     hint: {
       color: C.textMuted,
       fontSize: 13,
       marginTop: 8,
       marginBottom: 4,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     list: {
       maxHeight: 320,
@@ -222,12 +222,12 @@ function makeStyles(C) {
       color: C.text,
       fontSize: 15,
       fontWeight: '700',
-      lineHeight: 21,
+      lineHeight: 22,
     },
     rowMeta: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     sendButton: {
       backgroundColor: C.primary,
@@ -244,7 +244,7 @@ function makeStyles(C) {
       color: C.onPrimary,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     tag: {
       borderRadius: 12,
@@ -258,7 +258,7 @@ function makeStyles(C) {
       color: C.accent,
       fontSize: 13,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     centerBox: {
       alignItems: 'center',
@@ -268,14 +268,14 @@ function makeStyles(C) {
     centerText: {
       color: C.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     centerSub: {
       color: C.textMuted,
       fontSize: 13,
       textAlign: 'center',
       paddingHorizontal: 16,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     feedbackBox: {
       marginTop: 10,
@@ -293,7 +293,7 @@ function makeStyles(C) {
       textAlign: 'center',
       flex: 1,
       minWidth: 0,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

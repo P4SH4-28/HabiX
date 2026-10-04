@@ -181,7 +181,7 @@ function makeStyles(C, radius, type, space) {
     label: {
       color: C.textMuted,
       ...type.label,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     box: {
       borderWidth: 1,
@@ -214,7 +214,7 @@ function makeStyles(C, radius, type, space) {
       fontSize: 15,
       fontWeight: '600',
       paddingVertical: 0,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     inputDisabled: {
       opacity: 0.7,
@@ -234,7 +234,7 @@ function makeStyles(C, radius, type, space) {
     msg: {
       color: C.textMuted,
       ...type.small,
-      lineHeight: 18,
+      lineHeight: 20,
     },
   });
 }

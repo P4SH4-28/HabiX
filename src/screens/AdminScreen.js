@@ -674,8 +674,8 @@ function makeStyles(C, type) {
       backgroundColor: C.background,
     },
     content: {
-      padding: 20,
-      gap: 10,
+      padding: 24,
+      gap: 24,
     },
 
     // ---- istatistik ----
@@ -693,13 +693,13 @@ function makeStyles(C, type) {
     statValue: {
       ...type.stat,
       color: C.primary,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     statLabel: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
     systemCard: {
       flexDirection: 'row',
@@ -715,14 +715,14 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     systemSub: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- arama ----
@@ -755,14 +755,14 @@ function makeStyles(C, type) {
     resultName: {
       ...type.bodyStrong,
       color: C.text,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     resultMeta: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     resultBadges: {
       flexDirection: 'row',
@@ -781,14 +781,14 @@ function makeStyles(C, type) {
     userName: {
       ...type.h3,
       color: C.text,
-      lineHeight: 24,
+      lineHeight: 26,
     },
     userMeta: {
       ...type.micro,
       color: C.textMuted,
       marginTop: 3,
       fontVariant: ['tabular-nums'],
-      lineHeight: 14,
+      lineHeight: 16,
     },
     userPills: {
       flexDirection: 'row',
@@ -797,7 +797,7 @@ function makeStyles(C, type) {
     reasonText: {
       ...type.small,
       color: C.xp,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     blockCard: {
       gap: 12,
@@ -806,7 +806,7 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.text,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
 
     // ---- hediye ----
@@ -823,13 +823,13 @@ function makeStyles(C, type) {
     },
     grantEmoji: {
       fontSize: 22,
-      lineHeight: 30,
+      lineHeight: 32,
     },
     grantName: {
       ...type.micro,
       color: C.textMuted,
       textAlign: 'center',
-      lineHeight: 14,
+      lineHeight: 16,
     },
 
     // ---- form ----
@@ -858,7 +858,7 @@ function makeStyles(C, type) {
       ...type.bodyStrong,
       color: C.danger,
       fontSize: 15,
-      lineHeight: 21,
+      lineHeight: 22,
     },
     dangerSubTitle: {
       ...type.small,
@@ -866,12 +866,12 @@ function makeStyles(C, type) {
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: 1,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     dangerNote: {
       ...type.small,
       color: C.textMuted,
-      lineHeight: 18,
+      lineHeight: 20,
     },
     dangerDivider: {
       height: 1,
@@ -892,7 +892,7 @@ function makeStyles(C, type) {
     logText: {
       ...type.micro,
       color: C.textMuted,
-      lineHeight: 14,
+      lineHeight: 16,
     },
     logAction: {
       color: C.text,
@@ -902,7 +902,7 @@ function makeStyles(C, type) {
       ...type.micro,
       color: C.textMuted,
       marginTop: 2,
-      lineHeight: 14,
+      lineHeight: 16,
     },
   });
 }
